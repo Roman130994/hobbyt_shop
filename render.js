@@ -380,6 +380,16 @@ function renderSiteContent() {
     });
 }
 
+function renderHeroSlider() {
+    const container = document.getElementById('hero-slider-container');
+    if (!container || typeof bannerData === 'undefined') return;
+
+    const slides = bannerData.slides.map(({ image }) =>
+        `<div class="slide" style="background-image: url('${image}')"></div>`
+    ).join('');
+    container.insertAdjacentHTML('afterbegin', slides);
+}
+
 // Початковий запуск при завантаженні сторінки
 document.addEventListener('DOMContentLoaded', () => {
     // Перевіряємо чи є параметр категорії в URL
@@ -407,6 +417,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     renderSiteContent();
+    renderHeroSlider();
     renderCart();
     updateCartBadge();
     renderSingleProduct();

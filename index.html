@@ -77,6 +77,7 @@
         <div class="carousel-container" id="popularCarousel">
             <!-- Товари будуть завантажені через JS -->
         </div>
+        <div class="carousel-dots" id="popularDots" aria-label="Навігація популярними товарами"></div>
     </div>
 
 
@@ -312,19 +313,42 @@
             }
         }
 
-        /* Carousel Navigation */
-        const carousel = document.getElementById('popularCarousel');
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
+        document.addEventListener('DOMContentLoaded', () => {
+            const carousel = document.getElementById('popularCarousel');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const dots = document.getElementById('popularDots');
+            if (!carousel || !prevBtn || !nextBtn || !dots) return;
 
-        if(carousel && prevBtn && nextBtn) {
-            prevBtn.addEventListener('click', () => {
-                carousel.scrollBy({ left: -270, behavior: 'smooth' });
-            });
-            nextBtn.addEventListener('click', () => {
-                carousel.scrollBy({ left: 270, behavior: 'smooth' });
-            });
-        }
+            const getPageCount = () => Math.max(1, Math.ceil(carousel.scrollWidth / carousel.clientWidth));
+            const getPage = () => Math.min(getPageCount() - 1, Math.round(carousel.scrollLeft / carousel.clientWidth));
+
+            function updateDots() {
+                const activePage = getPage();
+                dots.querySelectorAll('button').forEach((dot, index) => {
+                    dot.classList.toggle('active', index === activePage);
+                    dot.setAttribute('aria-current', index === activePage ? 'true' : 'false');
+                });
+            }
+
+            function renderDots() {
+                dots.innerHTML = '';
+                for (let index = 0; index < getPageCount(); index += 1) {
+                    const dot = document.createElement('button');
+                    dot.type = 'button';
+                    dot.setAttribute('aria-label', `Слайд ${index + 1}`);
+                    dot.addEventListener('click', () => carousel.scrollTo({ left: index * carousel.clientWidth, behavior: 'smooth' }));
+                    dots.appendChild(dot);
+                }
+                updateDots();
+            }
+
+            prevBtn.addEventListener('click', () => carousel.scrollBy({ left: -carousel.clientWidth, behavior: 'smooth' }));
+            nextBtn.addEventListener('click', () => carousel.scrollBy({ left: carousel.clientWidth, behavior: 'smooth' }));
+            carousel.addEventListener('scroll', updateDots, { passive: true });
+            window.addEventListener('resize', renderDots);
+            renderDots();
+        });
     </script>
 
 </body>
