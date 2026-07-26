@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ua">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Всі товари | Hobbyt Equipment</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="js/products-data.js"></script>
+    <script src="js/render.js"></script>
+</head>
+
+<body class="dark-theme">
+    <div class="container">
+        <div class="navbar">
+            <div class="logo">
+                <a href="index.html"><img src="images/logo-white.png" alt="logo" width="125px"></a>
+            </div>
+            <nav>
+                <ul id="MenuItems">
+                    <li><a href="index.html">Головна</a></li>
+                    <li class="dropdown">
+                        <a href="products.html">Продукти <i class="fa fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="products.html?category=handles">Ручки для тренувань</a>
+                            <a href="products.html?category=sets">Сети для тренувань</a>
+                            <a href="products.html?category=blocks">Блоки для тренувань</a>
+                            <a href="products.html?category=tables">Столи для тренувань</a>
+                        </div>
+                    </li>
+                    <li><a href="about.html">Про нас</a></li>
+                    <li><a href="delivery.html">Доставка та оплата</a></li>
+                </ul>
+            </nav>
+            <a href="cart.html" class="cart-icon-container">
+                <img src="images/cart.png" width="30px" height="30px">
+                <span class="cart-badge">0</span>
+            </a>
+            <img src="images/menu.png" class="menu-icon" onclick="menutoggle()">
+        </div>
+    </div>
+
+    <!-- Всі товари -->
+
+    <div class="small-container">
+        <div class="row row-2">
+            <h2>Всі товари</h2>
+            <select id="sort-select" onchange="sortAndRender()">
+                <option value="default">Сортування за замовчуванням</option>
+                <option value="price">Сортувати за ціною</option>
+                <option value="popular">Сортувати за популярністю</option>
+                <option value="rating">Сортувати за рейтингом</option>
+            </select>
+        </div>
+        <div class="row" id="all-products-list">
+            <!-- Товари будуть завантажені автоматично -->
+        </div>
+        <div class="page-btn">
+            <span>1</span>
+            <span>2</span>
+            <span>3</span>
+            <span>4</span>
+            <span>&#8594;</span>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="footer-col-1">
+                    <h3>Зв'яжіться з нами</h3>
+                    <ul>
+                        <li><a href="tel:+380978194010"><i class="fa fa-phone"></i> +38 (097) 819-4010</a></li>
+                        <li><i class="fa fa-envelope"></i> info@hobbyt.com</li>
+                        <li><a href="https://t.me/rmnkbtkn" target="_blank"><i class="fa fa-telegram"></i> @rmnkbtkn</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col-2">
+                    <img src="images/logo-white.png">
+                    <p>Наша мета — зробити задоволення та користь від спорту доступними для багатьох.
+                    </p>
+                </div>
+                <div class="footer-col-3">
+                    <h3>Меню</h3>
+                    <ul>
+                        <li><a href="index.html">Головна</a></li>
+                        <li><a href="products.html">Каталог</a></li>
+                        <li><a href="about.html">Про нас</a></li>
+                        <li><a href="delivery.html">Доставка та оплата</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col-4">
+                    <h3>Слідкуйте за нами</h3>
+                    <ul>
+                        <li><a href="#"><i class="fa fa-instagram"></i> Instagram</a></li>
+                        <li><a href="#"><i class="fa fa-facebook-square"></i> Facebook</a></li>
+                        <li><a href="#"><i class="fa fa-youtube-play"></i> YouTube</a></li>
+                        <li><a href="#"><i class="fa fa-twitter"></i> Twitter</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <p class="copyright">Copyright 2026 - Hobbyt Equipment</p>
+        </div>
+    </div>
+
+    <!-- javascript -->
+
+    <script>
+        var MenuItems = document.getElementById("MenuItems");
+        MenuItems.style.maxHeight = "0px";
+        function menutoggle() {
+            if (MenuItems.style.maxHeight == "0px") {
+                MenuItems.style.maxHeight = "200px"
+            }
+            else {
+                MenuItems.style.maxHeight = "0px"
+            }
+        }
+    </script>
+
+</body>
+
+</html>

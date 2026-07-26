@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://dishkxk0.github.io/equipments_hobbyt/sitemap.xml

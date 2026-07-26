@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ua">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Доставка та оплата | Hobbyt Equipment</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="js/products-data.js"></script>
+    <script src="js/render.js"></script>
+    <style>
+        .info-card {
+            background: #1a1a1a;
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            border: 1px solid #333;
+            transition: border-color 0.3s;
+        }
+        .info-card:hover {
+            border-color: #0E5EA3;
+        }
+        .info-card i {
+            font-size: 30px;
+            color: #0E5EA3;
+            margin-bottom: 20px;
+        }
+        .info-card h3 {
+            color: #fff;
+            margin-bottom: 15px;
+        }
+        .info-card p {
+            color: #aaa;
+            line-height: 1.6;
+        }
+        .info-card ul {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 15px;
+        }
+        .info-card ul li {
+            color: #ccc;
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        .info-card ul li::before {
+            content: "\f00c";
+            font-family: FontAwesome;
+            position: absolute;
+            left: 0;
+            color: #0E5EA3;
+        }
+    </style>
+</head>
+
+<body class="dark-theme">
+    <div class="container">
+        <div class="navbar">
+            <div class="logo">
+                <a href="index.html"><img src="images/logo-white.png" alt="logo" width="125px"></a>
+            </div>
+            <nav>
+                <ul id="MenuItems">
+                    <li><a href="index.html">Головна</a></li>
+                    <li class="dropdown">
+                        <a href="products.html">Продукти <i class="fa fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="products.html?category=handles">Ручки для тренувань</a>
+                            <a href="products.html?category=sets">Сети для тренувань</a>
+                            <a href="products.html?category=blocks">Блоки для тренувань</a>
+                            <a href="products.html?category=tables">Столи для тренувань</a>
+                        </div>
+                    </li>
+                    <li><a href="about.html">Про нас</a></li>
+                    <li><a href="delivery.html">Доставка та оплата</a></li>
+                </ul>
+            </nav>
+            <a href="cart.html" class="cart-icon-container">
+                <img src="images/cart.png" width="30px" height="30px">
+                <span class="cart-badge">0</span>
+            </a>
+            <img src="images/menu.png" class="menu-icon" onclick="menutoggle()">
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <div class="about-hero" style="background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('images/golovnyj baner.png'); height: 30vh;">
+        <div class="container" style="text-align: center;">
+            <h1>Доставка та оплата</h1>
+            <p>Ваші замовлення будуть доставлені швидко та надійно в будь-яку точку України та світу.</p>
+        </div>
+    </div>
+
+    <!-- Info Sections -->
+    <div class="small-container" style="padding-top: 80px; padding-bottom: 80px;">
+        <div class="row" style="align-items: stretch; justify-content: space-between;">
+            <!-- Доставка -->
+            <div class="col-2" style="flex-basis: 48%;">
+                <h2 class="title">Методи доставки</h2>
+                <div class="info-card">
+                    <i class="fa fa-truck"></i>
+                    <h3>Нова Пошта</h3>
+                    <p>Найпопулярніший спосіб доставки по Україні. Термін 1-3 дні.</p>
+                    <ul>
+                        <li>До відділення або поштомату</li>
+                        <li>Кур'єрська доставка до дверей</li>
+                        <li>Безкоштовно при замовленні від 5000 ₴</li>
+                    </ul>
+                </div>
+                <div class="info-card">
+                    <i class="fa fa-globe"></i>
+                    <h3>Міжнародна доставка</h3>
+                    <p>Ми відправляємо наше обладнання атлетам по всьому світу через Укрпошту або DHL.</p>
+                    <ul>
+                        <li>Фіксована ціна для Європи</li>
+                        <li>Можливість відстеження посилки</li>
+                        <li>Термін від 7 до 21 дня</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Оплата -->
+            <div class="col-2" style="flex-basis: 48%;">
+                <h2 class="title">Методи оплати</h2>
+                <div class="info-card">
+                    <i class="fa fa-credit-card"></i>
+                    <h3>Оплата онлайн</h3>
+                    <p>Швидко та безпечно за допомогою карт будь-якого банку (Visa, Mastercard).</p>
+                    <ul>
+                        <li>Криптовалюти (USDT)</li>
+                        <li>Apple Pay та Google Pay</li>
+                        <li>Безпечне проведення платежів через LiqPay</li>
+                    </ul>
+                </div>
+                <div class="info-card">
+                    <i class="fa fa-handshake-o"></i>
+                    <h3>Післяплата</h3>
+                    <p>Сплачуйте замовлення при отриманні у відділенні Нової Пошти.</p>
+                    <ul>
+                        <li>Огляд товару перед оплатою</li>
+                        <li>Мінімальна передоплата 200 ₴</li>
+                        <li>Комісія за переказ згідно тарифів перевізника</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="footer-col-1">
+                    <h3>Зв'яжіться з нами</h3>
+                    <ul>
+                        <li><a href="tel:+380978194010"><i class="fa fa-phone"></i> +38 (097) 819-4010</a></li>
+                        <li><i class="fa fa-envelope"></i> info@hobbyt.com</li>
+                        <li><a href="https://t.me/rmnkbtkn" target="_blank"><i class="fa fa-telegram"></i> @rmnkbtkn</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col-2">
+                    <img src="images/logo-white.png">
+                    <p>Наша мета — зробити тренування доступними та ефективними для кожного атлета.</p>
+                </div>
+                <div class="footer-col-3">
+                    <h3>Меню</h3>
+                    <ul>
+                        <li><a href="index.html">Головна</a></li>
+                        <li><a href="products.html">Каталог</a></li>
+                        <li><a href="about.html">Про нас</a></li>
+                        <li><a href="delivery.html">Доставка та оплата</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col-4">
+                    <h3>Слідкуйте за нами</h3>
+                    <ul>
+                        <li><a href="#"><i class="fa fa-instagram"></i> Instagram</a></li>
+                        <li><a href="#"><i class="fa fa-facebook-square"></i> Facebook</a></li>
+                        <li><a href="#"><i class="fa fa-youtube-play"></i> YouTube</a></li>
+                        <li><a href="#"><i class="fa fa-twitter"></i> Twitter</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <p class="copyright">Copyright 2025 - Hobbyt Equipment</p>
+        </div>
+    </div>
+
+    <script>
+        function menutoggle() {
+            var MenuItems = document.getElementById("MenuItems");
+            if (MenuItems.style.maxHeight == "0px") {
+                MenuItems.style.maxHeight = "200px";
+            } else {
+                MenuItems.style.maxHeight = "0px";
+            }
+        }
+    </script>
+</body>
+</html>

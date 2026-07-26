@@ -1,0 +1,428 @@
+let currentSort = 'default';
+function renderProducts(containerId, categoryFilter = null, limit = null, page = 1, sortType = currentSort) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    let products = [...productsData];
+    if (categoryFilter) {
+        if (categoryFilter === 'popular') {
+            products = products.filter(p => p.popular === true && !p.discount);
+        } else if (categoryFilter === 'sale') {
+            products = products.filter(p => p.discount);
+        } else {
+            products = products.filter(p => p.category === categoryFilter);
+        }
+    }
+
+    if (sortType === 'price') {
+        products.sort((a, b) => parseInt(a.price.replace(/[^\d]/g, '')) - parseInt(b.price.replace(/[^\d]/g, '')));
+    } else if (sortType === 'popular') {
+        products.sort((a, b) => (b.popular ? 1 : 0) - (a.popular ? 1 : 0));
+    } else if (sortType === 'rating') {
+        products.sort((a, b) => b.rating - a.rating);
+    }
+
+    const itemsPerPage = 16;
+    if (containerId === 'all-products-list') {
+        const totalPages = Math.ceil(products.length / itemsPerPage);
+        const start = (page - 1) * itemsPerPage;
+        const end = start + itemsPerPage;
+        products = products.slice(start, end);
+        renderPagination(totalPages, page);
+    } else if (limit) {
+        products = products.slice(0, limit);
+    }
+
+    const isCarousel = containerId.toLowerCase().includes('carousel');
+
+    container.innerHTML = products.map(p => {
+        const productCard = document.createElement('div');
+        productCard.className = isCarousel ? 'product-card' : 'col-4';
+        
+        const discountBadge = p.discount ? `<div class="discount-badge">${p.discount}</div>` : '';
+        const priceHTML = p.oldPrice 
+            ? `<p><span class="old-price">${p.oldPrice}</span> ${p.price}</p>` 
+            : `<p>${p.price}</p>`;
+
+        productCard.innerHTML = `
+            ${discountBadge}
+            <a href="product_details.html?id=${p.id}"><img src="${p.image}" alt="${p.name}"></a>
+            <a href="product_details.html?id=${p.id}"><h4>${p.name}</h4></a>
+            <div class="rating">
+                ${'<i class="fa fa-star"></i>'.repeat(Math.floor(p.rating || 5))}
+                ${'<i class="fa fa-star-o"></i>'.repeat(5 - Math.floor(p.rating || 5))}
+            </div>
+            ${priceHTML}
+            <button onclick="addToCart(${p.id})" class="add-to-cart-btn">В кошик</button>
+        `;
+        return productCard.outerHTML;
+    }).join('');
+}
+
+function renderPagination(totalPages, currentPage) {
+    const paginationContainer = document.querySelector('.page-btn');
+    if (!paginationContainer) return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get('category');
+
+    let html = '';
+    for (let i = 1; i <= totalPages; i++) {
+        html += `<span class="${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</span>`;
+    }
+    
+    if (currentPage < totalPages) {
+        html += `<span onclick="changePage(${currentPage + 1})">&#8594;</span>`;
+    }
+
+    paginationContainer.innerHTML = html;
+}
+
+function changePage(page) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get('category');
+    renderProducts('all-products-list', category, null, page, currentSort);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function sortAndRender() {
+    const select = document.getElementById('sort-select');
+    if (select) {
+        currentSort = select.value;
+    }
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get('category');
+    renderProducts('all-products-list', category, null, 1, currentSort);
+}
+
+function renderSingleProduct() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const productId = parseInt(urlParams.get('id'));
+    const product = productsData.find(p => p.id === productId);
+
+    if (product) {
+        // Заповнюємо основні дані
+        const nameEl = document.getElementById('ProductName');
+        const priceEl = document.getElementById('ProductPrice');
+        const imgEl = document.getElementById('ProductImg');
+        const descEl = document.getElementById('ProductDesc');
+        const catEl = document.getElementById('ProductCategory');
+
+        if (nameEl) nameEl.innerText = product.name;
+        if (priceEl) priceEl.innerText = product.price;
+        if (imgEl) imgEl.src = product.image;
+        if (descEl) descEl.innerText = product.description || "Опис скоро з'явиться...";
+        if (catEl) catEl.innerText = "Головна / " + (product.category === 'popular' ? 'Популярні' : product.category);
+        
+        // Додаємо дію для кнопки кошика
+        const cartBtn = document.querySelector('.single-product .btn');
+        if (cartBtn) {
+            cartBtn.setAttribute('onclick', `addToCart(${product.id}); return false;`);
+        }
+    }
+}
+
+function addToCart(productId) {
+    let cart = JSON.parse(localStorage.getItem('hobbytCart')) || [];
+    const product = productsData.find(p => p.id === productId);
+    
+    if (product) {
+        cart.push({...product, quantity: 1});
+        localStorage.setItem('hobbytCart', JSON.stringify(cart));
+        updateCartBadge();
+        alert('Товар додано до кошика!');
+    }
+}
+
+function updateCartBadge() {
+    const badges = document.querySelectorAll('.cart-badge');
+    const cart = JSON.parse(localStorage.getItem('hobbytCart')) || [];
+    const count = cart.length;
+
+    badges.forEach(badge => {
+        if (count > 0) {
+            badge.innerText = count;
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
+    });
+}
+
+function renderCart() {
+    const container = document.getElementById('cart-items-container');
+    if (!container) return;
+
+    let cart = JSON.parse(localStorage.getItem('hobbytCart')) || [];
+    let subtotal = 0;
+
+    const checkoutBtn = document.getElementById('checkout-btn-container');
+
+    if (cart.length === 0) {
+        container.innerHTML = '<tr><td colspan="3" style="text-align:center; padding: 50px;">Кошик порожній</td></tr>';
+        const subtotalEl = document.getElementById('cart-subtotal');
+        if (subtotalEl) subtotalEl.innerText = '0 ₴';
+        const taxEl = document.getElementById('cart-tax');
+        if (taxEl) taxEl.innerText = '0 ₴';
+        const totalEl = document.getElementById('cart-total');
+        if (totalEl) totalEl.innerText = '0 ₴';
+        if (checkoutBtn) checkoutBtn.style.display = 'none';
+        return;
+    }
+
+    if (checkoutBtn) checkoutBtn.style.display = 'block';
+
+    container.innerHTML = cart.map((item, index) => {
+        const price = parseInt(item.price.replace(/[^\d]/g, ''));
+        subtotal += price * item.quantity;
+        return `
+            <tr>
+                <td>
+                    <div class="cart-info">
+                        <img src="${item.image}">
+                        <div>
+                            <p>${item.name}</p>
+                            <small>Ціна: ${item.price}</small>
+                            <br>
+                            <a href="#" onclick="removeFromCart(${index}); return false;" style="color: #ff523b;">Видалити</a>
+                        </div>
+                    </div>
+                </td>
+                <td><input type="number" value="${item.quantity}" disabled></td>
+                <td>${item.price}</td>
+            </tr>
+        `;
+    }).join('');
+
+    const tax = Math.round(subtotal * 0.2);
+    const total = subtotal + tax;
+
+    const subtotalEl = document.getElementById('cart-subtotal');
+    const taxEl = document.getElementById('cart-tax');
+    const totalEl = document.getElementById('cart-total');
+
+    if (subtotalEl) subtotalEl.innerText = subtotal.toLocaleString() + ' ₴';
+    if (taxEl) taxEl.innerText = tax.toLocaleString() + ' ₴';
+    if (totalEl) totalEl.innerText = total.toLocaleString() + ' ₴';
+}
+
+function renderCheckout() {
+    const container = document.getElementById('checkout-items-list');
+    if (!container) return;
+
+    let cart = JSON.parse(localStorage.getItem('hobbytCart')) || [];
+    let subtotal = 0;
+
+    if (cart.length === 0) {
+        container.innerHTML = '<p style="text-align:center;">Кошик порожній</p>';
+        document.getElementById('checkout-subtotal').innerText = '0 ₴';
+        document.getElementById('checkout-total').innerText = '0 ₴';
+        return;
+    }
+
+    container.innerHTML = cart.map((item, index) => {
+        const price = parseInt(item.price.replace(/[^\d]/g, ''));
+        subtotal += price * item.quantity;
+        return `
+            <div class="checkout-item">
+                <img src="${item.image}" alt="${item.name}">
+                <div class="checkout-item-details">
+                    <div class="checkout-item-title">${item.name}</div>
+                    <div class="checkout-item-controls">
+                        <div class="checkout-item-qty">
+                            <button type="button" class="qty-btn" onclick="updateCheckoutQuantity(${index}, -1)">-</button>
+                            <span style="width: 20px; text-align: center;">${item.quantity}</span>
+                            <button type="button" class="qty-btn" onclick="updateCheckoutQuantity(${index}, 1)">+</button>
+                        </div>
+                        <div class="checkout-item-price">${(price * item.quantity).toLocaleString()} ₴</div>
+                        <button type="button" class="remove-item-btn" onclick="removeCheckoutItem(${index})">
+                            <i class="fa fa-trash-o"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    const tax = 0; // На скріншоті немає ПДВ
+    const total = subtotal + tax; // Plus shipping if calculated
+
+    document.getElementById('checkout-subtotal').innerText = subtotal.toLocaleString() + ' ₴';
+    document.getElementById('checkout-total').innerText = total.toLocaleString() + ' ₴';
+
+    // Слухач для форми
+    const orderForm = document.getElementById('checkout-form');
+    if (orderForm && !orderForm.dataset.initialized) {
+        orderForm.dataset.initialized = 'true';
+        orderForm.onsubmit = function(e) {
+            e.preventDefault();
+            
+            // Collect form data
+            const isCorp = document.getElementById('corp-order').checked;
+            const phone = document.getElementById('phone').value;
+            const email = document.getElementById('email').value;
+            const firstName = document.getElementById('first-name').value;
+            const lastName = document.getElementById('last-name').value;
+            const deliverToAlt = document.getElementById('alt-address').checked;
+            const street = document.getElementById('street').value;
+            const street2 = document.getElementById('street-2').value;
+            const city = document.getElementById('city').value;
+            const region = document.getElementById('region').value;
+            const zip = document.getElementById('zip').value;
+            const notes = document.getElementById('notes').value;
+            
+            const doNotCall = document.getElementById('do-not-call').checked;
+            const paymentMethodStr = document.querySelector('input[name="payment_method"]:checked').value;
+
+            // Формуємо список товарів для повідомлення
+            let itemsText = cart.map(item => `• ${item.name} x${item.quantity} - ${(parseInt(item.price.replace(/[^\\d]/g, '')) * item.quantity).toLocaleString()} ₴`).join('\n');
+            
+            const message = `🔔 НОВЕ ЗАМОВЛЕННЯ (Checkout)!\n\n` +
+                            `👤 Покупець: ${firstName} ${lastName}\n` +
+                            `📞 Телефон: ${phone}\n` +
+                            `✉️ E-mail: ${email}\n` +
+                            `🏢 Корпоративне: ${isCorp ? 'Так' : 'Ні'}\n` +
+                            `📍 Адреса: ${city}, ${region}, Вул. ${street} ${street2}, Індекс: ${zip}\n` +
+                            `${deliverToAlt ? '⚠️ Доставка на іншу адресу\n' : ''}` +
+                            `📝 Нотатки: ${notes || '-'}\n` +
+                            `💳 Оплата: ${paymentMethodStr}\n` +
+                            `🔕 Не дзвонити: ${doNotCall ? 'Так' : 'Ні'}\n` +
+                            `------------------------\n` +
+                            `📦 Товари:\n${itemsText}\n` +
+                            `------------------------\n` +
+                            `💰 РАЗОМ: ${total.toLocaleString()} ₴\n\n` +
+                            `Адмін: @rmnkbtkn`;
+
+            // Відправка в Телеграм
+            const token = '8685653696:AAGySLz7j9ntEnaGPHtXt8QF38UG2pluEVc';
+            const chatId = '1864685581';
+            const url = `https://api.telegram.org/bot${token}/sendMessage`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: message,
+                    parse_mode: 'HTML'
+                })
+            }).then(() => {
+                alert('Дякуємо, ' + firstName + '! Ваше замовлення прийнято. Менеджер зв\'яжеться з вами найближчим часом.');
+                localStorage.clear();
+                window.location.href = 'index.html';
+            }).catch(err => {
+                console.error('Помилка відправки:', err);
+                alert('Сталася помилка при оформленні. Спробуйте ще раз або зв\'яжіться з нами.');
+            });
+        };
+        
+        // Show/hide payment descriptions
+        const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
+        paymentRadios.forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                document.querySelectorAll('.payment-desc').forEach(desc => desc.style.display = 'none');
+                const id = e.target.id;
+                const desc = document.getElementById('desc-' + id);
+                if(desc) desc.style.display = 'block';
+            });
+        });
+
+        // Show/hide alt address fields
+        const altAddressCheck = document.getElementById('alt-address');
+        const altFielsdContainer = document.querySelector('.alt-address-fields');
+        if(altAddressCheck && altFielsdContainer) {
+            altAddressCheck.addEventListener('change', (e) => {
+                altFielsdContainer.style.display = e.target.checked ? 'block' : 'none';
+            });
+        }
+    }
+}
+
+function updateCheckoutQuantity(index, delta) {
+    let cart = JSON.parse(localStorage.getItem('hobbytCart')) || [];
+    if(cart[index]) {
+        cart[index].quantity += delta;
+        if(cart[index].quantity < 1) cart[index].quantity = 1;
+        localStorage.setItem('hobbytCart', JSON.stringify(cart));
+        renderCheckout();
+        updateCartBadge();
+    }
+}
+
+function removeCheckoutItem(index) {
+    let cart = JSON.parse(localStorage.getItem('hobbytCart')) || [];
+    cart.splice(index, 1);
+    localStorage.setItem('hobbytCart', JSON.stringify(cart));
+    renderCheckout();
+    renderCart(); // in case both are somehow open/needed
+    updateCartBadge();
+}
+
+function removeFromCart(index) {
+    let cart = JSON.parse(localStorage.getItem('hobbytCart')) || [];
+    cart.splice(index, 1);
+    localStorage.setItem('hobbytCart', JSON.stringify(cart));
+    renderCart();
+    updateCartBadge();
+}
+
+function renderSiteContent() {
+    // Шукаємо всі елементи з атрибутом data-content
+    // Формат: data-content="page.key" (наприклад: "index.heroTitle")
+    const elements = document.querySelectorAll('[data-content]');
+    elements.forEach(el => {
+        const path = el.getAttribute('data-content').split('.');
+        if (path.length === 2 && siteContent[path[0]] && siteContent[path[0]][path[1]]) {
+            el.innerText = siteContent[path[0]][path[1]];
+        }
+    });
+}
+
+// Початковий запуск при завантаженні сторінки
+document.addEventListener('DOMContentLoaded', () => {
+    // Перевіряємо чи є параметр категорії в URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryFromUrl = urlParams.get('category');
+
+    renderProducts('popularCarousel', 'popular');
+    renderProducts('newProductsCarousel', 'sale', 10);
+    
+    // Якщо ми на сторінці продуктів, рендеримо або категорію, або все
+    if (categoryFromUrl) {
+        renderProducts('all-products-list', categoryFromUrl);
+        const titleEl = document.querySelector('.row-2 h2');
+        if (titleEl) {
+            const catNames = {
+                'handles': 'Ручки для тренувань',
+                'sets': 'Сети для тренувань',
+                'blocks': 'Блоки для тренувань',
+                'tables': 'Столи для тренувань'
+            };
+            titleEl.innerText = catNames[categoryFromUrl] || 'Товари';
+        }
+    } else {
+        renderProducts('all-products-list');
+    }
+
+    renderSiteContent();
+    renderCart();
+    updateCartBadge();
+    renderSingleProduct();
+    renderCheckout();
+
+    // Додаємо навігацію для нової каруселі
+    const newCarousel = document.getElementById('newProductsCarousel');
+    const newPrevBtn = document.getElementById('newPrevBtn');
+    const newNextBtn = document.getElementById('newNextBtn');
+
+    if (newCarousel && newPrevBtn && newNextBtn) {
+        newPrevBtn.addEventListener('click', () => {
+            newCarousel.scrollBy({ left: -270, behavior: 'smooth' });
+        });
+        newNextBtn.addEventListener('click', () => {
+            newCarousel.scrollBy({ left: 270, behavior: 'smooth' });
+        });
+    }
+});

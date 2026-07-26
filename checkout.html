@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ua">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Оформлення замовлення | Hobbyt Equipment</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="js/products-data.js"></script>
+    <script src="js/render.js"></script>
+</head>
+
+<body class="dark-theme">
+    <div class="container">
+        <div class="navbar">
+            <div class="logo">
+                <a href="index.html"><img src="images/logo-white.png" alt="logo" width="125px"></a>
+            </div>
+            <nav>
+                <ul id="MenuItems">
+                    <li><a href="index.html">Головна</a></li>
+                    <li class="dropdown">
+                        <a href="products.html">Продукти <i class="fa fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="products.html?category=handles">Ручки для тренувань</a>
+                            <a href="products.html?category=sets">Сети для тренувань</a>
+                            <a href="products.html?category=blocks">Блоки для тренувань</a>
+                            <a href="products.html?category=tables">Столи для тренувань</a>
+                        </div>
+                    </li>
+                    <li><a href="about.html">Про нас</a></li>
+                    <li><a href="delivery.html">Доставка та оплата</a></li>
+                </ul>
+            </nav>
+            <a href="cart.html" class="cart-icon-container">
+                <img src="images/cart.png" width="30px" height="30px">
+                <span class="cart-badge">0</span>
+            </a>
+            <img src="images/menu.png" class="menu-icon" onclick="menutoggle()">
+        </div>
+    </div>
+
+    <div class="small-container checkout-page-wrapper">
+        <div class="breadcrumbs">
+            <a href="index.html"><i class="fa fa-home"></i></a> > <span>Оформлення</span>
+        </div>
+        
+        <div class="coupon-section">
+            <p>Маєте купон знижки? <strong>ВВЕДІТЬ КОД</strong></p>
+        </div>
+
+        <form id="checkout-form">
+            <div class="checkout-layout">
+                <!-- Ліва колонка: Платіжні дані -->
+                <div class="checkout-col-left">
+                    <h2 class="checkout-title">Платіжні дані</h2>
+                    
+                    <div class="form-check">
+                        <input type="checkbox" id="corp-order">
+                        <label for="corp-order">Корпоративне замовлення</label>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="phone">Телефон <span class="required">*</span></label>
+                            <input type="tel" id="phone" value="+38 (111) 111-11-11" required>
+                        </div>
+                        <div class="form-group half">
+                            <label for="email">E-mail адреса <span class="required">*</span></label>
+                            <input type="email" id="email" value="wp1@lineup.ua" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="first-name">Ім'я <span class="required">*</span></label>
+                            <input type="text" id="first-name" value="тест" required>
+                        </div>
+                        <div class="form-group half">
+                            <label for="last-name">Прізвище <span class="required">*</span></label>
+                            <input type="text" id="last-name" value="тест" required>
+                        </div>
+                    </div>
+
+                    <div class="form-check" style="margin-top: 15px;">
+                        <input type="checkbox" id="alt-address">
+                        <label for="alt-address">Доставити на іншу адресу?</label>
+                    </div>
+
+                    <div class="alt-address-fields" style="display: none;">
+                        <!-- Додаткові поля, якщо треба -->
+                    </div>
+
+                    <div class="form-group">
+                        <label for="street">Назва вулиці <span class="required">*</span></label>
+                        <input type="text" id="street" value="Перемоги" required>
+                        <input type="text" id="street-2" value="1" style="margin-top: 10px;">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="city">Місто / Село <span class="required">*</span></label>
+                        <input type="text" id="city" value="Курахово" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="region">Область / Округ <span class="required">*</span></label>
+                        <select id="region" required>
+                            <option value="Донецька область" selected>Донецька область</option>
+                            <option value="Київська область">Київська область</option>
+                            <option value="Львівська область">Львівська область</option>
+                            <option value="Одеська область">Одеська область</option>
+                            <option value="Інша">Інша</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="zip">Поштовий індекс <span class="required">*</span></label>
+                        <input type="text" id="zip" value="85612" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Нотатки до замовлення (необов'язково)</label>
+                        <textarea id="notes" placeholder="Нотатки до вашого замовлення, наприклад спеціальні нотатки для доставки." rows="4"></textarea>
+                    </div>
+                </div>
+
+                <!-- Права колонка: Ваше замовлення -->
+                <div class="checkout-col-right">
+                    <div class="order-summary-box">
+                        <h3 class="checkout-title">ВАШЕ ЗАМОВЛЕННЯ</h3>
+                        
+                        <div id="checkout-items-list" class="checkout-items-list">
+                            <!-- JS will populate checkout items here -->
+                        </div>
+
+                        <div class="order-totals">
+                            <div class="total-row">
+                                <span>Проміжний підсумок</span>
+                                <span id="checkout-subtotal">0 ₴</span>
+                            </div>
+                            <div class="total-row shipping-row">
+                                <span>Відправлення <i class="fa fa-info-circle"></i></span>
+                                <div>Нова Пошта: Відповідно Тарифам</div>
+                            </div>
+                            <div class="total-row grand-total">
+                                <span>Загалом</span>
+                                <span id="checkout-total">0 ₴</span>
+                            </div>
+                        </div>
+
+                        <div class="payment-methods">
+                            <h4>Способи оплати</h4>
+                            
+                            <div class="payment-option">
+                                <input type="radio" name="payment_method" id="bank-transfer" value="Банківський переказ" checked>
+                                <label for="bank-transfer">Банківський переказ</label>
+                                <div class="payment-desc" id="desc-bank-transfer">
+                                    На IBAN по реквізитам ФОП.
+                                </div>
+                            </div>
+                            
+                            <div class="payment-option">
+                                <input type="radio" name="payment_method" id="cash" value="Готівка при отриманні">
+                                <label for="cash">Готівка при отриманні</label>
+                                <div class="payment-desc" id="desc-cash" style="display: none;">
+                                    Оплата при отриманні у відділенні (накладений платіж).
+                                </div>
+                            </div>
+                            
+                            <div class="payment-option">
+                                <input type="radio" name="payment_method" id="crypto" value="Криптовалютою через Whitepay">
+                                <label for="crypto">Криптовалютою через Whitepay</label>
+                                <div class="payment-desc" id="desc-crypto" style="display: none;">
+                                    Швидко та безпечно сплачуйте криптовалютою.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="privacy-policy">
+                            <p>Ваші особисті дані будуть використовуватися для обробки ваших замовлень, спрощення вашої роботи з сайтом та інших цілей, які описує наша <a href="#">політика конфіденційності</a>.</p>
+                        </div>
+
+                        <div class="form-check agreement-check">
+                            <input type="checkbox" id="terms-agree" required>
+                            <label for="terms-agree">Я прочитав(ла) і погоджуюся з правилами сайту <a href="#">правила та умови</a> <span class="required">*</span></label>
+                        </div>
+
+                        <div class="form-check do-not-call">
+                            <input type="checkbox" id="do-not-call">
+                            <label for="do-not-call">Не дзвоніти мені для уточнення деталей</label>
+                        </div>
+
+                        <button type="submit" class="btn checkout-submit-btn">ПІДТВЕРДИТИ ЗАМОВЛЕННЯ</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="footer-col-1">
+                    <h3>Зв'яжіться з нами</h3>
+                    <ul>
+                        <li><a href="tel:+380978194010"><i class="fa fa-phone"></i> +38 (097) 819-4010</a></li>
+                        <li><i class="fa fa-envelope"></i> info@hobbyt.com</li>
+                        <li><a href="https://t.me/rmnkbtkn" target="_blank"><i class="fa fa-telegram"></i> @rmnkbtkn</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col-2">
+                    <img src="images/logo-white.png">
+                    <p>Наша мета — зробити задоволення та користь від спорту доступними для багатьох.
+                    </p>
+                </div>
+                <div class="footer-col-3">
+                    <h3>Меню</h3>
+                    <ul>
+                        <li><a href="index.html">Головна</a></li>
+                        <li><a href="products.html">Каталог</a></li>
+                        <li><a href="about.html">Про нас</a></li>
+                        <li><a href="delivery.html">Доставка та оплата</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col-4">
+                    <h3>Слідкуйте за нами</h3>
+                    <ul>
+                        <li><a href="#"><i class="fa fa-instagram"></i> Instagram</a></li>
+                        <li><a href="#"><i class="fa fa-facebook-square"></i> Facebook</a></li>
+                        <li><a href="#"><i class="fa fa-youtube-play"></i> YouTube</a></li>
+                        <li><a href="#"><i class="fa fa-twitter"></i> Twitter</a></li>
+                    </ul>
+                </div>
+                
+            </div>
+            <hr>
+            <p class="copyright">Copyright 2026 - Hobbyt Equipment</p>
+        </div>
+    </div>
+
+    <!-- javascript -->
+    <script>
+        var MenuItems = document.getElementById("MenuItems");
+        MenuItems.style.maxHeight = "0px";
+        function menutoggle() {
+            if (MenuItems.style.maxHeight == "0px") {
+                MenuItems.style.maxHeight = "200px"
+            }
+            else {
+                MenuItems.style.maxHeight = "0px"
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ua">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hobbyt Equipment | Професійне обладнання для армрестлінгу</title>
+    <meta name="description" content="Hobbyt Equipment - Професійне обладнання для армрестлінгу. Ручки, сети та блоки для справжніх чемпіонів. Найкраща якість в Україні.">
+    <meta name="keywords" content="армрестлінг, обладнання, ручки для армрестлінгу, блоки, Hobbyt Equipment, тренування хвату">
+    <meta property="og:title" content="Hobbyt Equipment | Магазин обладнання для армрестлінгу">
+    <meta property="og:description" content="Найкраще обладнання для тренувань з армрестлінгу в Україні. Доставка по всій країні.">
+    <meta property="og:image" content="images/logo-white.png">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <script src="js/products-data.js"></script>
+    <script src="js/render.js"></script>
+</head>
+
+<body class="dark-theme">
+
+    <div class="header hero-header">
+        <div class="hero-slider" id="hero-slider-container">
+            <!-- Слайди генеруються динамічно через JS -->
+            <div class="overlay"></div>
+        </div>
+        <div class="container relative-container">
+            <div class="navbar">
+                <div class="logo">
+                    <a href="index.html"><img src="images/logo-white.png" alt="logo" width="125px"></a>
+                </div>
+                <nav>
+                    <ul id="MenuItems">
+                        <li><a href="index.html">Головна</a></li>
+                    <li class="dropdown">
+                        <a href="products.html">Продукти <i class="fa fa-caret-down"></i></a>
+                        <div class="dropdown-content">
+                            <a href="products.html?category=handles">Ручки для тренувань</a>
+                            <a href="products.html?category=sets">Сети для тренувань</a>
+                            <a href="products.html?category=blocks">Блоки для тренувань</a>
+                            <a href="products.html?category=tables">Столи для тренувань</a>
+                        </div>
+                    </li>
+                    <li><a href="about.html">Про нас</a></li>
+                    <li><a href="delivery.html">Доставка та оплата</a></li>
+                    </ul>
+                </nav>
+                <a href="cart.html" class="cart-icon-container">
+                    <img src="images/cart.png" width="30px" height="30px">
+                    <span class="cart-badge">0</span>
+                </a>
+                <img src="images/menu.png" class="menu-icon" onclick="menutoggle()">
+            </div>
+            <div class="row hero-content">
+                <div class="col-2 hero-text-col">
+                    <h1 class="hero-title" data-content="index.heroTitle">Обладнання,<br>що робить різницю</h1>
+                    <p class="hero-subtitle" data-content="index.heroText">Від новачка до професіонала - маємо все, що потрібно для результату.</p>
+                    <a href="products.html" class="btn">Переглянути каталог &#8594;</a>
+                </div>
+                <div class="col-2">
+                    <!-- Залишено порожнім умисно -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Популярні товари (Карусель) -->
+    <div class="popular-products-section small-container">
+        <div class="section-top">
+            <h2 class="section-title">Популярні товари</h2>
+            <div class="carousel-nav">
+                <button id="prevBtn"><i class="fa fa-angle-left"></i></button>
+                <button id="nextBtn"><i class="fa fa-angle-right"></i></button>
+            </div>
+        </div>
+        <div class="carousel-container" id="popularCarousel">
+            <!-- Товари будуть завантажені через JS -->
+        </div>
+    </div>
+
+
+
+    <!-- Рекомендовані товари -->
+
+    <div class="small-container">
+        <h2 class="title">Категорії товарів</h2>
+        <div class="row">
+            <div class="col-4">
+                <a href="products.html?category=handles">
+                    <div class="category-col">
+                        <img src="images/4.png">
+                        <div class="category-overlay">
+                            <h3>Ручки для тренувань</h3>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-4">
+                <a href="products.html?category=sets">
+                    <div class="category-col">
+                        <img src="images/3.png">
+                        <div class="category-overlay">
+                            <h3>Сети для тренувань</h3>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-4">
+                <a href="products.html?category=blocks">
+                    <div class="category-col">
+                        <img src="images/1.png">
+                        <div class="category-overlay">
+                            <h3>Блоки для тренувань</h3>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <div class="col-4">
+                <a href="products.html?category=tables">
+                    <div class="category-col">
+                        <img src="images/2.png">
+                        <div class="category-overlay">
+                            <h3>Столи для тренувань</h3>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+        <div class="section-top" style="margin-top: 50px;">
+            <h2 class="section-title">Розпродаж</h2>
+            <div class="carousel-nav">
+                <button id="newPrevBtn"><i class="fa fa-angle-left"></i></button>
+                <button id="newNextBtn"><i class="fa fa-angle-right"></i></button>
+            </div>
+        </div>
+        <div class="carousel-container" id="newProductsCarousel">
+            <!-- Товари будуть завантажені через JS (тільки 8) -->
+        </div>
+    </div>
+
+    </div>
+
+    <!-- Offer Banner Slider -->
+    <div class="offer-slider-container" id="main-banner-slider">
+        <!-- Слайди будуть завантажені через JS -->
+    </div>
+
+    <script>
+        function renderBanners() {
+            const container = document.getElementById('main-banner-slider');
+            if (!container) return;
+
+            const slides = bannerData.slides;
+            const count = slides.length;
+            const slideDuration = 5; // секунд на слайд
+            const totalDuration = count * slideDuration;
+
+            // Генеруємо фонові слайди з динамічною анімацією
+            let html = slides.map((slide, index) => {
+                const delay = index * slideDuration;
+                return `<div class="offer-slide-bg" style="background-image: url('${slide.image}'); animation: bannerFade ${totalDuration}s infinite; animation-delay: ${delay}s;"></div>`;
+            }).join('');
+
+            html += `<div class="slider-overlay"></div>
+                     <img src="images/logo-white.png" class="offer-logo" alt="Hobbyt Logo">`;
+
+            // Генеруємо текстовий контент з динамічною анімацією
+            html += slides.map((slide, index) => {
+                const delay = index * slideDuration;
+                return `<div class="offer-slide-content" style="animation: bannerTextFade ${totalDuration}s infinite; animation-delay: ${delay}s;">
+                    <h2>${slide.title}</h2>
+                    <p>${slide.text}</p>
+                    <a href="products.html" class="btn">Переглянути каталог</a>
+                </div>`;
+            }).join('');
+
+            container.innerHTML = html;
+
+            // Динамічно створюємо @keyframes під поточну кількість слайдів
+            const fadeIn = 5 / totalDuration * 100;   // % для fade-in
+            const visible = (100 / count);             // % видимості одного слайда
+            const fadeOut = visible + fadeIn;           // % до повного зникнення
+
+            let styleEl = document.getElementById('dynamic-banner-anim');
+            if (!styleEl) {
+                styleEl = document.createElement('style');
+                styleEl.id = 'dynamic-banner-anim';
+                document.head.appendChild(styleEl);
+            }
+            styleEl.textContent = `
+                @keyframes bannerFade {
+                    0% { opacity: 0; transform: scale(1.0); }
+                    ${fadeIn.toFixed(2)}% { opacity: 1; }
+                    ${visible.toFixed(2)}% { opacity: 1; }
+                    ${fadeOut.toFixed(2)}% { opacity: 0; transform: scale(1.08); }
+                    100% { opacity: 0; transform: scale(1.08); }
+                }
+                @keyframes bannerTextFade {
+                    0% { opacity: 0; }
+                    ${fadeIn.toFixed(2)}% { opacity: 1; }
+                    ${visible.toFixed(2)}% { opacity: 1; }
+                    ${fadeOut.toFixed(2)}% { opacity: 0; }
+                    100% { opacity: 0; }
+                }
+            `;
+        }
+
+        document.addEventListener('DOMContentLoaded', renderBanners);
+    </script>
+
+    <!-- Testimonial -->
+    <div class="testimonial">
+        <div class="small-container">
+            <div class="row">
+                <div class="col-3">
+                    <i class="fa fa-quote-left"></i>
+                    <p>Купив ручку для тренування пронації. Якість виготовлення ідеальна — нічого не скрипить і не люфтить. Однозначно вартує своїх грошей!</p>
+                    <div class="rating">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                    </div>
+                    <img src="images/Taras.jpeg" style="height: 50px; object-fit: cover;">
+                    <h3>Kibitkin Taras</h3>
+                </div>
+                <div class="col-3">
+                    <i class="fa fa-quote-left"></i>
+                    <p>Ексцентрики та ручки-конуси від Hobbyt — це топ. Матеріали підібрані чудово, ручка сидить у руці як влита. Дуже задоволений покупкою!</p>
+                    <div class="rating">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                    </div>
+                    <img src="images/Anton.jpeg" style="height: 50px; object-fit: cover;">
+                    <h3>Kibitkin Anton</h3>
+                </div>
+                <div class="col-3">
+                    <i class="fa fa-quote-left"></i>
+                    <p>Замовляю вже втретє. Спорядження реально допомагає відчути правильні кути та збільшити силу кисті. Всім армрестлерам раджу спробувати!</p>
+                    <div class="rating">
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                        <i class="fa fa-star"></i>
+                    </div>
+                    <img src="images/Andrij.jpeg" style="height: 50px; object-fit: cover;">
+                    <h3>Kibitkin Andrij</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="footer-col-1">
+                    <h3>Зв'яжіться з нами</h3>
+                    <ul>
+                        <li><a href="tel:+380978194010"><i class="fa fa-phone"></i> +38 (097) 819-4010</a></li>
+                        <li><i class="fa fa-envelope"></i> info@hobbyt.com</li>
+                        <li><a href="https://t.me/rmnkbtkn" target="_blank"><i class="fa fa-telegram"></i> @rmnkbtkn</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col-2">
+                    <img src="images/logo-white.png">
+                    <p>Наша мета — зробити задоволення та користь від спорту доступними для багатьох.
+                    </p>
+                </div>
+                <div class="footer-col-3">
+                    <h3>Меню</h3>
+                    <ul>
+                        <li><a href="index.html">Головна</a></li>
+                        <li><a href="products.html">Каталог</a></li>
+                        <li><a href="about.html">Про нас</a></li>
+                        <li><a href="delivery.html">Доставка та оплата</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col-4">
+                    <h3>Слідкуйте за нами</h3>
+                    <ul>
+                        <li><a href="#"><i class="fa fa-instagram"></i> Instagram</a></li>
+                        <li><a href="#"><i class="fa fa-facebook-square"></i> Facebook</a></li>
+                        <li><a href="#"><i class="fa fa-youtube-play"></i> YouTube</a></li>
+                        <li><a href="#"><i class="fa fa-twitter"></i> Twitter</a></li>
+                    </ul>
+                </div>
+
+            </div>
+            <hr>
+            <p class="copyright">Copyright 2026 - Hobbyt Equipment</p>
+        </div>
+    </div>
+
+    <!-- javascript -->
+
+    <script>
+        var MenuItems = document.getElementById("MenuItems");
+        MenuItems.style.maxHeight = "0px";
+        function menutoggle() {
+            if (MenuItems.style.maxHeight == "0px") {
+                MenuItems.style.maxHeight = "200px"
+            }
+            else {
+                MenuItems.style.maxHeight = "0px"
+            }
+        }
+
+        /* Carousel Navigation */
+        const carousel = document.getElementById('popularCarousel');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        if(carousel && prevBtn && nextBtn) {
+            prevBtn.addEventListener('click', () => {
+                carousel.scrollBy({ left: -270, behavior: 'smooth' });
+            });
+            nextBtn.addEventListener('click', () => {
+                carousel.scrollBy({ left: 270, behavior: 'smooth' });
+            });
+        }
+    </script>
+
+</body>
+
+</html>
