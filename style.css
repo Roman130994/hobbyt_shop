@@ -848,6 +848,7 @@ body.dark-theme img.menu-icon {
     background-size: cover;
     background-position: right center;
     opacity: 0;
+    will-change: opacity, transform;
 }
 
 .slider-overlay {

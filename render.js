@@ -46,7 +46,7 @@ function renderProducts(containerId, categoryFilter = null, limit = null, page =
 
         productCard.innerHTML = `
             ${discountBadge}
-            <a href="product_details.html?id=${p.id}"><img src="${p.image}" alt="${p.name}"></a>
+            <a href="product_details.html?id=${p.id}"><img src="${p.image.replace(/^images\//, '')}" alt="${p.name}"></a>
             <a href="product_details.html?id=${p.id}"><h4>${p.name}</h4></a>
             <div class="rating">
                 ${'<i class="fa fa-star"></i>'.repeat(Math.floor(p.rating || 5))}

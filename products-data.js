@@ -43,17 +43,17 @@ const productsData = [
 const bannerData = {
     slides: [
         {
-            image: "images/golovnyj baner.png",
+            image: "golovnyj baner.png",
             title: "Потужний хват – твоя перевага",
             text: "Розвивай силу пальців, кистей та передпліч за допомогою професійних ручок."
         },
         {
-            image: "images/golovnyj baner 1.png",
+            image: "golovnyj baner 1.png",
             title: "Міцні та надійні матеріали",
             text: "3D-друк з високоякісного пластику витримує інтенсивні навантаження."
         },
         {
-            image: "images/golovnyj baner 3.png",
+            image: "golovnyj baner 3.png",
             title: "Компактні та зручні",
             text: "Легкі, портативні та ідеально підходять для тренувань будь-де: в залі чи вдома."
         }
