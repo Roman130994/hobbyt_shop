@@ -1093,6 +1093,8 @@ body.dark-theme img.menu-icon {
 }
 .product-price-stack { display: flex; flex-direction: column; gap: 3px; }
 .product-old-price { color: #888; font-size: 14px; }
+.product-current-price { display: flex; align-items: center; gap: 9px; }
+.product-discount { background: #d84a3a; color: #fff; border-radius: 999px; padding: 4px 8px; font-size: 12px; font-weight: 700; }
 .product-card:hover {
     transform: translateY(-5px);
     border-color: #0E5EA3;

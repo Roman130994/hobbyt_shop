@@ -158,6 +158,7 @@ function renderSingleProduct() {
         const nameEl = document.getElementById('ProductName');
         const priceEl = document.getElementById('ProductPrice');
         const oldPriceEl = document.getElementById('ProductOldPrice');
+        const discountEl = document.getElementById('ProductDiscount');
         const imgEl = document.getElementById('ProductImg');
         const descEl = document.getElementById('ProductDesc');
         const catEl = document.getElementById('ProductCategory');
@@ -168,6 +169,7 @@ function renderSingleProduct() {
         if (priceEl) priceEl.innerText = product.price;
         const hasDiscount = product.oldPrice && parseInt(product.oldPrice.replace(/[^\d]/g, '')) > parseInt(product.price.replace(/[^\d]/g, ''));
         if (oldPriceEl) { oldPriceEl.hidden = !hasDiscount; oldPriceEl.innerText = hasDiscount ? product.oldPrice : ''; }
+        if (discountEl) { discountEl.hidden = !hasDiscount; discountEl.innerText = hasDiscount ? product.discount : ''; }
         if (imgEl) {
             imgEl.src = imagePath;
             imgEl.alt = product.name;
