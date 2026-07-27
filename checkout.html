@@ -46,6 +46,7 @@
     </div>
 
     <div class="small-container checkout-page-wrapper">
+        <div class="checkout-steps" aria-label="Етапи оформлення"><span>1. Кошик</span><strong>2. Доставка й оплата</strong><span>3. Дані покупця</span></div>
         <div class="breadcrumbs">
             <a href="index.html"><i class="fa fa-home"></i></a> > <span>Оформлення</span>
         </div>
@@ -126,10 +127,10 @@
                     <section class="delivery-method-section" aria-labelledby="delivery-method-title">
                         <h3 id="delivery-method-title">Спосіб доставки</h3>
                         <div class="delivery-options">
-                            <label><input type="radio" name="delivery_method" value="nova_branch" checked> Нова Пошта — відділення</label>
-                            <label><input type="radio" name="delivery_method" value="nova_courier"> Нова Пошта — кур’єр</label>
-                            <label><input type="radio" name="delivery_method" value="ukrposhta"> Укрпошта</label>
-                            <label><input type="radio" name="delivery_method" value="pickup"> Самовивіз</label>
+                            <label class="checkout-choice"><input type="radio" name="delivery_method" value="nova_branch" checked><span><strong>Нова Пошта — відділення</strong><small>Оберіть місто та відділення</small></span><b>За тарифами</b></label>
+                            <label class="checkout-choice"><input type="radio" name="delivery_method" value="nova_courier"><span><strong>Нова Пошта — кур’єр</strong><small>Доставка за вашою адресою</small></span><b>За тарифами</b></label>
+                            <label class="checkout-choice"><input type="radio" name="delivery_method" value="ukrposhta"><span><strong>Укрпошта</strong><small>Доставка до відділення</small></span><b>За тарифами</b></label>
+                            <label class="checkout-choice"><input type="radio" name="delivery_method" value="pickup"><span><strong>Самовивіз</strong><small>Узгодимо адресу й час</small></span><b>Безкоштовно</b></label>
                         </div>
                         <div id="delivery-fields" class="delivery-fields"></div>
                     </section>
@@ -167,29 +168,29 @@
                         <div class="payment-methods">
                             <h4>Способи оплати</h4>
                             
-                            <div class="payment-option">
+                            <label class="payment-option checkout-choice">
                                 <input type="radio" name="payment_method" id="bank-transfer" value="Банківський переказ" checked>
-                                <label for="bank-transfer">Банківський переказ</label>
+                                <span><strong>Банківський переказ</strong><small>Оплата за реквізитами</small></span><b>Безкоштовно</b>
                                 <div class="payment-desc" id="desc-bank-transfer">
                                     На IBAN по реквізитам ФОП.
                                 </div>
-                            </div>
+                            </label>
                             
-                            <div class="payment-option">
+                            <label class="payment-option checkout-choice">
                                 <input type="radio" name="payment_method" id="cash" value="Готівка при отриманні">
-                                <label for="cash">Готівка при отриманні</label>
+                                <span><strong>Готівка при отриманні</strong><small>Оплата при отриманні</small></span><b>За тарифами</b>
                                 <div class="payment-desc" id="desc-cash" style="display: none;">
                                     Оплата при отриманні у відділенні (накладений платіж).
                                 </div>
-                            </div>
+                            </label>
                             
-                            <div class="payment-option">
+                            <label class="payment-option checkout-choice">
                                 <input type="radio" name="payment_method" id="crypto" value="Криптовалютою через Whitepay">
-                                <label for="crypto">Криптовалютою через Whitepay</label>
+                                <span><strong>Онлайн-оплата</strong><small>Безпечна онлайн-оплата</small></span><b>Безкоштовно</b>
                                 <div class="payment-desc" id="desc-crypto" style="display: none;">
                                     Швидко та безпечно сплачуйте криптовалютою.
                                 </div>
-                            </div>
+                            </label>
                         </div>
 
                         <div class="privacy-policy">
