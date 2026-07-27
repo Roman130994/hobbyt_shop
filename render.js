@@ -107,6 +107,7 @@ function renderSingleProduct() {
         const imgEl = document.getElementById('ProductImg');
         const descEl = document.getElementById('ProductDesc');
         const catEl = document.getElementById('ProductCategory');
+        const skuEl = document.getElementById('ProductSku');
 
         const imagePath = product.image.replace(/^images\//, '');
         if (nameEl) nameEl.innerText = product.name;
@@ -117,6 +118,7 @@ function renderSingleProduct() {
         }
         if (descEl) descEl.innerText = product.description || "Опис скоро з'явиться...";
         if (catEl) catEl.innerText = "Головна / " + (product.category === 'popular' ? 'Популярні' : product.category);
+        if (skuEl) skuEl.innerText = `Код: HBT-${String(product.id).padStart(3, '0')}`;
         document.title = `${product.name} | Hobbyt Equipment`;
 
         renderProductGallery(product, imagePath);
@@ -136,6 +138,7 @@ function renderProductDetails(product) {
     const specifications = document.getElementById('ProductSpecifications');
     const video = document.getElementById('ProductVideo');
     const videoTitle = document.getElementById('ProductVideoTitle');
+    const highlights = document.getElementById('ProductHighlights');
     const categoryNames = {
         handles: 'Ручки для тренувань',
         sets: 'Сети для тренувань',
@@ -147,6 +150,12 @@ function renderProductDetails(product) {
         sets: [['Матеріал', 'Полімер і сталь'], ['Кількість елементів', '3 предмети'], ['Призначення', 'Тренування кисті та передпліччя'], ['Комплектація', 'Сет у фірмовій упаковці'], ['Вага комплекту', '0,85 кг'], ['Країна виробництва', 'Україна']],
         blocks: [['Матеріал', 'Сталь'], ['Максимальне навантаження', '120 кг'], ['Тип кріплення', 'Карабін'], ['Комплектація', 'Блок і елементи кріплення'], ['Покриття', 'Порошкове фарбування'], ['Країна виробництва', 'Україна']],
         tables: [['Матеріал рами', 'Сталь'], ['Покриття', 'Зносостійка фарба'], ['Призначення', 'Тренування з армрестлінгу'], ['Комплектація', 'Основна конструкція товару'], ['Колір', 'Чорний'], ['Країна виробництва', 'Україна']]
+    };
+    const categoryHighlights = {
+        handles: ['Продумана форма для тренування кисті', 'Компактний формат для дому або залу', 'Надійне кріплення для робочої ваги'],
+        sets: ['Готовий набір для комплексного тренування', 'Елементи підібрані для різних вправ', 'Зручно дарувати та зберігати'],
+        blocks: ['Стабільна конструкція для навантажень', 'Сумісність із тренувальними аксесуарами', 'Зручне кріплення та швидке налаштування'],
+        tables: ['Стійка основа для регулярних тренувань', 'Конструкція для дому та спортивного залу', 'Зносостійкі матеріали для активного використання']
     };
     const specs = [
         ['Категорія', categoryNames[product.category] || 'Тренувальне обладнання'],
@@ -166,6 +175,7 @@ function renderProductDetails(product) {
     }
     if (video) video.style.backgroundImage = `linear-gradient(rgba(12, 12, 12, .4), rgba(12, 12, 12, .72)), url('${product.image.replace(/^images\//, '')}')`;
     if (videoTitle) videoTitle.innerText = `Відеоогляд: ${product.name}`;
+    if (highlights) highlights.innerHTML = (categoryHighlights[product.category] || []).map(item => `<li><i class="fa fa-check" aria-hidden="true"></i>${item}</li>`).join('');
 }
 
 function renderProductGallery(product, mainImage) {

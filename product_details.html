@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Деталі товару | Hobbyt Equipment</title>
-    <link rel="stylesheet" href="style.css?v=2026072702">
+    <link rel="stylesheet" href="style.css?v=2026072704">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="products-data.js?v=2026072702"></script>
-    <script src="render.js?v=2026072702"></script>
+    <script src="products-data.js?v=2026072704"></script>
+    <script src="render.js?v=2026072704"></script>
 </head>
 
 <body class="dark-theme">
@@ -57,10 +57,21 @@
             <div class="col-2">
                 <h1 id="ProductName">Назва товару</h1>
                 <p id="ProductCategory">Головна / Товари</p>
-                <h4 id="ProductPrice">0 ₴</h4>
+                <div class="product-price-row">
+                    <h4 id="ProductPrice">0 ₴</h4>
+                    <div class="product-status">
+                        <span id="ProductSku">Код: HBT-000</span>
+                        <span class="in-stock"><i class="fa fa-check-circle" aria-hidden="true"></i>В наявності</span>
+                    </div>
+                </div>
                 
                 <input type="number" value="1" min="1" id="ProductQuantity" aria-label="Кількість товару">
                 <a href="#" class="btn">Додати в кошик</a>
+
+                <aside class="product-highlights" aria-label="Переваги товару">
+                    <p class="product-highlights-title">Переваги товару</p>
+                    <ul id="ProductHighlights"></ul>
+                </aside>
             </div>
         </div>
     </div>
