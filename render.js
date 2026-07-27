@@ -618,6 +618,21 @@ function renderCheckout() {
                 ? `Код «${code}» збережено. Знижка буде застосована після перевірки.`
                 : 'Введіть код купона.';
         });
+
+        const phoneInput = document.getElementById('phone');
+        const emailInput = document.getElementById('email');
+        const phonePrefix = '+38 ';
+        const formatPhone = () => {
+            if (!phoneInput) return;
+            const digits = phoneInput.value.replace(/\D/g, '').replace(/^38/, '').slice(0, 10);
+            phoneInput.value = phonePrefix + digits;
+        };
+        phoneInput?.addEventListener('focus', formatPhone);
+        phoneInput?.addEventListener('input', formatPhone);
+        emailInput?.addEventListener('blur', () => {
+            const value = emailInput.value.trim();
+            if (value && !value.includes('@')) emailInput.value = `${value}@gmail.com`;
+        });
         renderDeliveryFields();
         showSingleCheckoutStep();
         orderForm.onsubmit = function(e) {
