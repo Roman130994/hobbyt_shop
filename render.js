@@ -135,7 +135,8 @@ function renderProductGallery(product, mainImage) {
     const mainImageEl = document.getElementById('ProductImg');
     if (!gallery || !mainImageEl) return;
 
-    const images = [...new Set((product.gallery || [mainImage]).map(image => image.replace(/^images\//, '')))];
+    const fallbackGallery = [mainImage, '4.png', '3.png', '2.png', '1.png'];
+    const images = [...new Set((product.gallery || fallbackGallery).map(image => image.replace(/^images\//, '')))];
     gallery.innerHTML = images.map((image, index) => `
         <button type="button" class="small-img-col${index === 0 ? ' active' : ''}" aria-label="Фото ${index + 1} товару">
             <img src="${image}" class="small-img" alt="${product.name}">
