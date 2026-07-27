@@ -194,11 +194,15 @@ function renderProductDetails(product) {
         blocks: ['Стабільна конструкція для навантажень', 'Сумісність із тренувальними аксесуарами', 'Зручне кріплення та швидке налаштування'],
         tables: ['Стійка основа для регулярних тренувань', 'Конструкція для дому та спортивного залу', 'Зносостійкі матеріали для активного використання']
     };
-    const specs = [
+    const defaultSpecs = [
         ['Категорія', categoryNames[product.category] || 'Тренувальне обладнання'],
         ...categorySpecs[product.category],
         ['Гарантія', '12 місяців']
     ];
+    const customSpecs = Array.isArray(product.specifications)
+        ? product.specifications
+        : Object.entries(product.specifications || {});
+    const specs = customSpecs.length ? customSpecs : defaultSpecs;
 
     if (description) {
         description.innerHTML = `

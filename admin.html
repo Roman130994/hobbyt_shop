@@ -94,6 +94,33 @@
         .btn-edit { background: #0E5EA3; color: #fff; border: none; }
         .btn-delete { background: #e74c3c; color: #fff; border: none; }
 
+        /* ===== Products editor ===== */
+        .products-toolbar { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 22px; flex-wrap: wrap; }
+        .product-search { min-width: min(100%, 320px); padding: 12px 14px; background: #191919; border: 1px solid #333; border-radius: 8px; color: #fff; font: inherit; }
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+        .admin-product-card { background: #151515; border: 1px solid #2a2a2a; border-radius: 12px; overflow: hidden; transition: transform .2s, border-color .2s; }
+        .admin-product-card:hover { transform: translateY(-2px); border-color: #0E5EA3; }
+        .admin-product-image { width: 100%; height: 170px; object-fit: cover; display: block; background: #0b0b0b; }
+        .admin-product-body { padding: 14px; }
+        .product-category-badge { display: inline-block; padding: 4px 8px; border-radius: 99px; background: #133a5a; color: #a9d9ff; font-size: 11px; margin-bottom: 9px; }
+        .admin-product-name { font-size: 15px; font-weight: 600; line-height: 1.35; min-height: 40px; margin-bottom: 10px; }
+        .admin-product-price { font-size: 17px; font-weight: 700; margin-bottom: 13px; }
+        .admin-product-actions { display: flex; gap: 8px; }
+        .admin-product-actions button { margin: 0; flex: 1; padding: 9px 8px; }
+        .image-picker { border: 1px dashed #444; border-radius: 9px; padding: 16px; text-align: center; background: #171717; cursor: pointer; }
+        .image-picker:hover { border-color: #0E5EA3; }
+        .image-picker input { display: none; }
+        .image-picker small { display: block; color: #999; margin-top: 5px; }
+        .product-image-previews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .product-image-preview { position: relative; width: 70px; height: 70px; }
+        .product-image-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 7px; border: 1px solid #444; }
+        .product-image-preview button { position: absolute; top: -7px; right: -7px; border: 0; background: #b72d2d; color: #fff; width: 21px; height: 21px; padding: 0; border-radius: 50%; cursor: pointer; }
+        .editor-help { color: #999; font-size: 13px; margin: 0 0 16px; line-height: 1.5; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .checkbox-field { display: flex; align-items: center; gap: 9px; min-height: 42px; color: #ddd; }
+        .checkbox-field input { width: auto; }
+        @media (max-width: 680px) { .form-row { grid-template-columns: 1fr; } .admin-main { padding: 20px; } .sidebar { width: 75px; padding: 12px; } .sidebar-menu li { font-size: 0; padding: 15px; } .sidebar-menu li i { margin: 0; } .sidebar-header img { width: 50px; } }
+
         /* Login Overlay */
         #login-overlay {
             position: fixed;
@@ -522,25 +549,15 @@
 
         <div id="section-products" class="admin-section" style="display: none;">
             <div class="admin-content-box">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                    <h3>Управління товарами</h3>
-                    <button class="btn btn-sm" style="background: #27ae60;" onclick="openAddModal()">+ Додати товар</button>
+                <div class="products-toolbar">
+                    <div>
+                        <h3 style="margin-bottom: 6px;">Товари</h3>
+                        <p class="editor-help" style="margin: 0;">Оберіть товар, щоб змінити фото, ціну, опис і характеристики.</p>
+                    </div>
+                    <button class="btn btn-sm" style="background: #27ae60; padding: 11px 16px;" onclick="openAddModal()"><i class="fa fa-plus"></i> Додати товар</button>
                 </div>
-                <table class="admin-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Фото</th>
-                            <th>Назва</th>
-                            <th>Ціна</th>
-                            <th>Категорія</th>
-                            <th>Дії</th>
-                        </tr>
-                    </thead>
-                    <tbody id="admin-product-list">
-                        <!-- Буде заповнено через JS -->
-                    </tbody>
-                </table>
+                <input class="product-search" id="product-search" type="search" placeholder="Пошук за назвою або категорією" oninput="loadAdminProducts()">
+                <div class="products-grid" id="admin-product-list"></div>
             </div>
         </div>
 
@@ -659,29 +676,16 @@
         <div class="modal-box">
             <h3 id="modal-title">Редагувати товар</h3>
             <input type="hidden" id="edit-id">
+            <p class="editor-help">Тут зберігається саме один товар: після збереження дані автоматично з’являться у каталозі, картці та кошику.</p>
+            <div class="form-row"><div class="form-group"><label>Назва товару</label><input type="text" id="edit-name" placeholder="Наприклад, Ручка для тяги"></div><div class="form-group"><label>Категорія</label><select id="edit-category"><option value="handles">Ручки</option><option value="sets">Сети</option><option value="blocks">Блоки</option><option value="tables">Столи</option></select></div></div>
+            <div class="form-row"><div class="form-group"><label>Ціна, ₴</label><input type="number" min="0" id="edit-price" placeholder="0"></div><div class="form-group"><label>Стара ціна, ₴ <small>(необов’язково)</small></label><input type="number" min="0" id="edit-old-price" placeholder="Наприклад, 1 590"></div></div>
+            <div class="form-row"><label class="checkbox-field"><input type="checkbox" id="edit-stock" checked> Є в наявності</label><label class="checkbox-field"><input type="checkbox" id="edit-popular"> Показувати в «Популярних товарах»</label></div>
+            <div class="form-group"><label>Фотографії товару</label><label class="image-picker"><input type="file" id="edit-images" accept="image/*" multiple onchange="addProductImages(this.files)"><i class="fa fa-cloud-upload"></i> Додати фото<small>Перше фото буде головним. Можна обрати кілька.</small></label><div class="product-image-previews" id="product-image-previews"></div></div>
             <div class="form-group">
-                <label>Назва товару</label>
-                <input type="text" id="edit-name">
+                <label>Опис товару</label>
+                <textarea id="edit-desc" rows="5" placeholder="Коротко опишіть товар, його призначення та переваги."></textarea>
             </div>
-            <div class="form-group">
-                <label>Ціна</label>
-                <input type="text" id="edit-price">
-            </div>
-            <div class="form-group">
-                <label>Категорія</label>
-                <select id="edit-category">
-                    <option value="popular">Популярні</option>
-                    <option value="new">Нові</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Шлях до фото</label>
-                <input type="text" id="edit-image">
-            </div>
-            <div class="form-group">
-                <label>Опис</label>
-                <textarea id="edit-desc" rows="3"></textarea>
-            </div>
+            <div class="form-group"><label>Характеристики</label><textarea id="edit-specifications" rows="5" placeholder="Матеріал: Сталь&#10;Вага: 0,8 кг&#10;Колір: Чорний"></textarea><small style="color:#888;">Кожна характеристика — з нового рядка у форматі «Назва: значення».</small></div>
             <div class="modal-footer">
                 <button class="btn btn-sm" onclick="closeModal()" style="background: #333;">Закрити</button>
                 <button class="btn btn-sm btn-edit" onclick="saveProduct()">Зберегти зміни</button>
@@ -741,7 +745,8 @@
             id: row.id, name: row.name, price: `${Number(row.price).toLocaleString('uk-UA')} ₴`,
             oldPrice: row.old_price ? `${Number(row.old_price).toLocaleString('uk-UA')} ₴` : null,
             image: (row.images || [])[0] || '4.png', gallery: row.images || [], rating: 5,
-            category: row.category, popular: row.is_popular, description: row.description || '', sku: row.sku
+            category: row.category, popular: row.is_popular, inStock: row.in_stock !== false,
+            description: row.description || '', specifications: row.specifications || {}, sku: row.sku
         });
 
         async function syncProductsFromDatabase() {
@@ -1055,24 +1060,79 @@
             alert('Контент сторінки оновлено! Не забудьте скопіювати код.');
         }
 
+        const categoryLabels = { handles: 'Ручки', sets: 'Сети', blocks: 'Блоки', tables: 'Столи' };
+        let editingImages = [];
+
+        function escapeHtml(value = '') {
+            return String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[char]));
+        }
+
         function loadAdminProducts() {
-            const tbody = document.getElementById('admin-product-list');
+            const list = document.getElementById('admin-product-list');
             const totalProductsEl = document.getElementById('total-products');
             if(totalProductsEl) totalProductsEl.innerText = productsData.length;
-            
-            tbody.innerHTML = productsData.map(p => `
-                <tr>
-                    <td>#${p.id}</td>
-                    <td><img src="${p.image}" width="40" height="40" style="object-fit: cover; border-radius: 5px;"></td>
-                    <td>${p.name}</td>
-                    <td>${p.price}</td>
-                    <td>${p.category === 'popular' ? 'Популярні' : 'Нові'}</td>
-                    <td>
-                        <button class="btn-sm btn-edit" onclick="openEditModal(${p.id})"><i class="fa fa-pencil"></i></button>
-                        <button class="btn-sm btn-delete" onclick="deleteProduct(${p.id})"><i class="fa fa-trash"></i></button>
-                    </td>
-                </tr>
+            const query = (document.getElementById('product-search')?.value || '').trim().toLowerCase();
+            const filtered = productsData.filter(p => !query || `${p.name} ${categoryLabels[p.category] || p.category}`.toLowerCase().includes(query));
+            list.innerHTML = filtered.length ? filtered.map(p => `
+                <article class="admin-product-card">
+                    <img class="admin-product-image" src="${escapeHtml(p.image || '4.png')}" alt="${escapeHtml(p.name)}" onerror="this.src='4.png'">
+                    <div class="admin-product-body">
+                        <span class="product-category-badge">${escapeHtml(categoryLabels[p.category] || 'Інше')}</span>
+                        <div class="admin-product-name">${escapeHtml(p.name)}</div>
+                        <div class="admin-product-price">${escapeHtml(p.price)}</div>
+                        <div class="admin-product-actions">
+                            <button class="btn-sm btn-edit" onclick="openEditModal(${Number(p.id)})"><i class="fa fa-pencil"></i> Редагувати</button>
+                            <button class="btn-sm btn-delete" onclick="deleteProduct(${Number(p.id)})" title="Видалити"><i class="fa fa-trash"></i></button>
+                        </div>
+                    </div>
+                </article>
+            `).join('') : '<p class="editor-help">Нічого не знайдено. Спробуйте інший запит або додайте товар.</p>';
+        }
+
+        function renderProductImagePreviews() {
+            document.getElementById('product-image-previews').innerHTML = editingImages.map((src, index) => `
+                <div class="product-image-preview"><img src="${escapeHtml(src)}" alt="Фото ${index + 1}"><button type="button" onclick="removeProductImage(${index})" title="Прибрати фото">×</button></div>
             `).join('');
+        }
+
+        function removeProductImage(index) { editingImages.splice(index, 1); renderProductImagePreviews(); }
+
+        function specificationsToText(specifications) {
+            if (Array.isArray(specifications)) return specifications.map(([label, value]) => `${label}: ${value}`).join('\n');
+            return Object.entries(specifications || {}).map(([label, value]) => `${label}: ${value}`).join('\n');
+        }
+
+        function parseSpecifications(value) {
+            return value.split('\n').reduce((all, line) => {
+                const [label, ...rest] = line.split(':');
+                const text = rest.join(':').trim();
+                if (label.trim() && text) all[label.trim()] = text;
+                return all;
+            }, {});
+        }
+
+        function addProductImages(files) {
+            [...files].forEach(file => {
+                if (!file.type.startsWith('image/')) { showToast('Можна додавати лише зображення.', true); return; }
+                if (file.size > 8 * 1024 * 1024) { showToast('Одне фото не може бути більшим за 8 МБ.', true); return; }
+                editingImages.push(file);
+            });
+            document.getElementById('edit-images').value = '';
+            renderProductImagePreviews();
+        }
+
+        async function uploadProductImages() {
+            const uploaded = [];
+            for (const image of editingImages) {
+                if (typeof image === 'string') { uploaded.push(image); continue; }
+                const safeName = image.name.toLowerCase().replace(/[^a-z0-9._-]+/g, '-');
+                const path = `products/${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safeName}`;
+                const { error } = await supabaseClient.storage.from('product-images').upload(path, image, { contentType: image.type });
+                if (error) throw error;
+                const { data } = supabaseClient.storage.from('product-images').getPublicUrl(path);
+                uploaded.push(data.publicUrl);
+            }
+            return uploaded;
         }
 
         function openEditModal(id) {
@@ -1081,10 +1141,15 @@
             document.getElementById('modal-title').innerText = 'Редагувати товар';
             document.getElementById('edit-id').value = product.id;
             document.getElementById('edit-name').value = product.name;
-            document.getElementById('edit-price').value = product.price;
-            document.getElementById('edit-category').value = product.category;
-            document.getElementById('edit-image').value = product.image;
+            document.getElementById('edit-price').value = toNumber(product.price);
+            document.getElementById('edit-old-price').value = product.oldPrice ? toNumber(product.oldPrice) : '';
+            document.getElementById('edit-category').value = categoryLabels[product.category] ? product.category : 'handles';
+            document.getElementById('edit-stock').checked = product.inStock !== false;
+            document.getElementById('edit-popular').checked = !!product.popular;
             document.getElementById('edit-desc').value = product.description || '';
+            document.getElementById('edit-specifications').value = specificationsToText(product.specifications);
+            editingImages = product.gallery?.length ? [...product.gallery] : (product.image ? [product.image] : []);
+            renderProductImagePreviews();
             document.getElementById('edit-modal').style.display = 'flex';
         }
 
@@ -1093,9 +1158,14 @@
             document.getElementById('edit-id').value = 'new';
             document.getElementById('edit-name').value = '';
             document.getElementById('edit-price').value = '';
-            document.getElementById('edit-category').value = 'popular';
-            document.getElementById('edit-image').value = 'images/4.png';
+            document.getElementById('edit-old-price').value = '';
+            document.getElementById('edit-category').value = 'handles';
+            document.getElementById('edit-stock').checked = true;
+            document.getElementById('edit-popular').checked = false;
             document.getElementById('edit-desc').value = '';
+            document.getElementById('edit-specifications').value = '';
+            editingImages = [];
+            renderProductImagePreviews();
             document.getElementById('edit-modal').style.display = 'flex';
         }
 
@@ -1105,29 +1175,43 @@
 
         async function saveProduct() {
             const idVal = document.getElementById('edit-id').value;
+            const saveButton = document.querySelector('#edit-modal .btn-edit');
             const newProduct = {
                 name: document.getElementById('edit-name').value,
                 price: toNumber(document.getElementById('edit-price').value),
                 category: document.getElementById('edit-category').value,
                 description: document.getElementById('edit-desc').value,
-                images: [document.getElementById('edit-image').value || '4.png'],
-                is_popular: document.getElementById('edit-category').value === 'popular',
+                old_price: toNumber(document.getElementById('edit-old-price').value) || null,
+                in_stock: document.getElementById('edit-stock').checked,
+                is_popular: document.getElementById('edit-popular').checked,
+                specifications: parseSpecifications(document.getElementById('edit-specifications').value),
                 is_sale: false
             };
             if (!newProduct.name || !newProduct.price) {
                 showToast('Заповніть назву і ціну товару.', true);
                 return;
             }
-            let error;
-            if (idVal === 'new') {
-                ({ error } = await supabaseClient.from('products').insert({ ...newProduct, slug: productSlug(newProduct.name), sort_order: productsData.length + 1 }));
-            } else {
-                ({ error } = await supabaseClient.from('products').update(newProduct).eq('id', Number(idVal)));
+            try {
+                saveButton.disabled = true;
+                saveButton.textContent = 'Збереження…';
+                newProduct.images = await uploadProductImages();
+                if (!newProduct.images.length) newProduct.images = ['4.png'];
+                let error;
+                if (idVal === 'new') {
+                    ({ error } = await supabaseClient.from('products').insert({ ...newProduct, slug: productSlug(newProduct.name), sku: `HBT-${String(productsData.length + 1).padStart(3, '0')}`, sort_order: productsData.length + 1 }));
+                } else {
+                    ({ error } = await supabaseClient.from('products').update(newProduct).eq('id', Number(idVal)));
+                }
+                if (error) throw error;
+                closeModal();
+                await syncProductsFromDatabase();
+                showToast('Товар збережено у базі.');
+            } catch (error) {
+                showToast('Не вдалося зберегти: ' + error.message, true);
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = 'Зберегти зміни';
             }
-            if (error) { showToast('Не вдалося зберегти: ' + error.message, true); return; }
-            closeModal();
-            await syncProductsFromDatabase();
-            showToast('Товар збережено у базі.');
         }
 
         async function deleteProduct(id) {
