@@ -57,9 +57,10 @@
 
         <form id="checkout-form">
             <div class="checkout-layout">
-                <!-- Ліва колонка: Платіжні дані -->
+                <!-- Ліва колонка: крок 3, дані покупця -->
                 <div class="checkout-col-left">
-                    <h2 class="checkout-title" data-content="checkout.title">Платіжні дані</h2>
+                    <section id="customer-details-step" class="checkout-customer-step">
+                    <h2 class="checkout-title" data-content="checkout.title">Ваші дані</h2>
                     
                     <div class="form-check">
                         <input type="checkbox" id="corp-order">
@@ -123,8 +124,9 @@
                         <label for="zip">Поштовий індекс <span class="required">*</span></label>
                         <input type="text" id="zip" value="85612" required>
                     </div>
+                    </section>
 
-                    <section class="delivery-method-section" aria-labelledby="delivery-method-title">
+                    <section id="delivery-payment-step" class="delivery-method-section" aria-labelledby="delivery-method-title">
                         <h3 id="delivery-method-title">Спосіб доставки</h3>
                         <div class="delivery-options">
                             <label class="checkout-choice"><input type="radio" name="delivery_method" value="nova_branch" checked><span><strong>Нова Пошта — відділення</strong><small>Оберіть місто та відділення</small></span><b>За тарифами</b></label>
@@ -135,7 +137,7 @@
                         <div id="delivery-fields" class="delivery-fields"></div>
                     </section>
 
-                    <div class="form-group">
+                    <div id="checkout-notes-step" class="form-group">
                         <label for="notes">Нотатки до замовлення (необов'язково)</label>
                         <textarea id="notes" placeholder="Нотатки до вашого замовлення, наприклад спеціальні нотатки для доставки." rows="4"></textarea>
                     </div>

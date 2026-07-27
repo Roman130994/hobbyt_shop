@@ -570,10 +570,50 @@ function renderCheckout() {
     const orderForm = document.getElementById('checkout-form');
     if (orderForm && !orderForm.dataset.initialized) {
         orderForm.dataset.initialized = 'true';
+        let checkoutStep = 'delivery';
+        const customerStep = document.getElementById('customer-details-step');
+        const deliveryStep = document.getElementById('delivery-payment-step');
+        const notesStep = document.getElementById('checkout-notes-step');
+        const privacyPolicy = document.querySelector('.privacy-policy');
+        const termsCheck = document.querySelector('.agreement-check');
+        const doNotCallCheck = document.querySelector('.do-not-call');
+        const submitButton = orderForm.querySelector('.checkout-submit-btn');
+        const steps = document.querySelector('.checkout-steps');
+
+        function toggleCustomerFields(disabled) {
+            customerStep?.querySelectorAll('input, select, textarea').forEach(field => { field.disabled = disabled; });
+        }
+
+        function setCheckoutStep(step) {
+            checkoutStep = step;
+            const showCustomer = step === 'customer';
+            if (customerStep) customerStep.hidden = !showCustomer;
+            if (deliveryStep) deliveryStep.hidden = showCustomer;
+            if (notesStep) notesStep.hidden = !showCustomer;
+            if (privacyPolicy) privacyPolicy.hidden = !showCustomer;
+            if (termsCheck) termsCheck.hidden = !showCustomer;
+            if (doNotCallCheck) doNotCallCheck.hidden = !showCustomer;
+            toggleCustomerFields(!showCustomer);
+            termsCheck?.querySelectorAll('input').forEach(field => { field.disabled = !showCustomer; });
+            doNotCallCheck?.querySelectorAll('input').forEach(field => { field.disabled = !showCustomer; });
+            if (submitButton) submitButton.textContent = showCustomer ? 'ПІДТВЕРДИТИ ЗАМОВЛЕННЯ' : 'ПРОДОВЖИТИ';
+            if (steps) steps.innerHTML = showCustomer
+                ? '<span>1. Кошик</span><span>2. Доставка й оплата</span><strong>3. Дані покупця</strong>'
+                : '<span>1. Кошик</span><strong>2. Доставка й оплата</strong><span>3. Дані покупця</span>';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
         document.querySelectorAll('input[name="delivery_method"]').forEach(input => input.addEventListener('change', renderDeliveryFields));
         renderDeliveryFields();
+        setCheckoutStep('delivery');
         orderForm.onsubmit = function(e) {
             e.preventDefault();
+
+            if (checkoutStep === 'delivery') {
+                if (!orderForm.reportValidity()) return;
+                setCheckoutStep('customer');
+                return;
+            }
             
             // Collect form data
             const isCorp = document.getElementById('corp-order').checked;

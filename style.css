@@ -587,6 +587,7 @@ select:focus{
 .delivery-fields .form-group:last-child { margin-bottom: 0; }
 .nova-results { display: block; width: 100%; margin-top: 7px; padding: 4px; color: #eee; background: #161616; border: 1px solid #3a3a3a; border-radius: 6px; }
 .nova-results option { padding: 7px; }
+.checkout-customer-step[hidden], #delivery-payment-step[hidden], #checkout-notes-step[hidden] { display: none; }
 .product-buy-row #ProductQuantity {
     margin: 0;
 }
