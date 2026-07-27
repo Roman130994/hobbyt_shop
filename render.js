@@ -28,6 +28,7 @@ function mapDatabaseProduct(row) {
         description: row.description,
         sku: row.sku,
         specifications: row.specifications,
+        variants: row.variants || { enabled: false, items: [] },
         videoUrl: row.video_url,
         inStock: row.in_stock
     };

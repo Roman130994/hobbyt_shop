@@ -123,6 +123,11 @@
         .specification-row select, .specification-row input { min-width: 0; }
         .specification-row button { border: 0; border-radius: 6px; background: #632323; color: #fff; cursor: pointer; }
         .add-specification { margin-top: 4px; border: 1px dashed #0E5EA3; background: transparent; color: #a9d9ff; padding: 9px 12px; border-radius: 6px; cursor: pointer; }
+        .variants-panel { display: none; margin-top: 12px; padding: 16px; background: #171717; border: 1px solid #313131; border-radius: 9px; }
+        .variants-panel.visible { display: block; }
+        .variant-row { display: grid; grid-template-columns: 1.25fr 1fr 90px 76px 36px; gap: 8px; align-items: center; margin-bottom: 8px; }
+        .variant-row input { min-width: 0; }
+        .variant-row button { height: 38px; border: 0; border-radius: 6px; background: #632323; color: #fff; cursor: pointer; }
         @media (max-width: 680px) { .form-row { grid-template-columns: 1fr; } .admin-main { padding: 20px; } .sidebar { width: 75px; padding: 12px; } .sidebar-menu li { font-size: 0; padding: 15px; } .sidebar-menu li i { margin: 0; } .sidebar-header img { width: 50px; } }
 
         /* Login Overlay */
@@ -693,6 +698,7 @@
             <div class="form-row"><div class="form-group"><label>Назва товару</label><input type="text" id="edit-name" placeholder="Наприклад, Ручка для тяги"></div><div class="form-group"><label>Категорія</label><select id="edit-category"><option value="handles">Ручки</option><option value="sets">Сети</option><option value="blocks">Блоки</option><option value="tables">Столи</option></select></div></div>
             <div class="form-row"><div class="form-group"><label>Ціна, ₴</label><input type="number" min="0" id="edit-price" placeholder="0"></div><div class="form-group"><label>Стара ціна, ₴ <small>(необов’язково)</small></label><input type="number" min="0" id="edit-old-price" placeholder="Наприклад, 1 590"></div></div>
             <div class="form-row"><label class="checkbox-field"><input type="checkbox" id="edit-stock" checked> Є в наявності</label><label class="checkbox-field"><input type="checkbox" id="edit-popular"> Показувати в «Популярних товарах»</label></div>
+            <div class="form-group"><label class="checkbox-field"><input type="checkbox" id="edit-variants-enabled" onchange="toggleVariantsPanel()"> Використовувати модифікації товару</label><div class="variants-panel" id="variants-panel"><p class="editor-help">Кожна модифікація має власну назву, ціну, залишок і код.</p><div id="variants-editor"></div><button type="button" class="add-specification" onclick="addVariantRow()"><i class="fa fa-plus"></i> Додати модифікацію</button></div></div>
             <div class="form-group"><label>Фотографії товару</label><label class="image-picker"><input type="file" id="edit-images" accept="image/*" multiple onchange="addProductImages(this.files)"><i class="fa fa-cloud-upload"></i> Додати фото<small>Перше фото буде головним. Можна обрати кілька.</small></label><div class="product-image-previews" id="product-image-previews"></div></div>
             <div class="form-group">
                 <label>Опис товару</label>
@@ -759,7 +765,7 @@
             oldPrice: row.old_price ? `${Number(row.old_price).toLocaleString('uk-UA')} ₴` : null,
             image: (row.images || [])[0] || '4.png', gallery: row.images || [], rating: 5,
             category: row.category, popular: row.is_popular, inStock: row.in_stock !== false,
-            description: row.description || '', specifications: row.specifications || {}, sku: row.sku
+            description: row.description || '', specifications: row.specifications || {}, variants: row.variants || { enabled: false, items: [] }, sku: row.sku
         });
 
         async function syncProductsFromDatabase() {
@@ -1166,6 +1172,36 @@
             }, {});
         }
 
+        function toggleVariantsPanel() {
+            document.getElementById('variants-panel').classList.toggle('visible', document.getElementById('edit-variants-enabled').checked);
+        }
+
+        function addVariantRow(variant = {}) {
+            const editor = document.getElementById('variants-editor');
+            const row = document.createElement('div');
+            row.className = 'variant-row';
+            row.innerHTML = `<input class="variant-name" type="text" placeholder="Наприклад, Чорний / M" value="${escapeHtml(variant.name || '')}"><input class="variant-sku" type="text" placeholder="Код" value="${escapeHtml(variant.sku || '')}"><input class="variant-price" type="number" min="0" placeholder="Ціна" value="${variant.price ?? ''}"><input class="variant-stock" type="number" min="0" placeholder="Залишок" value="${variant.stock_quantity ?? ''}"><button type="button" title="Прибрати" onclick="this.parentElement.remove()"><i class="fa fa-times"></i></button>`;
+            editor.appendChild(row);
+        }
+
+        function setVariants(variants = {}) {
+            document.getElementById('edit-variants-enabled').checked = !!variants.enabled;
+            document.getElementById('variants-editor').innerHTML = '';
+            (variants.items || []).forEach(addVariantRow);
+            toggleVariantsPanel();
+        }
+
+        function collectVariants() {
+            const enabled = document.getElementById('edit-variants-enabled').checked;
+            const items = [...document.querySelectorAll('#variants-editor .variant-row')].map(row => ({
+                name: row.querySelector('.variant-name').value.trim(),
+                sku: row.querySelector('.variant-sku').value.trim(),
+                price: toNumber(row.querySelector('.variant-price').value),
+                stock_quantity: Number(row.querySelector('.variant-stock').value || 0)
+            })).filter(variant => variant.name);
+            return { enabled, items };
+        }
+
         function addProductImages(files) {
             [...files].forEach(file => {
                 if (!file.type.startsWith('image/')) { showToast('Можна додавати лише зображення.', true); return; }
@@ -1201,6 +1237,7 @@
             document.getElementById('edit-category').value = categoryLabels[product.category] ? product.category : 'handles';
             document.getElementById('edit-stock').checked = product.inStock !== false;
             document.getElementById('edit-popular').checked = !!product.popular;
+            setVariants(product.variants);
             document.getElementById('edit-desc').value = product.description || '';
             setSpecificationRows(product.specifications);
             editingImages = product.gallery?.length ? [...product.gallery] : (product.image ? [product.image] : []);
@@ -1217,6 +1254,7 @@
             document.getElementById('edit-category').value = 'handles';
             document.getElementById('edit-stock').checked = true;
             document.getElementById('edit-popular').checked = false;
+            setVariants();
             document.getElementById('edit-desc').value = '';
             setSpecificationRows();
             editingImages = [];
@@ -1240,6 +1278,7 @@
                 in_stock: document.getElementById('edit-stock').checked,
                 is_popular: document.getElementById('edit-popular').checked,
                 specifications: collectSpecifications(),
+                variants: collectVariants(),
                 is_sale: false
             };
             if (!newProduct.name || !newProduct.price) {
