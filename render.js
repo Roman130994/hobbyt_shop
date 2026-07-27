@@ -36,6 +36,15 @@ async function loadProductsFromSupabase() {
     if (!error && data && data.length) shopProducts = data.map(mapDatabaseProduct);
 }
 
+async function loadSiteContentFromSupabase() {
+    if (!window.supabase || !window.HOBBYT_SUPABASE_URL) return;
+    const client = window.supabase.createClient(window.HOBBYT_SUPABASE_URL, window.HOBBYT_SUPABASE_KEY);
+    const { data } = await client.from('site_settings').select('data').eq('id', 'content').maybeSingle();
+    if (data?.data) Object.keys(data.data).forEach(page => siteContent[page] = { ...(siteContent[page] || {}), ...data.data[page] });
+    const { data: banners } = await client.from('site_settings').select('data').eq('id', 'banners').maybeSingle();
+    if (banners?.data?.slides) bannerData.slides = banners.data.slides;
+}
+
 function renderProducts(containerId, categoryFilter = null, limit = null, page = 1, sortType = currentSort) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -587,5 +596,9 @@ document.addEventListener('DOMContentLoaded', () => {
         renderProducts('newProductsCarousel', 'sale', 10);
         renderProducts('all-products-list', categoryFromUrl);
         renderSingleProduct();
+    });
+    loadSiteContentFromSupabase().then(() => {
+        renderSiteContent();
+        if (typeof renderBanners === 'function') renderBanners();
     });
 });

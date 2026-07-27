@@ -561,6 +561,15 @@
             </div>
         </div>
 
+        <div id="section-pages" class="admin-section" style="display: none;">
+            <div class="admin-content-box">
+                <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Редактор сторінок</h3><p class="editor-help" style="margin:0;">Змініть текст і одразу перегляньте результат на сайті.</p></div></div>
+                <div class="form-group"><label>Сторінка</label><select id="page-selector" onchange="loadPageContentEditor()"><option value="index">Головна</option><option value="about">Про нас</option><option value="delivery">Доставка й оплата</option></select></div>
+                <div id="page-content-editor"></div>
+                <button class="btn btn-sm" onclick="savePageContent()">Зберегти сторінку</button>
+            </div>
+        </div>
+
         <div id="section-banners" class="admin-section" style="display: none;">
             <div class="admin-content-box">
                 <p style="margin-bottom: 20px; color: #888; font-size: 14px;">
@@ -767,6 +776,15 @@
             loadAdminProducts();
         }
 
+        async function syncSiteContentFromDatabase() {
+            const { data } = await supabaseClient.from('site_settings').select('data').eq('id', 'content').maybeSingle();
+            if (data?.data) Object.keys(data.data).forEach(page => siteContent[page] = { ...(siteContent[page] || {}), ...data.data[page] });
+            const { data: banners } = await supabaseClient.from('site_settings').select('data').eq('id', 'banners').maybeSingle();
+            if (banners?.data?.slides) bannerData.slides = banners.data.slides;
+            loadAdminBanners();
+            loadPageContentEditor();
+        }
+
         async function checkLogin() {
             const email = document.getElementById('admin-email').value.trim();
             const pass = document.getElementById('admin-pass').value;
@@ -775,6 +793,7 @@
                 document.getElementById('login-overlay').style.display = 'none';
                 try {
                     await syncProductsFromDatabase();
+                    await syncSiteContentFromDatabase();
                     showToast('Вхід виконано. Товари синхронізовано з базою.');
                 } catch (syncError) {
                     showToast('Не вдалося завантажити товари: ' + syncError.message, true);
@@ -844,8 +863,7 @@
             bannerData.slides[index] = bannerData.slides[newIndex];
             bannerData.slides[newIndex] = temp;
             loadAdminBanners();
-            showUpdatedCode();
-            showToast('Порядок банерів змінено');
+            saveBannersToDatabase();
         }
 
         function openBannerModal(index) {
@@ -960,7 +978,14 @@
             hideUploadPreview();
         }
 
-        function saveBanner() {
+        async function saveBannersToDatabase() {
+            const { error } = await supabaseClient.from('site_settings').upsert({ id: 'banners', data: bannerData });
+            if (error) { showToast('Не вдалося зберегти банер: ' + error.message, true); return false; }
+            showToast('Банери збережено.');
+            return true;
+        }
+
+        async function saveBanner() {
             const indexVal = document.getElementById('edit-banner-index').value;
             const imagePath = document.getElementById('edit-banner-image').value;
             const imageSource = pendingBannerImageData || imagePath;
@@ -990,7 +1015,7 @@
 
             closeBannerModal();
             loadAdminBanners();
-            showUpdatedCode();
+            await saveBannersToDatabase();
         }
 
         function deleteBanner(index) {
@@ -1001,8 +1026,7 @@
             if (confirm('Видалити банер #' + (index + 1) + '?')) {
                 bannerData.slides.splice(index, 1);
                 loadAdminBanners();
-                showUpdatedCode();
-                showToast('Банер видалено');
+                saveBannersToDatabase();
             }
         }
 
@@ -1024,15 +1048,15 @@
             }, 2500);
         }
 
-        function loadPageContentEditor() {
+        async function loadPageContentEditor() {
             const page = document.getElementById('page-selector').value;
-            const content = siteContent[page];
+            const content = siteContent[page] || {};
             const editor = document.getElementById('page-content-editor');
             
             let html = '';
             for (let key in content) {
                 const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                if (content[key].length > 100) {
+                if (String(content[key]).length > 100) {
                     html += `
                         <div class="form-group">
                             <label>${label}</label>
@@ -1051,13 +1075,14 @@
             editor.innerHTML = html;
         }
 
-        function savePageContent() {
+        async function savePageContent() {
             const page = document.getElementById('page-selector').value;
             for (let key in siteContent[page]) {
                 siteContent[page][key] = document.getElementById('content-' + key).value;
             }
-            showUpdatedCode();
-            alert('Контент сторінки оновлено! Не забудьте скопіювати код.');
+            const { error } = await supabaseClient.from('site_settings').upsert({ id: 'content', data: siteContent });
+            if (error) { showToast('Не вдалося зберегти: ' + error.message, true); return; }
+            showToast('Сторінку збережено. Оновіть сайт, щоб побачити зміни.');
         }
 
         const categoryLabels = { handles: 'Ручки', sets: 'Сети', blocks: 'Блоки', tables: 'Столи' };
