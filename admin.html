@@ -128,8 +128,6 @@
         .variant-row { display: grid; grid-template-columns: 1.25fr 1fr 90px 76px 36px; gap: 8px; align-items: center; margin-bottom: 8px; }
         .variant-row input { min-width: 0; }
         .variant-row button { height: 38px; border: 0; border-radius: 6px; background: #632323; color: #fff; cursor: pointer; }
-        .highlight-row { display: grid; grid-template-columns: 1fr 36px; gap: 8px; margin-bottom: 8px; }
-        .highlight-row button { border: 0; border-radius: 6px; background: #632323; color: #fff; cursor: pointer; }
         @media (max-width: 680px) { .form-row { grid-template-columns: 1fr; } .admin-main { padding: 20px; } .sidebar { width: 75px; padding: 12px; } .sidebar-menu li { font-size: 0; padding: 15px; } .sidebar-menu li i { margin: 0; } .sidebar-header img { width: 50px; } }
 
         /* Login Overlay */
@@ -714,7 +712,7 @@
                 <textarea id="edit-desc" rows="5" placeholder="Коротко опишіть товар, його призначення та переваги."></textarea>
             </div>
             <div class="form-group"><label>Характеристики товару</label><div id="specifications-editor"></div><button type="button" class="add-specification" onclick="addSpecificationRow()"><i class="fa fa-plus"></i> Додати характеристику</button><small style="color:#888; display:block; margin-top:7px;">Виберіть атрибут, введіть значення — після збереження він автоматично з’явиться у таблиці товару.</small></div>
-            <div class="form-group"><label>Переваги товару</label><div id="highlights-editor"></div><button type="button" class="add-specification" onclick="addHighlightRow()"><i class="fa fa-plus"></i> Додати перевагу</button><small style="color:#888; display:block; margin-top:7px;">Ці короткі пункти показуються праворуч на сторінці товару.</small></div>
+            <div class="form-group"><label>Переваги товару</label><textarea id="edit-highlights" rows="6" placeholder="Міцна конструкція для регулярних тренувань&#10;Зручне кріплення та швидке налаштування&#10;Підходить для дому й залу"></textarea><small style="color:#888; display:block; margin-top:7px;">Кожен новий рядок стане окремою перевагою праворуч на сторінці товару.</small></div>
             <div class="modal-footer">
                 <button class="btn btn-sm" onclick="closeModal()" style="background: #333;">Закрити</button>
                 <button class="btn btn-sm btn-edit" onclick="saveProduct()">Зберегти зміни</button>
@@ -1212,22 +1210,8 @@
             return { enabled, items };
         }
 
-        function addHighlightRow(value = '') {
-            const row = document.createElement('div');
-            row.className = 'highlight-row';
-            row.innerHTML = `<input class="highlight-value" type="text" placeholder="Наприклад, Надійне кріплення для робочої ваги" value="${escapeHtml(value)}"><button type="button" title="Прибрати" onclick="this.parentElement.remove()"><i class="fa fa-times"></i></button>`;
-            document.getElementById('highlights-editor').appendChild(row);
-        }
-
-        function setHighlights(items = []) {
-            const editor = document.getElementById('highlights-editor');
-            editor.innerHTML = '';
-            (items.length ? items : ['', '', '']).forEach(addHighlightRow);
-        }
-
-        function collectHighlights() {
-            return [...document.querySelectorAll('#highlights-editor .highlight-value')].map(input => input.value.trim()).filter(Boolean);
-        }
+        function setHighlights(items = []) { document.getElementById('edit-highlights').value = (items || []).join('\n'); }
+        function collectHighlights() { return document.getElementById('edit-highlights').value.split('\n').map(item => item.trim()).filter(Boolean); }
 
         function addProductImages(files) {
             [...files].forEach(file => {
