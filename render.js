@@ -452,7 +452,7 @@ function attachNovaCitySearch(inputId, resultsId, onSelect) {
         clearTimeout(timer);
         input.dataset.npRef = '';
         results.hidden = true;
-        if (input.value.trim().length < 2) return;
+        if (input.value.trim().length < 1) return;
         timer = setTimeout(async () => {
             try {
                 const cities = await novaPoshtaLookup('cities', input.value);
@@ -490,7 +490,7 @@ function attachNovaBranchSearch() {
         clearTimeout(timer);
         branchResults.hidden = true;
         const cityRef = cityInput.dataset.npRef;
-        if (!cityRef || branchInput.value.trim().length < 2) return;
+        if (!cityRef || branchInput.value.trim().length < 1) return;
         timer = setTimeout(async () => {
             try {
                 const branches = await novaPoshtaLookup('warehouses', branchInput.value, cityRef);

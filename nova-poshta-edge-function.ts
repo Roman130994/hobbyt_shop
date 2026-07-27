@@ -15,8 +15,8 @@ Deno.serve(async (req) => {
     if (!['cities', 'warehouses'].includes(action)) {
       return Response.json({ error: "Невідома дія" }, { status: 400, headers: corsHeaders });
     }
-    if (search.length < 2) {
-      return Response.json({ error: "Введіть щонайменше 2 символи" }, { status: 400, headers: corsHeaders });
+    if (search.length < 1) {
+      return Response.json({ error: "Введіть хоча б одну літеру" }, { status: 400, headers: corsHeaders });
     }
     if (action === 'warehouses' && !cityRef) {
       return Response.json({ error: "Спочатку виберіть місто" }, { status: 400, headers: corsHeaders });
