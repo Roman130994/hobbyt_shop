@@ -9,15 +9,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
-    <script src="js/products-data.js"></script>
-    <script src="js/render.js"></script>
+    <script src="products-data.js"></script>
+    <script src="render.js"></script>
 </head>
 
 <body class="dark-theme">
     <div class="container">
         <div class="navbar">
             <div class="logo">
-                <a href="index.html"><img src="images/logo-white.png" alt="logo" width="125px"></a>
+                <a href="index.html"><img src="logo-white.png" alt="logo" width="125px"></a>
             </div>
             <nav>
                 <ul id="MenuItems">
@@ -35,8 +35,8 @@
                     <li><a href="delivery.html">Доставка та оплата</a></li>
                 </ul>
             </nav>
-            <a href="cart.html"><img src="images/cart.png" width="30px" height="30px"></a>
-            <img src="images/menu.png" class="menu-icon" onclick="menutoggle()">
+            <a href="cart.html" class="cart-icon-container"><img src="cart.png" width="30px" height="30px"><span class="cart-badge">0</span></a>
+            <img src="menu.png" class="menu-icon" onclick="menutoggle()">
         </div>
     </div>
 
@@ -44,21 +44,9 @@
     <div class="small-container single-product">
         <div class="row">
             <div class="col-2">
-                <img src="images/4.png" width="100%" id="ProductImg">
-
-                <div class="small-img-row">
-                    <div class="small-img-col">
-                        <img src="images/4.png" width="100%" class="small-img">
-                    </div>
-                    <div class="small-img-col">
-                        <img src="images/4.png" width="100%" class="small-img">
-                    </div>
-                    <div class="small-img-col">
-                        <img src="images/4.png" width="100%" class="small-img">
-                    </div>
-                    <div class="small-img-col">
-                        <img src="images/4.png" width="100%" class="small-img">
-                    </div>
+                <div class="product-media">
+                    <img src="4.png" width="100%" id="ProductImg" alt="">
+                    <div class="small-img-row" id="ProductGallery" aria-label="Галерея товару"></div>
                 </div>
 
             </div>
@@ -67,7 +55,7 @@
                 <h1 id="ProductName">Назва товару</h1>
                 <h4 id="ProductPrice">0 ₴</h4>
                 
-                <input type="number" value="1">
+                <input type="number" value="1" min="1" id="ProductQuantity" aria-label="Кількість товару">
                 <a href="#" class="btn">Додати в кошик</a>
 
                 <h3>Деталі товару <i class="fa fa-indent"></i></h3>
@@ -85,56 +73,7 @@
     </div>
     <!-- Товарs -->
     <div class="small-container">
-        <div class="row">
-            <div class="col-4">
-                <img src="images/4.png">
-                <h4>Червона футболка з принтом</h4>
-                <div class="rating">
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star-o"></i>
-                </div>
-                <p>$50.00</p>
-            </div>
-            <div class="col-4">
-                <img src="images/4.png">
-                <h4>Червона футболка з принтом</h4>
-                <div class="rating">
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star-o"></i>
-                </div>
-                <p>$50.00</p>
-            </div>
-            <div class="col-4">
-                <img src="images/4.png">
-                <h4>Червона футболка з принтом</h4>
-                <div class="rating">
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star-o"></i>
-                </div>
-                <p>$50.00</p>
-            </div>
-            <div class="col-4">
-                <img src="images/4.png">
-                <h4>Червона футболка з принтом</h4>
-                <div class="rating">
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star"></i>
-                    <i class="fa fa-star-o"></i>
-                </div>
-                <p>$50.00</p>
-            </div>
-        </div>
+        <div class="row" id="related-products"></div>
     </div>
 
     <!-- Footer -->
@@ -150,7 +89,7 @@
                     </ul>
                 </div>
                 <div class="footer-col-2">
-                    <img src="images/logo-white.png">
+                    <img src="logo-white.png">
                     <p>Наша мета — зробити задоволення та користь від спорту доступними для багатьох.
                     </p>
                 </div>
@@ -193,25 +132,6 @@
         }
     </script>
 
-    <!-- product gallery -->
-    <script>
-        var ProductImg = document.getElementById("ProductImg");
-        var SmallImg = document.getElementsByClassName("small-img");
-
-        SmallImg[0].onclick = function () {
-            ProductImg.src = SmallImg[0].src;
-        }
-        SmallImg[1].onclick = function () {
-            ProductImg.src = SmallImg[1].src;
-        }
-        SmallImg[2].onclick = function () {
-            ProductImg.src = SmallImg[2].src;
-        }
-        SmallImg[3].onclick = function () {
-            ProductImg.src = SmallImg[3].src;
-        }
-
-    </script>
 </body>
 
 </html>

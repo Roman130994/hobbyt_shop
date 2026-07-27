@@ -108,11 +108,19 @@ function renderSingleProduct() {
         const descEl = document.getElementById('ProductDesc');
         const catEl = document.getElementById('ProductCategory');
 
+        const imagePath = product.image.replace(/^images\//, '');
         if (nameEl) nameEl.innerText = product.name;
         if (priceEl) priceEl.innerText = product.price;
-        if (imgEl) imgEl.src = product.image;
+        if (imgEl) {
+            imgEl.src = imagePath;
+            imgEl.alt = product.name;
+        }
         if (descEl) descEl.innerText = product.description || "Опис скоро з'явиться...";
         if (catEl) catEl.innerText = "Головна / " + (product.category === 'popular' ? 'Популярні' : product.category);
+        document.title = `${product.name} | Hobbyt Equipment`;
+
+        renderProductGallery(product, imagePath);
+        renderRelatedProducts(product);
         
         // Додаємо дію для кнопки кошика
         const cartBtn = document.querySelector('.single-product .btn');
@@ -120,6 +128,42 @@ function renderSingleProduct() {
             cartBtn.setAttribute('onclick', `addToCart(${product.id}); return false;`);
         }
     }
+}
+
+function renderProductGallery(product, mainImage) {
+    const gallery = document.getElementById('ProductGallery');
+    const mainImageEl = document.getElementById('ProductImg');
+    if (!gallery || !mainImageEl) return;
+
+    const images = [...new Set((product.gallery || [mainImage]).map(image => image.replace(/^images\//, '')))];
+    gallery.innerHTML = images.map((image, index) => `
+        <button type="button" class="small-img-col${index === 0 ? ' active' : ''}" aria-label="Фото ${index + 1} товару">
+            <img src="${image}" class="small-img" alt="${product.name}">
+        </button>
+    `).join('');
+
+    gallery.querySelectorAll('.small-img-col').forEach((thumb, index) => {
+        thumb.addEventListener('click', () => {
+            mainImageEl.src = images[index];
+            gallery.querySelectorAll('.small-img-col').forEach(item => item.classList.remove('active'));
+            thumb.classList.add('active');
+        });
+    });
+}
+
+function renderRelatedProducts(product) {
+    const container = document.getElementById('related-products');
+    if (!container) return;
+
+    const related = productsData.filter(item => item.id !== product.id && item.category === product.category).slice(0, 4);
+    container.innerHTML = related.map(item => `
+        <div class="col-4">
+            <a href="product_details.html?id=${item.id}"><img src="${item.image.replace(/^images\//, '')}" alt="${item.name}"></a>
+            <a href="product_details.html?id=${item.id}"><h4>${item.name}</h4></a>
+            <div class="rating">${'<i class="fa fa-star"></i>'.repeat(Math.floor(item.rating || 5))}</div>
+            <p>${item.price}</p>
+        </div>
+    `).join('');
 }
 
 function addToCart(productId) {
@@ -179,7 +223,7 @@ function renderCart() {
             <tr>
                 <td>
                     <div class="cart-info">
-                        <img src="${item.image}">
+                        <img src="${item.image.replace(/^images\//, '')}">
                         <div>
                             <p>${item.name}</p>
                             <small>Ціна: ${item.price}</small>
