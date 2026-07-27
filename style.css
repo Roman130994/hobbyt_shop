@@ -1333,6 +1333,8 @@ body.dark-theme img.menu-icon {
     margin: 50px auto;
 }
 .checkout-steps { display: flex; gap: 18px; align-items: center; margin-bottom: 26px; padding-bottom: 16px; border-bottom: 1px solid #303030; color: #777; font-size: 13px; text-transform: uppercase; letter-spacing: .04em; }
+.checkout-steps a { color: #9eb7ce; }
+.checkout-steps a:hover { color: #fff; }
 .checkout-steps strong { color: #fff; }
 .breadcrumbs {
     font-size: 14px;
