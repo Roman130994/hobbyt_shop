@@ -202,22 +202,31 @@ function renderSingleProduct() {
 function renderProductVariants(product) {
     const container = document.getElementById('ProductVariants');
     const buttons = document.getElementById('ProductVariantButtons');
+    const label = document.getElementById('ProductVariantLabel');
     const stockEl = document.querySelector('.product-status .in-stock');
     if (!container || !buttons) return;
     const variants = product.variants?.enabled ? (product.variants.items || []).filter(item => item.name) : [];
     container.hidden = !variants.length;
     if (!variants.length) return;
+    const parsedVariants = variants.map(item => {
+        const [attribute, ...values] = String(item.name).split(/[/:|]/).map(part => part.trim());
+        return { ...item, attribute: values.length ? attribute : 'Модифікація', value: values.length ? values.join(' / ') : item.name };
+    });
+    const attribute = parsedVariants.every(item => item.attribute === parsedVariants[0].attribute)
+        ? parsedVariants[0].attribute
+        : 'Модифікація';
+    if (label) label.textContent = attribute.charAt(0).toUpperCase() + attribute.slice(1);
     let chosen = selectedVariants.get(product.id) ?? 0;
-    if (variants[chosen]?.stock_quantity < 1) chosen = variants.findIndex(item => item.stock_quantity > 0);
+    if (parsedVariants[chosen]?.stock_quantity < 1) chosen = parsedVariants.findIndex(item => item.stock_quantity > 0);
     if (chosen < 0) chosen = 0;
     const applyVariant = (index) => {
-        const variant = variants[index];
+        const variant = parsedVariants[index];
         selectedVariants.set(product.id, index);
         document.getElementById('ProductPrice').innerText = formatPrice(variant.price);
         if (stockEl) stockEl.innerHTML = `<i class="fa ${variant.stock_quantity > 0 ? 'fa-check-circle' : 'fa-times-circle'}" aria-hidden="true"></i>${variant.stock_quantity > 0 ? `В наявності: ${variant.stock_quantity} шт.` : 'Немає в наявності'}`;
         buttons.querySelectorAll('button').forEach((button, buttonIndex) => button.classList.toggle('is-selected', buttonIndex === index));
     };
-    buttons.innerHTML = variants.map((item, index) => `<button type="button" class="variant-button ${index === chosen ? 'is-selected' : ''}" data-index="${index}" ${item.stock_quantity < 1 ? 'disabled' : ''}><span>${escapeProductText(item.name)}</span><small>${formatPrice(item.price)}${item.stock_quantity < 1 ? ' · Немає' : ''}</small></button>`).join('');
+    buttons.innerHTML = parsedVariants.map((item, index) => `<button type="button" class="variant-button ${index === chosen ? 'is-selected' : ''}" data-index="${index}" ${item.stock_quantity < 1 ? 'disabled' : ''}>${escapeProductText(item.value)}</button>`).join('');
     buttons.querySelectorAll('button').forEach(button => button.addEventListener('click', () => applyVariant(Number(button.dataset.index))));
     applyVariant(chosen);
 }
