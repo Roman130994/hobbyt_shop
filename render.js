@@ -6,7 +6,7 @@ function renderProducts(containerId, categoryFilter = null, limit = null, page =
     let products = [...productsData];
     if (categoryFilter) {
         if (categoryFilter === 'popular') {
-            products = products.filter(p => p.popular === true && !p.discount);
+            products = products.filter(p => p.popular === true);
         } else if (categoryFilter === 'sale') {
             products = products.filter(p => p.discount);
         } else {
