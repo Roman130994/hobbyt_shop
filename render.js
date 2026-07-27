@@ -28,6 +28,7 @@ function mapDatabaseProduct(row) {
         description: row.description,
         sku: row.sku,
         specifications: row.specifications,
+        highlights: row.highlights || [],
         variants: row.variants || { enabled: false, items: [] },
         videoUrl: row.video_url,
         inStock: row.in_stock
@@ -230,7 +231,15 @@ function renderProductDetails(product) {
     }
     if (video) video.style.backgroundImage = `linear-gradient(rgba(12, 12, 12, .4), rgba(12, 12, 12, .72)), url('${product.image.replace(/^images\//, '')}')`;
     if (videoTitle) videoTitle.innerText = `Відеоогляд: ${product.name}`;
-    if (highlights) highlights.innerHTML = (categoryHighlights[product.category] || []).map(item => `<li><i class="fa fa-check" aria-hidden="true"></i>${item}</li>`).join('');
+    if (highlights) {
+        highlights.innerHTML = '';
+        (product.highlights?.length ? product.highlights : categoryHighlights[product.category] || []).forEach(item => {
+            const li = document.createElement('li');
+            li.innerHTML = '<i class="fa fa-check" aria-hidden="true"></i>';
+            li.append(document.createTextNode(item));
+            highlights.appendChild(li);
+        });
+    }
 }
 
 function renderProductGallery(product, mainImage) {
