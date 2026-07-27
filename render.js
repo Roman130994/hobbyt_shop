@@ -120,6 +120,7 @@ function renderSingleProduct() {
         document.title = `${product.name} | Hobbyt Equipment`;
 
         renderProductGallery(product, imagePath);
+        renderProductDetails(product);
         renderRelatedProducts(product);
         
         // Додаємо дію для кнопки кошика
@@ -127,6 +128,35 @@ function renderSingleProduct() {
         if (cartBtn) {
             cartBtn.setAttribute('onclick', `addToCart(${product.id}); return false;`);
         }
+    }
+}
+
+function renderProductDetails(product) {
+    const description = document.getElementById('ProductDesc');
+    const specifications = document.getElementById('ProductSpecifications');
+    const categoryNames = {
+        handles: 'Ручки для тренувань',
+        sets: 'Сети для тренувань',
+        blocks: 'Блоки для тренувань',
+        tables: 'Столи для тренувань'
+    };
+    const categorySpecs = {
+        handles: [['Матеріал', 'Міцний полімер'], ['Призначення', 'Тренування хвату та кисті'], ['Комплектація', 'Ручка, карабін']],
+        sets: [['Матеріал', 'Міцний полімер і метал'], ['Призначення', 'Комплексне тренування рук'], ['Комплектація', 'Набір тренувальних аксесуарів']],
+        blocks: [['Матеріал', 'Сталь'], ['Призначення', 'Робота з навантаженням'], ['Комплектація', 'Блок і кріплення']],
+        tables: [['Матеріал', 'Сталь і зносостійке покриття'], ['Призначення', 'Тренування з армрестлінгу'], ['Комплектація', 'Основна конструкція товару']]
+    };
+    const specs = [
+        ['Категорія', categoryNames[product.category] || 'Тренувальне обладнання'],
+        ...categorySpecs[product.category],
+        ['Стан', 'Тестовий опис — дані будуть оновлені']
+    ];
+
+    if (description) {
+        description.innerText = `${product.description || 'Тестовий опис товару.'} Цей тестовий текст показує, як виглядатиме розгорнутий опис після додавання реальних характеристик, фото та інструкцій.`;
+    }
+    if (specifications) {
+        specifications.innerHTML = specs.map(([label, value]) => `<tr><th>${label}</th><td>${value}</td></tr>`).join('');
     }
 }
 
