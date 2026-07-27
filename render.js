@@ -1,5 +1,6 @@
 let currentSort = 'default';
 let shopProducts = [...productsData];
+const selectedVariants = new Map();
 
 function formatPrice(value) {
     return `${Number(value || 0).toLocaleString('uk-UA')} ₴`;
@@ -181,14 +182,35 @@ function renderSingleProduct() {
 
         renderProductGallery(product, imagePath);
         renderProductDetails(product);
+        renderProductVariants(product);
         renderRelatedProducts(product);
         
         // Додаємо дію для кнопки кошика
         const cartBtn = document.querySelector('.single-product .btn');
         if (cartBtn) {
-            cartBtn.setAttribute('onclick', `addToCart(${product.id}); return false;`);
+            cartBtn.setAttribute('onclick', `addProductPageToCart(${product.id}); return false;`);
         }
     }
+}
+
+function renderProductVariants(product) {
+    const container = document.getElementById('ProductVariants');
+    const select = document.getElementById('ProductVariantSelect');
+    const stockEl = document.querySelector('.product-status .in-stock');
+    if (!container || !select) return;
+    const variants = product.variants?.enabled ? (product.variants.items || []).filter(item => item.name) : [];
+    container.hidden = !variants.length;
+    if (!variants.length) return;
+    const chosen = selectedVariants.get(product.id) ?? 0;
+    select.innerHTML = variants.map((item, index) => `<option value="${index}" ${index === chosen ? 'selected' : ''}>${escapeProductText(item.name)} — ${formatPrice(item.price)} (${item.stock_quantity || 0} шт.)</option>`).join('');
+    const applyVariant = () => {
+        const variant = variants[Number(select.value)];
+        selectedVariants.set(product.id, Number(select.value));
+        document.getElementById('ProductPrice').innerText = formatPrice(variant.price);
+        if (stockEl) stockEl.innerHTML = `<i class="fa fa-check-circle" aria-hidden="true"></i>${variant.stock_quantity > 0 ? `В наявності: ${variant.stock_quantity} шт.` : 'Немає в наявності'}`;
+    };
+    select.onchange = applyVariant;
+    applyVariant();
 }
 
 function renderProductDetails(product) {
@@ -304,6 +326,23 @@ function addToCart(productId) {
         updateCartBadge();
         alert('Товар додано до кошика!');
     }
+}
+
+function addProductPageToCart(productId) {
+    const product = shopProducts.find(item => item.id === productId);
+    const variants = product?.variants?.enabled ? (product.variants.items || []).filter(item => item.name) : [];
+    const index = selectedVariants.get(productId) ?? 0;
+    const variant = variants[index];
+    if (variant && variant.stock_quantity < 1) { alert('Цієї модифікації немає в наявності.'); return; }
+    if (variant) {
+        const cart = JSON.parse(localStorage.getItem('hobbytCart')) || [];
+        cart.push({ ...product, name: `${product.name} — ${variant.name}`, price: formatPrice(variant.price), selectedVariant: variant, quantity: 1 });
+        localStorage.setItem('hobbytCart', JSON.stringify(cart));
+        updateCartBadge();
+        alert('Товар додано до кошика!');
+        return;
+    }
+    addToCart(productId);
 }
 
 function updateCartBadge() {

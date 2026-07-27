@@ -570,6 +570,9 @@ select:focus{
     align-items: center;
     gap: 12px;
 }
+.product-variants { margin: 18px 0; }
+.product-variants label { display: block; color: #b9b9b9; font-size: 13px; margin-bottom: 7px; }
+.product-variants select { width: 100%; margin: 0; background: #181818; color: #fff; border: 1px solid #3a3a3a; border-radius: 6px; }
 .product-buy-row #ProductQuantity {
     margin: 0;
 }
