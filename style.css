@@ -362,11 +362,23 @@ select:focus{
     margin-top: 0;
 }
 .single-product #ProductCategory {
-    margin: 8px 0 18px;
+    margin: 8px 0 0;
     color: #bdbdbd;
 }
+.product-summary {
+    display: grid;
+    gap: 20px;
+    padding: 26px;
+    border: 1px solid #393939;
+    border-radius: 10px;
+    background: #1e1e1e;
+}
+.product-summary-header {
+    padding-bottom: 18px;
+    border-bottom: 1px solid #393939;
+}
 .product-highlights {
-    margin-top: 32px;
+    margin-top: 4px;
     padding: 18px;
     border: 1px solid #393939;
     border-radius: 8px;
@@ -537,6 +549,7 @@ select:focus{
     gap: 16px;
 }
 .product-price-row h4 { margin: 20px 0; }
+.product-price-row h4 { margin: 0; }
 .product-status {
     display: grid;
     justify-items: end;
@@ -551,6 +564,19 @@ select:focus{
 .product-status .fa {
     margin: 0 5px 0 0;
     color: #67c78a;
+}
+.product-buy-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.product-buy-row #ProductQuantity {
+    margin: 0;
+}
+.product-buy-row .btn {
+    flex: 1;
+    margin: 0;
+    text-align: center;
 }
 .single-product select{
     display: block;
