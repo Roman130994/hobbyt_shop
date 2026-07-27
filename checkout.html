@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Оформлення замовлення | Hobbyt Equipment</title>
-    <link rel="stylesheet" href="style.css?v=checkout-20260727-5">
+    <link rel="stylesheet" href="style.css?v=checkout-20260727-6">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -56,11 +56,22 @@
                 <!-- Ліва колонка: крок 3, дані покупця -->
                 <div class="checkout-col-left">
                     <section id="customer-details-step" class="checkout-customer-step">
-                    <h2 class="checkout-title" data-content="checkout.title">Ваші дані</h2>
+                    <h2 class="checkout-title">Контактна інформація</h2>
                     
                     <div class="form-check">
                         <input type="checkbox" id="corp-order">
                         <label for="corp-order">Корпоративне замовлення</label>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group half">
+                            <label for="first-name">Ім'я <span class="required">*</span></label>
+                            <input type="text" id="first-name" value="тест" required>
+                        </div>
+                        <div class="form-group half">
+                            <label for="last-name">Прізвище <span class="required">*</span></label>
+                            <input type="text" id="last-name" value="тест" required>
+                        </div>
                     </div>
 
                     <div class="form-row">
@@ -74,16 +85,7 @@
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group half">
-                            <label for="first-name">Ім'я <span class="required">*</span></label>
-                            <input type="text" id="first-name" value="тест" required>
-                        </div>
-                        <div class="form-group half">
-                            <label for="last-name">Прізвище <span class="required">*</span></label>
-                            <input type="text" id="last-name" value="тест" required>
-                        </div>
-                    </div>
+                    <h3 class="checkout-address-title">Адреса доставки</h3>
 
                     <div class="form-check" style="margin-top: 15px;">
                         <input type="checkbox" id="alt-address">

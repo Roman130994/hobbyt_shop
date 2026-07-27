@@ -1381,6 +1381,7 @@ body.dark-theme img.menu-icon {
     margin-bottom: 25px;
     font-weight: 600;
 }
+.checkout-address-title { margin: 8px 0 18px; padding-top: 20px; border-top: 1px solid #303030; color: #fff; font-size: 18px; }
 .form-group {
     margin-bottom: 20px;
 }
