@@ -473,7 +473,8 @@
         <div class="login-box">
             <img src="logo-white.png" width="150" style="margin-bottom: 20px;">
             <h2>Вхід в адмін-панель</h2>
-            <input type="password" id="admin-pass" placeholder="Введіть пароль">
+            <input type="email" id="admin-email" placeholder="Електронна пошта">
+            <input type="password" id="admin-pass" placeholder="Пароль">
             <button class="btn" onclick="checkLogin()" style="width: 100%;">Увійти</button>
         </div>
     </div>
@@ -728,14 +729,53 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
     <script src="products-data.js"></script>
     <script>
-        function checkLogin() {
+        const supabaseClient = window.supabase.createClient(window.HOBBYT_SUPABASE_URL, window.HOBBYT_SUPABASE_KEY);
+
+        const toNumber = (value) => Number(String(value || 0).replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+        const productSlug = (name) => `${name.toLowerCase().trim().replace(/[^a-zа-яіїє0-9]+/gi, '-').replace(/^-|-$/g, '')}-${Date.now()}`;
+        const mapRowToProduct = (row) => ({
+            id: row.id, name: row.name, price: `${Number(row.price).toLocaleString('uk-UA')} ₴`,
+            oldPrice: row.old_price ? `${Number(row.old_price).toLocaleString('uk-UA')} ₴` : null,
+            image: (row.images || [])[0] || '4.png', gallery: row.images || [], rating: 5,
+            category: row.category, popular: row.is_popular, description: row.description || '', sku: row.sku
+        });
+
+        async function syncProductsFromDatabase() {
+            const { data, error } = await supabaseClient.from('products').select('*').order('sort_order').order('id');
+            if (error) throw error;
+            if (!data.length) {
+                const seed = productsData.map((p, index) => ({
+                    slug: `test-product-${index + 1}`, name: p.name, category: p.category,
+                    sku: `HBT-${String(index + 1).padStart(3, '0')}`, price: toNumber(p.price),
+                    old_price: p.oldPrice ? toNumber(p.oldPrice) : null, description: p.description || '',
+                    images: [p.image], is_popular: !!p.popular, is_sale: !!p.discount, sort_order: index + 1
+                }));
+                const { error: seedError } = await supabaseClient.from('products').insert(seed);
+                if (seedError) throw seedError;
+                return syncProductsFromDatabase();
+            }
+            productsData.splice(0, productsData.length, ...data.map(mapRowToProduct));
+            loadAdminProducts();
+        }
+
+        async function checkLogin() {
+            const email = document.getElementById('admin-email').value.trim();
             const pass = document.getElementById('admin-pass').value;
-            if (pass === 'admin777') {
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
+            if (!error) {
                 document.getElementById('login-overlay').style.display = 'none';
+                try {
+                    await syncProductsFromDatabase();
+                    showToast('Вхід виконано. Товари синхронізовано з базою.');
+                } catch (syncError) {
+                    showToast('Не вдалося завантажити товари: ' + syncError.message, true);
+                }
             } else {
-                alert('Невірний пароль!');
+                alert('Не вдалося увійти. Перевірте пошту й пароль.');
             }
         }
 
@@ -1063,38 +1103,39 @@
             document.getElementById('edit-modal').style.display = 'none';
         }
 
-        function saveProduct() {
+        async function saveProduct() {
             const idVal = document.getElementById('edit-id').value;
             const newProduct = {
                 name: document.getElementById('edit-name').value,
-                price: document.getElementById('edit-price').value,
+                price: toNumber(document.getElementById('edit-price').value),
                 category: document.getElementById('edit-category').value,
-                image: document.getElementById('edit-image').value,
                 description: document.getElementById('edit-desc').value,
-                rating: 5
+                images: [document.getElementById('edit-image').value || '4.png'],
+                is_popular: document.getElementById('edit-category').value === 'popular',
+                is_sale: false
             };
-            if (idVal === 'new') {
-                const newId = productsData.length > 0 ? Math.max(...productsData.map(p => p.id)) + 1 : 1;
-                newProduct.id = newId;
-                productsData.push(newProduct);
-            } else {
-                const id = parseInt(idVal);
-                const index = productsData.findIndex(p => p.id === id);
-                if (index !== -1) productsData[index] = { ...productsData[index], ...newProduct };
+            if (!newProduct.name || !newProduct.price) {
+                showToast('Заповніть назву і ціну товару.', true);
+                return;
             }
+            let error;
+            if (idVal === 'new') {
+                ({ error } = await supabaseClient.from('products').insert({ ...newProduct, slug: productSlug(newProduct.name), sort_order: productsData.length + 1 }));
+            } else {
+                ({ error } = await supabaseClient.from('products').update(newProduct).eq('id', Number(idVal)));
+            }
+            if (error) { showToast('Не вдалося зберегти: ' + error.message, true); return; }
             closeModal();
-            loadAdminProducts();
-            showUpdatedCode();
+            await syncProductsFromDatabase();
+            showToast('Товар збережено у базі.');
         }
 
-        function deleteProduct(id) {
+        async function deleteProduct(id) {
             if (confirm('Ви впевнені, що хочете видалити цей товар?')) {
-                const index = productsData.findIndex(p => p.id === id);
-                if (index !== -1) {
-                    productsData.splice(index, 1);
-                    loadAdminProducts();
-                    showUpdatedCode();
-                }
+                const { error } = await supabaseClient.from('products').delete().eq('id', id);
+                if (error) { showToast('Не вдалося видалити: ' + error.message, true); return; }
+                await syncProductsFromDatabase();
+                showToast('Товар видалено.');
             }
         }
 

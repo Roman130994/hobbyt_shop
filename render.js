@@ -1,9 +1,46 @@
 let currentSort = 'default';
+let shopProducts = [...productsData];
+
+function formatPrice(value) {
+    return `${Number(value || 0).toLocaleString('uk-UA')} ₴`;
+}
+
+function mapDatabaseProduct(row) {
+    const images = Array.isArray(row.images) ? row.images : [];
+    const price = formatPrice(row.price);
+    const oldPrice = row.old_price ? formatPrice(row.old_price) : null;
+    return {
+        id: row.id,
+        name: row.name,
+        price,
+        oldPrice,
+        discount: row.old_price && row.old_price > row.price
+            ? `-${Math.round((1 - row.price / row.old_price) * 100)}%` : null,
+        image: images[0] || '4.png',
+        gallery: images,
+        rating: 5,
+        category: row.category,
+        popular: row.is_popular,
+        description: row.description,
+        sku: row.sku,
+        specifications: row.specifications,
+        videoUrl: row.video_url,
+        inStock: row.in_stock
+    };
+}
+
+async function loadProductsFromSupabase() {
+    if (!window.supabase || !window.HOBBYT_SUPABASE_URL) return;
+    const client = window.supabase.createClient(window.HOBBYT_SUPABASE_URL, window.HOBBYT_SUPABASE_KEY);
+    const { data, error } = await client.from('products').select('*').order('sort_order').order('id');
+    if (!error && data && data.length) shopProducts = data.map(mapDatabaseProduct);
+}
+
 function renderProducts(containerId, categoryFilter = null, limit = null, page = 1, sortType = currentSort) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
-    let products = [...productsData];
+    let products = [...shopProducts];
     if (categoryFilter) {
         if (categoryFilter === 'popular') {
             products = products.filter(p => p.popular === true);
@@ -98,7 +135,7 @@ function sortAndRender() {
 function renderSingleProduct() {
     const urlParams = new URLSearchParams(window.location.search);
     const productId = parseInt(urlParams.get('id'));
-    const product = productsData.find(p => p.id === productId);
+    const product = shopProducts.find(p => p.id === productId);
 
     if (product) {
         // Заповнюємо основні дані
@@ -213,7 +250,7 @@ function renderRelatedProducts(product) {
     const container = document.getElementById('related-products');
     if (!container) return;
 
-    const related = productsData.filter(item => item.id !== product.id && item.category === product.category).slice(0, 4);
+    const related = shopProducts.filter(item => item.id !== product.id && item.category === product.category).slice(0, 4);
     container.innerHTML = related.map(item => `
         <div class="col-4">
             <a href="product_details.html?id=${item.id}"><img src="${item.image.replace(/^images\//, '')}" alt="${item.name}"></a>
@@ -226,7 +263,7 @@ function renderRelatedProducts(product) {
 
 function addToCart(productId) {
     let cart = JSON.parse(localStorage.getItem('hobbytCart')) || [];
-    const product = productsData.find(p => p.id === productId);
+    const product = shopProducts.find(p => p.id === productId);
     
     if (product) {
         cart.push({...product, quantity: 1});
@@ -538,4 +575,13 @@ document.addEventListener('DOMContentLoaded', () => {
             newCarousel.scrollBy({ left: 270, behavior: 'smooth' });
         });
     }
+
+    // The static list keeps the shop visible during loading. Once the database
+    // responds, redraw all product areas from the single live product source.
+    loadProductsFromSupabase().then(() => {
+        renderProducts('popularCarousel', 'popular');
+        renderProducts('newProductsCarousel', 'sale', 10);
+        renderProducts('all-products-list', categoryFromUrl);
+        renderSingleProduct();
+    });
 });
