@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
     if (!['cities', 'warehouses'].includes(action)) {
       return Response.json({ error: "Невідома дія" }, { status: 400, headers: corsHeaders });
     }
-    if (search.length < 1) {
+    if (action === 'cities' && search.length < 1) {
       return Response.json({ error: "Введіть хоча б одну літеру" }, { status: 400, headers: corsHeaders });
     }
     if (action === 'warehouses' && !cityRef) {
@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
           apiKey: Deno.env.get('NOVA_POSHTA_API_KEY'),
           modelName: 'Address',
           calledMethod: 'getWarehouses',
-          methodProperties: { CityRef: cityRef, FindByString: search, Limit: '30' },
+          methodProperties: { CityRef: cityRef, FindByString: search, Limit: search ? '30' : '500' },
         };
 
     const response = await fetch('https://api.novaposhta.ua/v2.0/json/', {

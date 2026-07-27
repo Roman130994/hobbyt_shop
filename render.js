@@ -487,21 +487,26 @@ function attachNovaBranchSearch() {
         if (hint) hint.textContent = 'Почніть вводити номер або назву відділення.';
     });
 
+    async function loadBranches() {
+        const cityRef = cityInput.dataset.npRef;
+        if (!cityRef) return;
+        try {
+            const branches = await novaPoshtaLookup('warehouses', branchInput.value, cityRef);
+            fillNovaResults(branchResults, branches, branch => branch.number ? `${branch.number}. ${branch.name}` : branch.name);
+            if (hint) hint.textContent = branches.length ? 'Оберіть відділення зі списку.' : 'Відділень не знайдено.';
+        } catch (error) {
+            console.error('Nova Poshta branches:', error);
+            if (hint) hint.textContent = 'Не вдалося знайти відділення. Спробуйте ще раз.';
+        }
+    }
+
     let timer;
+    branchInput.addEventListener('focus', loadBranches);
     branchInput.addEventListener('input', () => {
         clearTimeout(timer);
-        branchResults.hidden = true;
         const cityRef = cityInput.dataset.npRef;
-        if (!cityRef || branchInput.value.trim().length < 1) return;
-        timer = setTimeout(async () => {
-            try {
-                const branches = await novaPoshtaLookup('warehouses', branchInput.value, cityRef);
-                fillNovaResults(branchResults, branches, branch => branch.number ? `${branch.number}. ${branch.name}` : branch.name);
-            } catch (error) {
-                console.error('Nova Poshta branches:', error);
-                if (hint) hint.textContent = 'Не вдалося знайти відділення. Спробуйте ще раз.';
-            }
-        }, 300);
+        if (!cityRef) return;
+        timer = setTimeout(loadBranches, 250);
     });
     const chooseBranch = () => {
         const option = branchResults.options[branchResults.selectedIndex];
