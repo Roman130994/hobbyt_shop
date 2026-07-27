@@ -1520,7 +1520,7 @@ body.dark-theme img.menu-icon {
 .payment-choice-copy > span { display: grid; gap: 3px; }
 .payment-icon { display: inline-grid; place-items: center; width: 34px; height: 34px; flex: 0 0 34px; border: 1px solid #3d6385; border-radius: 7px; background: #10283d; color: #a9d8ff; font-size: 17px; }
 .delivery-choice-price { display: grid; justify-items: end; gap: 4px; min-width: 92px; color: #c8d7e5; font-size: 12px; text-align: right; }
-.delivery-choice-price img { display: block; width: 84px; height: 25px; object-fit: contain; object-position: right center; }
+.delivery-choice-price img { display: block; width: 84px !important; max-width: 84px !important; height: 25px !important; max-height: 25px !important; object-fit: contain; object-position: right center; }
 .delivery-pickup-icon { display: inline-grid; place-items: center; width: 26px; height: 25px; color: #a9d8ff; font-size: 22px; }
 .payment-option {
     margin-bottom: 10px;
