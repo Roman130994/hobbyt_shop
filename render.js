@@ -462,14 +462,16 @@ function attachNovaCitySearch(inputId, resultsId, onSelect) {
             }
         }, 300);
     });
-    results.addEventListener('change', () => {
+    const chooseCity = () => {
         const option = results.options[results.selectedIndex];
         if (!option) return;
         input.value = option.text;
         input.dataset.npRef = option.value;
         results.hidden = true;
         onSelect?.(option.value);
-    });
+    };
+    results.addEventListener('change', chooseCity);
+    results.addEventListener('click', () => setTimeout(chooseCity, 0));
 }
 
 function attachNovaBranchSearch() {
@@ -501,13 +503,15 @@ function attachNovaBranchSearch() {
             }
         }, 300);
     });
-    branchResults.addEventListener('change', () => {
+    const chooseBranch = () => {
         const option = branchResults.options[branchResults.selectedIndex];
         if (!option) return;
         branchInput.value = option.text;
         branchInput.dataset.npRef = option.value;
         branchResults.hidden = true;
-    });
+    };
+    branchResults.addEventListener('change', chooseBranch);
+    branchResults.addEventListener('click', () => setTimeout(chooseBranch, 0));
 }
 
 function renderDeliveryFields() {
