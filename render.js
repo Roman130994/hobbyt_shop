@@ -385,7 +385,7 @@ function renderHeroSlider() {
     if (!container || typeof bannerData === 'undefined') return;
 
     const slides = bannerData.slides.map(({ image }) =>
-        `<div class="slide" style="background-image: url('${image}')"></div>`
+        `<div class="slide"><img src="${image}" alt=""></div>`
     ).join('');
     container.insertAdjacentHTML('afterbegin', slides);
 }
