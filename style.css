@@ -1514,6 +1514,9 @@ body.dark-theme img.menu-icon {
 }
 .payment-methods-checkout { margin: 0 0 28px; padding-bottom: 24px; border-bottom: 1px solid #303030; }
 .payment-methods-checkout h3 { margin: 0 0 14px; }
+.payment-choice-copy { display: flex; align-items: center; gap: 12px; }
+.payment-choice-copy > span { display: grid; gap: 3px; }
+.payment-icon { display: inline-grid; place-items: center; width: 34px; height: 34px; flex: 0 0 34px; border: 1px solid #3d6385; border-radius: 7px; background: #10283d; color: #a9d8ff; font-size: 17px; }
 .payment-option {
     margin-bottom: 10px;
 }
