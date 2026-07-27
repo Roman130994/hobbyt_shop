@@ -133,6 +133,8 @@ function renderSingleProduct() {
 function renderProductGallery(product, mainImage) {
     const gallery = document.getElementById('ProductGallery');
     const mainImageEl = document.getElementById('ProductImg');
+    const previousButton = document.querySelector('.product-gallery-prev');
+    const nextButton = document.querySelector('.product-gallery-next');
     if (!gallery || !mainImageEl) return;
 
     const fallbackGallery = [mainImage, '4.png', '3.png', '2.png', '1.png'];
@@ -143,13 +145,20 @@ function renderProductGallery(product, mainImage) {
         </button>
     `).join('');
 
-    gallery.querySelectorAll('.small-img-col').forEach((thumb, index) => {
-        thumb.addEventListener('click', () => {
-            mainImageEl.src = images[index];
-            gallery.querySelectorAll('.small-img-col').forEach(item => item.classList.remove('active'));
-            thumb.classList.add('active');
+    let currentIndex = 0;
+    const showImage = (index) => {
+        currentIndex = (index + images.length) % images.length;
+        mainImageEl.src = images[currentIndex];
+        gallery.querySelectorAll('.small-img-col').forEach((item, itemIndex) => {
+            item.classList.toggle('active', itemIndex === currentIndex);
         });
+    };
+
+    gallery.querySelectorAll('.small-img-col').forEach((thumb, index) => {
+        thumb.addEventListener('click', () => showImage(index));
     });
+    if (previousButton) previousButton.onclick = () => showImage(currentIndex - 1);
+    if (nextButton) nextButton.onclick = () => showImage(currentIndex + 1);
 }
 
 function renderRelatedProducts(product) {
