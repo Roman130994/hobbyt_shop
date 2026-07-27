@@ -1091,6 +1091,8 @@ body.dark-theme img.menu-icon {
     margin-right: 8px;
     font-size: 0.85em;
 }
+.product-price-stack { display: flex; flex-direction: column; gap: 3px; }
+.product-old-price { color: #888; font-size: 14px; }
 .product-card:hover {
     transform: translateY(-5px);
     border-color: #0E5EA3;

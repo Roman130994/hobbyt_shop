@@ -92,7 +92,8 @@ function renderProducts(containerId, categoryFilter = null, limit = null, page =
         productCard.className = isCarousel ? 'product-card' : 'col-4';
         
         const discountBadge = p.discount ? `<div class="discount-badge">${p.discount}</div>` : '';
-        const priceHTML = p.oldPrice 
+        const hasDiscount = p.oldPrice && parseInt(p.oldPrice.replace(/[^\d]/g, '')) > parseInt(p.price.replace(/[^\d]/g, ''));
+        const priceHTML = hasDiscount
             ? `<p><span class="old-price">${p.oldPrice}</span> ${p.price}</p>` 
             : `<p>${p.price}</p>`;
 
@@ -156,6 +157,7 @@ function renderSingleProduct() {
         // Заповнюємо основні дані
         const nameEl = document.getElementById('ProductName');
         const priceEl = document.getElementById('ProductPrice');
+        const oldPriceEl = document.getElementById('ProductOldPrice');
         const imgEl = document.getElementById('ProductImg');
         const descEl = document.getElementById('ProductDesc');
         const catEl = document.getElementById('ProductCategory');
@@ -164,6 +166,8 @@ function renderSingleProduct() {
         const imagePath = product.image.replace(/^images\//, '');
         if (nameEl) nameEl.innerText = product.name;
         if (priceEl) priceEl.innerText = product.price;
+        const hasDiscount = product.oldPrice && parseInt(product.oldPrice.replace(/[^\d]/g, '')) > parseInt(product.price.replace(/[^\d]/g, ''));
+        if (oldPriceEl) { oldPriceEl.hidden = !hasDiscount; oldPriceEl.innerText = hasDiscount ? product.oldPrice : ''; }
         if (imgEl) {
             imgEl.src = imagePath;
             imgEl.alt = product.name;
