@@ -564,7 +564,7 @@
         <div id="section-pages" class="admin-section" style="display: none;">
             <div class="admin-content-box">
                 <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Редактор сторінок</h3><p class="editor-help" style="margin:0;">Змініть текст і одразу перегляньте результат на сайті.</p></div></div>
-                <div class="form-group"><label>Сторінка</label><select id="page-selector" onchange="loadPageContentEditor()"><option value="index">Головна</option><option value="about">Про нас</option><option value="delivery">Доставка й оплата</option></select></div>
+                <div class="form-group"><label>Сторінка</label><select id="page-selector" onchange="loadPageContentEditor()"><option value="index">Головна</option><option value="about">Про нас</option><option value="delivery">Доставка й оплата</option><option value="catalog">Каталог</option><option value="cart">Кошик</option><option value="checkout">Оформлення замовлення</option><option value="product">Картка товару</option></select></div>
                 <div id="page-content-editor"></div>
                 <button class="btn btn-sm" onclick="savePageContent()">Зберегти сторінку</button>
             </div>
@@ -1053,9 +1053,10 @@
             const content = siteContent[page] || {};
             const editor = document.getElementById('page-content-editor');
             
+            const readableLabels = { heroTitle: 'Головний заголовок', heroText: 'Текст під заголовком', popularTitle: 'Заголовок популярних товарів', categoriesTitle: 'Заголовок категорій', saleTitle: 'Заголовок розпродажу', historyTitle: 'Заголовок історії', historyText: 'Перший абзац історії', historyMore: 'Другий абзац історії', advantagesTitle: 'Заголовок переваг', qualityTitle: 'Заголовок якості', qualityText: 'Текст про якість', deliveryTitle: 'Заголовок доставки', novaPostTitle: 'Заголовок Нової Пошти', novaPostText: 'Опис Нової Пошти', internationalTitle: 'Заголовок міжнародної доставки', internationalText: 'Опис міжнародної доставки', paymentTitle: 'Заголовок оплати', onlinePaymentTitle: 'Заголовок онлайн-оплати', onlinePaymentText: 'Опис онлайн-оплати', codTitle: 'Заголовок післяплати', codText: 'Опис післяплати', title: 'Головний заголовок', checkoutButton: 'Текст кнопки оформлення', couponText: 'Текст про купон', submitButton: 'Текст кнопки підтвердження', relatedTitle: 'Заголовок схожих товарів', videoTitle: 'Підпис відео' };
             let html = '';
             for (let key in content) {
-                const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                const label = readableLabels[key] || key;
                 if (String(content[key]).length > 100) {
                     html += `
                         <div class="form-group">
