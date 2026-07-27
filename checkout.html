@@ -123,6 +123,17 @@
                         <input type="text" id="zip" value="85612" required>
                     </div>
 
+                    <section class="delivery-method-section" aria-labelledby="delivery-method-title">
+                        <h3 id="delivery-method-title">Спосіб доставки</h3>
+                        <div class="delivery-options">
+                            <label><input type="radio" name="delivery_method" value="nova_branch" checked> Нова Пошта — відділення</label>
+                            <label><input type="radio" name="delivery_method" value="nova_courier"> Нова Пошта — кур’єр</label>
+                            <label><input type="radio" name="delivery_method" value="ukrposhta"> Укрпошта</label>
+                            <label><input type="radio" name="delivery_method" value="pickup"> Самовивіз</label>
+                        </div>
+                        <div id="delivery-fields" class="delivery-fields"></div>
+                    </section>
+
                     <div class="form-group">
                         <label for="notes">Нотатки до замовлення (необов'язково)</label>
                         <textarea id="notes" placeholder="Нотатки до вашого замовлення, наприклад спеціальні нотатки для доставки." rows="4"></textarea>

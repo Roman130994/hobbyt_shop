@@ -417,6 +417,23 @@ function renderCart() {
     if (totalEl) totalEl.innerText = total.toLocaleString() + ' ₴';
 }
 
+const deliveryTemplates = {
+    nova_branch: `<div class="form-group"><label for="np-city">Місто Нової Пошти <span class="required">*</span></label><input id="np-city" type="text" placeholder="Почніть вводити місто" required></div><div class="form-group"><label for="np-branch">Відділення <span class="required">*</span></label><input id="np-branch" type="text" placeholder="Номер або назва відділення" required><small>Після підключення API тут буде пошук реальних відділень.</small></div>`,
+    nova_courier: `<div class="form-group"><label for="np-courier-city">Місто <span class="required">*</span></label><input id="np-courier-city" type="text" placeholder="Наприклад, Київ" required></div><div class="form-row"><div class="form-group half"><label for="np-courier-street">Вулиця <span class="required">*</span></label><input id="np-courier-street" type="text" required></div><div class="form-group half"><label for="np-courier-house">Будинок <span class="required">*</span></label><input id="np-courier-house" type="text" required></div></div>`,
+    ukrposhta: `<div class="form-group"><label for="ukr-city">Місто / село <span class="required">*</span></label><input id="ukr-city" type="text" required></div><div class="form-group"><label for="ukr-index">Поштовий індекс <span class="required">*</span></label><input id="ukr-index" type="text" inputmode="numeric" required></div>`,
+    pickup: `<div class="form-group"><label for="pickup-location">Точка самовивозу</label><select id="pickup-location"><option>Узгодити з менеджером</option></select><small>Після замовлення ми підтвердимо час і адресу самовивозу.</small></div>`
+};
+
+function renderDeliveryFields() {
+    const container = document.getElementById('delivery-fields');
+    const selected = document.querySelector('input[name="delivery_method"]:checked');
+    if (!container || !selected) return;
+    container.innerHTML = deliveryTemplates[selected.value] || '';
+    const shippingText = document.querySelector('.shipping-row div');
+    const names = { nova_branch: 'Нова Пошта — відділення', nova_courier: 'Нова Пошта — кур’єр', ukrposhta: 'Укрпошта', pickup: 'Самовивіз' };
+    if (shippingText) shippingText.textContent = names[selected.value];
+}
+
 function renderCheckout() {
     const container = document.getElementById('checkout-items-list');
     if (!container) return;
@@ -465,6 +482,8 @@ function renderCheckout() {
     const orderForm = document.getElementById('checkout-form');
     if (orderForm && !orderForm.dataset.initialized) {
         orderForm.dataset.initialized = 'true';
+        document.querySelectorAll('input[name="delivery_method"]').forEach(input => input.addEventListener('change', renderDeliveryFields));
+        renderDeliveryFields();
         orderForm.onsubmit = function(e) {
             e.preventDefault();
             
@@ -484,6 +503,8 @@ function renderCheckout() {
             
             const doNotCall = document.getElementById('do-not-call').checked;
             const paymentMethodStr = document.querySelector('input[name="payment_method"]:checked').value;
+            const deliveryMethod = document.querySelector('input[name="delivery_method"]:checked').parentElement.textContent.trim();
+            const deliveryDetails = [...document.querySelectorAll('#delivery-fields input, #delivery-fields select')].map(field => `${field.previousElementSibling?.textContent?.replace('*', '').trim() || 'Дані'}: ${field.value}`).join(', ');
 
             // Формуємо список товарів для повідомлення
             let itemsText = cart.map(item => `• ${item.name} x${item.quantity} - ${(parseInt(item.price.replace(/[^\\d]/g, '')) * item.quantity).toLocaleString()} ₴`).join('\n');
@@ -496,6 +517,7 @@ function renderCheckout() {
                             `📍 Адреса: ${city}, ${region}, Вул. ${street} ${street2}, Індекс: ${zip}\n` +
                             `${deliverToAlt ? '⚠️ Доставка на іншу адресу\n' : ''}` +
                             `📝 Нотатки: ${notes || '-'}\n` +
+                            `🚚 Доставка: ${deliveryMethod}${deliveryDetails ? ` (${deliveryDetails})` : ''}\n` +
                             `💳 Оплата: ${paymentMethodStr}\n` +
                             `🔕 Не дзвонити: ${doNotCall ? 'Так' : 'Ні'}\n` +
                             `------------------------\n` +
@@ -633,6 +655,10 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCartBadge();
     renderSingleProduct();
     renderCheckout();
+    if (document.getElementById('checkout-form')) {
+        document.querySelectorAll('input[name="delivery_method"]').forEach(input => input.addEventListener('change', renderDeliveryFields));
+        renderDeliveryFields();
+    }
 
     // Додаємо навігацію для нової каруселі
     const newCarousel = document.getElementById('newProductsCarousel');
