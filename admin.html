@@ -119,6 +119,10 @@
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         .checkbox-field { display: flex; align-items: center; gap: 9px; min-height: 42px; color: #ddd; }
         .checkbox-field input { width: auto; }
+        .specification-row { display: grid; grid-template-columns: minmax(130px, .9fr) 1.2fr 36px; gap: 8px; margin-bottom: 8px; }
+        .specification-row select, .specification-row input { min-width: 0; }
+        .specification-row button { border: 0; border-radius: 6px; background: #632323; color: #fff; cursor: pointer; }
+        .add-specification { margin-top: 4px; border: 1px dashed #0E5EA3; background: transparent; color: #a9d9ff; padding: 9px 12px; border-radius: 6px; cursor: pointer; }
         @media (max-width: 680px) { .form-row { grid-template-columns: 1fr; } .admin-main { padding: 20px; } .sidebar { width: 75px; padding: 12px; } .sidebar-menu li { font-size: 0; padding: 15px; } .sidebar-menu li i { margin: 0; } .sidebar-header img { width: 50px; } }
 
         /* Login Overlay */
@@ -694,7 +698,7 @@
                 <label>Опис товару</label>
                 <textarea id="edit-desc" rows="5" placeholder="Коротко опишіть товар, його призначення та переваги."></textarea>
             </div>
-            <div class="form-group"><label>Характеристики</label><textarea id="edit-specifications" rows="5" placeholder="Матеріал: Сталь&#10;Вага: 0,8 кг&#10;Колір: Чорний"></textarea><small style="color:#888;">Кожна характеристика — з нового рядка у форматі «Назва: значення».</small></div>
+            <div class="form-group"><label>Характеристики товару</label><div id="specifications-editor"></div><button type="button" class="add-specification" onclick="addSpecificationRow()"><i class="fa fa-plus"></i> Додати характеристику</button><small style="color:#888; display:block; margin-top:7px;">Виберіть атрибут, введіть значення — після збереження він автоматично з’явиться у таблиці товару.</small></div>
             <div class="modal-footer">
                 <button class="btn btn-sm" onclick="closeModal()" style="background: #333;">Закрити</button>
                 <button class="btn btn-sm btn-edit" onclick="saveProduct()">Зберегти зміни</button>
@@ -1123,16 +1127,41 @@
 
         function removeProductImage(index) { editingImages.splice(index, 1); renderProductImagePreviews(); }
 
-        function specificationsToText(specifications) {
-            if (Array.isArray(specifications)) return specifications.map(([label, value]) => `${label}: ${value}`).join('\n');
-            return Object.entries(specifications || {}).map(([label, value]) => `${label}: ${value}`).join('\n');
+        const standardSpecifications = ['Вага', 'Матеріал', 'Колір', 'Країна виробництва', 'Гарантія', 'Діаметр', 'Розмір', 'Максимальне навантаження', 'Комплектація'];
+
+        function addSpecificationRow(label = '', value = '') {
+            const editor = document.getElementById('specifications-editor');
+            const row = document.createElement('div');
+            row.className = 'specification-row';
+            const options = standardSpecifications.map(option => `<option value="${option}" ${option === label ? 'selected' : ''}>${option}</option>`).join('');
+            row.innerHTML = `<select class="spec-label"><option value="">Оберіть атрибут</option>${options}<option value="__custom" ${label && !standardSpecifications.includes(label) ? 'selected' : ''}>Інший…</option></select><input class="spec-value" type="text" placeholder="Значення" value="${escapeHtml(value)}"><button type="button" title="Прибрати" onclick="this.parentElement.remove()"><i class="fa fa-times"></i></button>`;
+            editor.appendChild(row);
+            const select = row.querySelector('.spec-label');
+            if (label && !standardSpecifications.includes(label)) {
+                select.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(label)}" selected>${escapeHtml(label)}</option>`);
+                select.value = label;
+            }
+            select.addEventListener('change', () => {
+                if (select.value !== '__custom') return;
+                const custom = prompt('Введіть назву нового атрибуту:');
+                if (!custom?.trim()) { select.value = ''; return; }
+                select.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(custom.trim())}" selected>${escapeHtml(custom.trim())}</option>`);
+                select.value = custom.trim();
+            });
         }
 
-        function parseSpecifications(value) {
-            return value.split('\n').reduce((all, line) => {
-                const [label, ...rest] = line.split(':');
-                const text = rest.join(':').trim();
-                if (label.trim() && text) all[label.trim()] = text;
+        function setSpecificationRows(specifications = {}) {
+            const editor = document.getElementById('specifications-editor');
+            editor.innerHTML = '';
+            const rows = Array.isArray(specifications) ? specifications : Object.entries(specifications || {});
+            (rows.length ? rows : [['Вага', ''], ['Матеріал', ''], ['Колір', ''], ['Країна виробництва', ''], ['Гарантія', ''], ['Діаметр', '']]).forEach(([label, value]) => addSpecificationRow(label, value));
+        }
+
+        function collectSpecifications() {
+            return [...document.querySelectorAll('#specifications-editor .specification-row')].reduce((all, row) => {
+                const label = row.querySelector('.spec-label').value;
+                const value = row.querySelector('.spec-value').value.trim();
+                if (label && label !== '__custom' && value) all[label] = value;
                 return all;
             }, {});
         }
@@ -1173,7 +1202,7 @@
             document.getElementById('edit-stock').checked = product.inStock !== false;
             document.getElementById('edit-popular').checked = !!product.popular;
             document.getElementById('edit-desc').value = product.description || '';
-            document.getElementById('edit-specifications').value = specificationsToText(product.specifications);
+            setSpecificationRows(product.specifications);
             editingImages = product.gallery?.length ? [...product.gallery] : (product.image ? [product.image] : []);
             renderProductImagePreviews();
             document.getElementById('edit-modal').style.display = 'flex';
@@ -1189,7 +1218,7 @@
             document.getElementById('edit-stock').checked = true;
             document.getElementById('edit-popular').checked = false;
             document.getElementById('edit-desc').value = '';
-            document.getElementById('edit-specifications').value = '';
+            setSpecificationRows();
             editingImages = [];
             renderProductImagePreviews();
             document.getElementById('edit-modal').style.display = 'flex';
@@ -1210,7 +1239,7 @@
                 old_price: toNumber(document.getElementById('edit-old-price').value) || null,
                 in_stock: document.getElementById('edit-stock').checked,
                 is_popular: document.getElementById('edit-popular').checked,
-                specifications: parseSpecifications(document.getElementById('edit-specifications').value),
+                specifications: collectSpecifications(),
                 is_sale: false
             };
             if (!newProduct.name || !newProduct.price) {
