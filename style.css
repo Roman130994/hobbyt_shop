@@ -1342,9 +1342,18 @@ body.dark-theme img.menu-icon {
     color: #0E5EA3;
 }
 .coupon-section {
-    margin-bottom: 30px;
-    font-size: 14px;
+    margin: 20px 0 0;
+    padding: 20px;
+    background: #151515;
+    border: 1px solid #303030;
+    border-radius: 10px;
 }
+.coupon-section h3 { margin: 0 0 14px; font-size: 18px; }
+.coupon-form { display: flex; gap: 10px; }
+.coupon-form input { flex: 1; min-width: 0; padding: 12px; background: #1e1e1e; border: 1px solid #333; border-radius: 6px; color: #fff; font: inherit; }
+.coupon-form input:focus { outline: none; border-color: #0E5EA3; }
+.coupon-form button { padding: 0 18px; border: 0; border-radius: 6px; background: #0E5EA3; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+.coupon-message { min-height: 18px; margin: 10px 0 0; color: #a9c9e6; font-size: 13px; }
 .checkout-layout {
     display: flex;
     flex-wrap: wrap;
@@ -1503,6 +1512,8 @@ body.dark-theme img.menu-icon {
 .payment-methods {
     margin-top: 30px;
 }
+.payment-methods-checkout { margin: 0 0 28px; padding-bottom: 24px; border-bottom: 1px solid #303030; }
+.payment-methods-checkout h3 { margin: 0 0 14px; }
 .payment-option {
     margin-bottom: 10px;
 }

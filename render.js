@@ -10,6 +10,12 @@ function escapeProductText(value = '') {
     return String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[char]));
 }
 
+function checkoutImagePath(value) {
+    const image = String(value || '').trim();
+    if (!image) return '4.png';
+    return image.replace(/^images\//i, '');
+}
+
 function mapDatabaseProduct(row) {
     const images = Array.isArray(row.images) ? row.images : [];
     const price = formatPrice(row.price);
@@ -550,7 +556,7 @@ function renderCheckout() {
         subtotal += price * item.quantity;
         return `
             <div class="checkout-item">
-                <img src="${item.image}" alt="${item.name}">
+                <img src="${checkoutImagePath(item.image)}" alt="${escapeProductText(item.name)}" onerror="this.onerror=null;this.src='4.png';">
                 <div class="checkout-item-details">
                     <div class="checkout-item-title">${item.name}</div>
                     <div class="checkout-item-controls">
@@ -613,6 +619,14 @@ function renderCheckout() {
         }
 
         document.querySelectorAll('input[name="delivery_method"]').forEach(input => input.addEventListener('change', renderDeliveryFields));
+        const couponInput = document.getElementById('coupon-code');
+        const couponMessage = document.getElementById('coupon-message');
+        document.getElementById('apply-coupon')?.addEventListener('click', () => {
+            const code = couponInput?.value.trim();
+            if (couponMessage) couponMessage.textContent = code
+                ? `Код «${code}» збережено. Знижка буде застосована після перевірки.`
+                : 'Введіть код купона.';
+        });
         renderDeliveryFields();
         setCheckoutStep('delivery');
         orderForm.onsubmit = function(e) {

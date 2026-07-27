@@ -51,10 +51,6 @@
             <a href="index.html"><i class="fa fa-home"></i></a> > <span>Оформлення</span>
         </div>
         
-        <div class="coupon-section">
-            <p data-content="checkout.couponText">Маєте купон знижки? ВВЕДІТЬ КОД</p>
-        </div>
-
         <form id="checkout-form">
             <div class="checkout-layout">
                 <!-- Ліва колонка: крок 3, дані покупця -->
@@ -127,6 +123,34 @@
                     </section>
 
                     <section id="delivery-payment-step" class="delivery-method-section" aria-labelledby="delivery-method-title">
+                        <div class="payment-methods payment-methods-checkout">
+                            <h3>Спосіб оплати</h3>
+
+                            <label class="payment-option checkout-choice">
+                                <input type="radio" name="payment_method" id="bank-transfer" value="Банківський переказ" checked>
+                                <span><strong>Банківський переказ</strong><small>Оплата за реквізитами</small></span><b>Безкоштовно</b>
+                                <div class="payment-desc" id="desc-bank-transfer">
+                                    На IBAN по реквізитам ФОП.
+                                </div>
+                            </label>
+
+                            <label class="payment-option checkout-choice">
+                                <input type="radio" name="payment_method" id="cash" value="Готівка при отриманні">
+                                <span><strong>Готівка при отриманні</strong><small>Оплата при отриманні</small></span><b>За тарифами</b>
+                                <div class="payment-desc" id="desc-cash" style="display: none;">
+                                    Оплата при отриманні у відділенні (накладений платіж).
+                                </div>
+                            </label>
+
+                            <label class="payment-option checkout-choice">
+                                <input type="radio" name="payment_method" id="crypto" value="Криптовалютою через Whitepay">
+                                <span><strong>Онлайн-оплата</strong><small>Безпечна онлайн-оплата</small></span><b>Безкоштовно</b>
+                                <div class="payment-desc" id="desc-crypto" style="display: none;">
+                                    Швидко та безпечно сплачуйте криптовалютою.
+                                </div>
+                            </label>
+                        </div>
+
                         <h3 id="delivery-method-title">Спосіб доставки</h3>
                         <div class="delivery-options">
                             <label class="checkout-choice"><input type="radio" name="delivery_method" value="nova_branch" checked><span><strong>Нова Пошта — відділення</strong><small>Оберіть місто та відділення</small></span><b>За тарифами</b></label>
@@ -135,6 +159,15 @@
                             <label class="checkout-choice"><input type="radio" name="delivery_method" value="pickup"><span><strong>Самовивіз</strong><small>Узгодимо адресу й час</small></span><b>Безкоштовно</b></label>
                         </div>
                         <div id="delivery-fields" class="delivery-fields"></div>
+                    </section>
+
+                    <section class="coupon-section" aria-labelledby="coupon-title">
+                        <h3 id="coupon-title">Код купона</h3>
+                        <div class="coupon-form">
+                            <input id="coupon-code" type="text" autocomplete="off" placeholder="Введіть код купона">
+                            <button id="apply-coupon" type="button">Застосувати</button>
+                        </div>
+                        <p id="coupon-message" class="coupon-message" aria-live="polite"></p>
                     </section>
 
                     <div id="checkout-notes-step" class="form-group">
@@ -165,34 +198,6 @@
                                 <span>Загалом</span>
                                 <span id="checkout-total">0 ₴</span>
                             </div>
-                        </div>
-
-                        <div class="payment-methods">
-                            <h4>Способи оплати</h4>
-                            
-                            <label class="payment-option checkout-choice">
-                                <input type="radio" name="payment_method" id="bank-transfer" value="Банківський переказ" checked>
-                                <span><strong>Банківський переказ</strong><small>Оплата за реквізитами</small></span><b>Безкоштовно</b>
-                                <div class="payment-desc" id="desc-bank-transfer">
-                                    На IBAN по реквізитам ФОП.
-                                </div>
-                            </label>
-                            
-                            <label class="payment-option checkout-choice">
-                                <input type="radio" name="payment_method" id="cash" value="Готівка при отриманні">
-                                <span><strong>Готівка при отриманні</strong><small>Оплата при отриманні</small></span><b>За тарифами</b>
-                                <div class="payment-desc" id="desc-cash" style="display: none;">
-                                    Оплата при отриманні у відділенні (накладений платіж).
-                                </div>
-                            </label>
-                            
-                            <label class="payment-option checkout-choice">
-                                <input type="radio" name="payment_method" id="crypto" value="Криптовалютою через Whitepay">
-                                <span><strong>Онлайн-оплата</strong><small>Безпечна онлайн-оплата</small></span><b>Безкоштовно</b>
-                                <div class="payment-desc" id="desc-crypto" style="display: none;">
-                                    Швидко та безпечно сплачуйте криптовалютою.
-                                </div>
-                            </label>
                         </div>
 
                         <div class="privacy-policy">
