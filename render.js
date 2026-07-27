@@ -185,6 +185,7 @@ function renderSingleProduct() {
         if (catEl) catEl.innerText = "Головна / " + (product.category === 'popular' ? 'Популярні' : product.category);
         if (skuEl) skuEl.innerText = `Код: ${product.sku || `HBT-${String(product.id).padStart(3, '0')}`}`;
         document.title = `${product.name} | Hobbyt Equipment`;
+        updateProductSeo(product, imagePath, hasDiscount);
 
         renderProductGallery(product, imagePath);
         renderProductDetails(product);
@@ -196,6 +197,44 @@ function renderSingleProduct() {
         if (cartBtn) {
             cartBtn.setAttribute('onclick', `addProductPageToCart(${product.id}); return false;`);
         }
+    }
+}
+
+function updateProductSeo(product, imagePath, hasDiscount) {
+    const pageUrl = `https://hobbytequipment.com/product_details.html?id=${encodeURIComponent(product.id)}`;
+    const imageUrl = `https://hobbytequipment.com/${imagePath}`;
+    const price = Number(String(product.price || '').replace(/[^0-9,]/g, '').replace(',', '.'));
+    const oldPrice = Number(String(product.oldPrice || '').replace(/[^0-9,]/g, '').replace(',', '.'));
+    const canonical = document.getElementById('ProductCanonical');
+    const ogTitle = document.getElementById('ProductOgTitle');
+    const ogDescription = document.getElementById('ProductOgDescription');
+    const ogImage = document.getElementById('ProductOgImage');
+    const schema = document.getElementById('ProductSchema');
+    const description = product.description || `Професійне обладнання для тренувань з армрестлінгу: ${product.name}.`;
+
+    if (canonical) canonical.href = pageUrl;
+    if (ogTitle) ogTitle.content = `${product.name} | Hobbyt Equipment`;
+    if (ogDescription) ogDescription.content = description;
+    if (ogImage) ogImage.content = imageUrl;
+    if (schema && Number.isFinite(price)) {
+        schema.textContent = JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Product',
+            name: product.name,
+            description,
+            image: [imageUrl],
+            sku: product.sku || `HBT-${String(product.id).padStart(3, '0')}`,
+            brand: { '@type': 'Brand', name: 'Hobbyt Equipment' },
+            offers: {
+                '@type': 'Offer',
+                url: pageUrl,
+                priceCurrency: 'UAH',
+                price,
+                availability: 'https://schema.org/InStock',
+                itemCondition: 'https://schema.org/NewCondition',
+                ...(hasDiscount && Number.isFinite(oldPrice) ? { priceValidUntil: '2026-12-31' } : {})
+            }
+        });
     }
 }
 
