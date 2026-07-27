@@ -201,22 +201,25 @@ function renderSingleProduct() {
 
 function renderProductVariants(product) {
     const container = document.getElementById('ProductVariants');
-    const select = document.getElementById('ProductVariantSelect');
+    const buttons = document.getElementById('ProductVariantButtons');
     const stockEl = document.querySelector('.product-status .in-stock');
-    if (!container || !select) return;
+    if (!container || !buttons) return;
     const variants = product.variants?.enabled ? (product.variants.items || []).filter(item => item.name) : [];
     container.hidden = !variants.length;
     if (!variants.length) return;
-    const chosen = selectedVariants.get(product.id) ?? 0;
-    select.innerHTML = variants.map((item, index) => `<option value="${index}" ${index === chosen ? 'selected' : ''}>${escapeProductText(item.name)} — ${formatPrice(item.price)} (${item.stock_quantity || 0} шт.)</option>`).join('');
-    const applyVariant = () => {
-        const variant = variants[Number(select.value)];
-        selectedVariants.set(product.id, Number(select.value));
+    let chosen = selectedVariants.get(product.id) ?? 0;
+    if (variants[chosen]?.stock_quantity < 1) chosen = variants.findIndex(item => item.stock_quantity > 0);
+    if (chosen < 0) chosen = 0;
+    const applyVariant = (index) => {
+        const variant = variants[index];
+        selectedVariants.set(product.id, index);
         document.getElementById('ProductPrice').innerText = formatPrice(variant.price);
-        if (stockEl) stockEl.innerHTML = `<i class="fa fa-check-circle" aria-hidden="true"></i>${variant.stock_quantity > 0 ? `В наявності: ${variant.stock_quantity} шт.` : 'Немає в наявності'}`;
+        if (stockEl) stockEl.innerHTML = `<i class="fa ${variant.stock_quantity > 0 ? 'fa-check-circle' : 'fa-times-circle'}" aria-hidden="true"></i>${variant.stock_quantity > 0 ? `В наявності: ${variant.stock_quantity} шт.` : 'Немає в наявності'}`;
+        buttons.querySelectorAll('button').forEach((button, buttonIndex) => button.classList.toggle('is-selected', buttonIndex === index));
     };
-    select.onchange = applyVariant;
-    applyVariant();
+    buttons.innerHTML = variants.map((item, index) => `<button type="button" class="variant-button ${index === chosen ? 'is-selected' : ''}" data-index="${index}" ${item.stock_quantity < 1 ? 'disabled' : ''}><span>${escapeProductText(item.name)}</span><small>${formatPrice(item.price)}${item.stock_quantity < 1 ? ' · Немає' : ''}</small></button>`).join('');
+    buttons.querySelectorAll('button').forEach(button => button.addEventListener('click', () => applyVariant(Number(button.dataset.index))));
+    applyVariant(chosen);
 }
 
 function renderProductDetails(product) {
