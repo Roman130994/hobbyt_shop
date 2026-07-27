@@ -5,6 +5,10 @@ function formatPrice(value) {
     return `${Number(value || 0).toLocaleString('uk-UA')} ₴`;
 }
 
+function escapeProductText(value = '') {
+    return String(value).replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#039;', '"': '&quot;' }[char]));
+}
+
 function mapDatabaseProduct(row) {
     const images = Array.isArray(row.images) ? row.images : [];
     const price = formatPrice(row.price);
@@ -214,11 +218,11 @@ function renderProductDetails(product) {
     const specs = customSpecs.length ? customSpecs : defaultSpecs;
 
     if (description) {
-        description.innerHTML = `
-            <h2>${product.name} для результативних тренувань</h2>
-            <p>${product.description || 'Тренувальний товар для регулярних занять.'} Продумана конструкція допомагає зосередитися на техніці, контролювати рух і поступово збільшувати навантаження без зайвого дискомфорту.</p>
-            <p>Модель створена для спортсменів різного рівня підготовки: від перших домашніх тренувань до регулярних занять у залі. Надійні матеріали розраховані на активне використання, а компактний формат дозволяє легко зберігати та перевозити товар.</p>
-            <p>Перед початком тренування перевірте надійність кріплень і підберіть комфортну вагу. Це тестовий приклад повного опису: згодом тут буде ваш реальний текст, рекомендації з використання, переваги та особливості кожної моделі.</p>`;
+        const paragraphs = (product.description || 'Опис товару скоро з’явиться.')
+            .split(/\n{2,}/)
+            .map(text => text.trim())
+            .filter(Boolean);
+        description.innerHTML = `<h2>${escapeProductText(product.name)}</h2>${paragraphs.map(text => `<p>${escapeProductText(text)}</p>`).join('')}`;
     }
     if (specifications) {
         specifications.innerHTML = specs.map(([label, value]) => `<tr><th>${label}</th><td>${value}</td></tr>`).join('');
