@@ -555,15 +555,15 @@
                     <h2 id="total-products">4</h2>
                 </div>
                 <div class="col-4 stat-card">
-                    <small>Активні банери</small>
-                    <h2 id="total-banners">1</h2>
+                    <small>Замовлення сьогодні</small>
+                    <h2 id="dashboard-orders-today">0</h2>
                 </div>
                 <div class="col-4 stat-card">
-                    <small>Популярність</small>
-                    <h2>Висока</h2>
+                    <small>Виручка за місяць</small>
+                    <h2 id="dashboard-revenue-month">0 ₴</h2>
                 </div>
             </div>
-            <p>Вітаємо в панелі керування Hobbyt Equipment. Використовуйте бічне меню для навігації.</p>
+            <div class="admin-content-box"><div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Останні замовлення</h3><p class="editor-help" style="margin:0;">Нові замовлення з оформлення сайту.</p></div><button class="btn btn-sm" onclick="switchSection('stats')">Уся статистика</button></div><div id="dashboard-recent-orders" class="editor-help">Замовлень ще немає.</div></div>
         </div>
 
         <div id="section-products" class="admin-section" style="display: none;">
@@ -615,7 +615,13 @@
                     <small>Чистий прибуток</small>
                     <h2 id="stats-profit" style="color: #27ae60;">0 ₴</h2>
                 </div>
+                <div class="col-3 stat-card">
+                    <small>Замовлення за місяць</small>
+                    <h2 id="stats-orders">0</h2>
+                </div>
             </div>
+
+            <div class="admin-content-box" style="margin-bottom:20px;"><div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Замовлення</h3><p class="editor-help" style="margin:0;">Список замовлень, отриманих через сайт.</p></div><button class="btn btn-sm" onclick="loadStats()"><i class="fa fa-refresh"></i> Оновити</button></div><table class="admin-table"><thead><tr><th>№</th><th>Дата</th><th>Покупець</th><th>Доставка</th><th>Оплата</th><th>Сума</th><th>Статус</th></tr></thead><tbody id="orders-list"></tbody></table></div>
 
             <div class="row" style="gap: 20px;">
                 <div class="col-2 admin-content-box" style="flex: 1;">
@@ -820,6 +826,7 @@
                 try {
                     await syncProductsFromDatabase();
                     await syncSiteContentFromDatabase();
+                    await loadDashboard();
                     showToast('Вхід виконано. Товари синхронізовано з базою.');
                 } catch (syncError) {
                     showToast('Не вдалося завантажити товари: ' + syncError.message, true);
@@ -844,6 +851,7 @@
             };
             document.querySelector('.admin-header h1').innerText = titles[sectionId];
             if(sectionId === 'stats') loadStats();
+            if(sectionId === 'dashboard') loadDashboard();
         }
 
         // === Temp variable to hold uploaded image data ===
@@ -1360,12 +1368,47 @@
             });
         }
         
-        function loadStats() {
+        const orderMoney = (amount) => `${Number(amount || 0).toLocaleString('uk-UA')} ₴`;
+        const orderDate = (value) => value ? new Date(value).toLocaleString('uk-UA', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+
+        async function getOrders() {
+            const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
+            if (error) throw error;
+            return data || [];
+        }
+
+        async function loadDashboard() {
+            const ordersToday = document.getElementById('dashboard-orders-today');
+            const revenueMonth = document.getElementById('dashboard-revenue-month');
+            const recent = document.getElementById('dashboard-recent-orders');
+            if (!ordersToday || !revenueMonth || !recent) return;
+            try {
+                const orders = await getOrders();
+                const now = new Date();
+                const today = orders.filter(order => new Date(order.created_at).toDateString() === now.toDateString());
+                const month = orders.filter(order => {
+                    const date = new Date(order.created_at);
+                    return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear() && order.status !== 'cancelled';
+                });
+                ordersToday.textContent = today.length;
+                revenueMonth.textContent = orderMoney(month.reduce((sum, order) => sum + Number(order.total || 0), 0));
+                recent.innerHTML = orders.slice(0, 5).map(order => `<div style="display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid #2b2b2b;"><span>№${order.id} · ${escapeHtml(order.customer_name || 'Покупець')}</span><strong>${orderMoney(order.total)}</strong></div>`).join('') || 'Замовлень ще немає.';
+            } catch (error) {
+                recent.textContent = 'Щоб увімкнути статистику, запустіть SQL-запит для таблиці orders у Supabase.';
+            }
+        }
+
+        async function loadStats() {
             const expenses = JSON.parse(localStorage.getItem('hobbytExpenses')) || [];
             const defects = JSON.parse(localStorage.getItem('hobbytDefects')) || [];
-            
-            // Заглушка для доходу (можна буде розширити через історію замовлень)
-            const revenue = 150000; 
+            let orders = [];
+            try { orders = await getOrders(); } catch (error) { /* Таблицю буде створено SQL-запитом. */ }
+            const now = new Date();
+            const monthOrders = orders.filter(order => {
+                const date = new Date(order.created_at);
+                return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear() && order.status !== 'cancelled';
+            });
+            const revenue = monthOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
             
             let totalExpenses = expenses.reduce((sum, item) => sum + parseInt(item.amount), 0);
             let totalDefects = defects.reduce((sum, item) => sum + parseInt(item.amount), 0);
@@ -1375,6 +1418,9 @@
             document.getElementById('stats-revenue').innerText = revenue.toLocaleString() + ' ₴';
             document.getElementById('stats-expenses').innerText = totalOutgoings.toLocaleString() + ' ₴';
             document.getElementById('stats-profit').innerText = profit.toLocaleString() + ' ₴';
+            document.getElementById('stats-orders').innerText = monthOrders.length;
+            const ordersList = document.getElementById('orders-list');
+            if (ordersList) ordersList.innerHTML = orders.slice(0, 50).map(order => `<tr><td>№${order.id}</td><td>${orderDate(order.created_at)}</td><td>${escapeHtml(order.customer_name || '—')}<br><small>${escapeHtml(order.phone || '')}</small></td><td>${escapeHtml(order.delivery_method || '—')}</td><td>${escapeHtml(order.payment_method || '—')}</td><td>${orderMoney(order.total)}</td><td>${order.status === 'new' ? 'Нове' : escapeHtml(order.status)}</td></tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:#999;">Замовлень ще немає.</td></tr>';
 
             document.getElementById('expense-list').innerHTML = expenses.map((item, idx) => `
                 <tr>

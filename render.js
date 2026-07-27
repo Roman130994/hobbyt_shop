@@ -651,7 +651,7 @@ function renderCheckout() {
         });
         renderDeliveryFields();
         showSingleCheckoutStep();
-        orderForm.onsubmit = function(e) {
+        orderForm.onsubmit = async function(e) {
             e.preventDefault();
             if (!orderForm.reportValidity()) return;
             
@@ -693,6 +693,20 @@ function renderCheckout() {
                             `------------------------\n` +
                             `💰 РАЗОМ: ${total.toLocaleString()} ₴\n\n` +
                             `Адмін: @rmnkbtkn`;
+
+            const orderRecord = {
+                customer_name: `${firstName} ${lastName}`.trim(), phone, email: email || null,
+                delivery_method: deliveryMethod, delivery_details: deliveryDetails || null,
+                payment_method: paymentMethodStr, notes: notes || null,
+                items: cart.map(item => ({ id: item.id, name: item.name, quantity: item.quantity, price: Number(String(item.price).replace(/[^\d]/g, '')) || 0, variant: item.variant || null })),
+                total
+            };
+            try {
+                const client = window.supabase?.createClient(window.HOBBYT_SUPABASE_URL, window.HOBBYT_SUPABASE_KEY);
+                if (client) await client.from('orders').insert(orderRecord);
+            } catch (error) {
+                console.warn('Замовлення не збережено в статистиці:', error);
+            }
 
             // Відправка в Телеграм
             const token = '8685653696:AAGySLz7j9ntEnaGPHtXt8QF38UG2pluEVc';
