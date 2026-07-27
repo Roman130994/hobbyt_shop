@@ -5,14 +5,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Деталі товару | Hobbyt Equipment</title>
-    <link rel="stylesheet" href="style.css?v=2026072706">
+    <link rel="stylesheet" href="style.css?v=2026072707">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="products-data.js?v=2026072705"></script>
-    <script src="render.js?v=2026072706"></script>
+    <script src="render.js?v=2026072707"></script>
 </head>
 
 <body class="dark-theme">
@@ -95,11 +95,8 @@
                 <tbody id="ProductSpecifications"></tbody>
             </table>
         </div>
-        <div class="product-video-placeholder" id="ProductVideo" aria-label="Тестове вікно відеоінструкції">
-            <div class="video-overlay">
-                <i class="fa fa-play" aria-hidden="true"></i>
-                <p id="ProductVideoTitle" data-content="product.videoTitle">Відеоогляд товару</p>
-            </div>
+        <div class="product-video" id="ProductVideo" hidden>
+            <iframe id="ProductVideoFrame" title="Відеоогляд товару" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
         </div>
     </section>
     <!-- title -->

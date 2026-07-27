@@ -226,7 +226,7 @@ function renderProductDetails(product) {
     const description = document.getElementById('ProductDesc');
     const specifications = document.getElementById('ProductSpecifications');
     const video = document.getElementById('ProductVideo');
-    const videoTitle = document.getElementById('ProductVideoTitle');
+    const videoFrame = document.getElementById('ProductVideoFrame');
     const highlights = document.getElementById('ProductHighlights');
     const categoryNames = {
         handles: 'Ручки для тренувань',
@@ -266,8 +266,12 @@ function renderProductDetails(product) {
     if (specifications) {
         specifications.innerHTML = specs.map(([label, value]) => `<tr><th>${label}</th><td>${value}</td></tr>`).join('');
     }
-    if (video) video.style.backgroundImage = `linear-gradient(rgba(12, 12, 12, .4), rgba(12, 12, 12, .72)), url('${product.image.replace(/^images\//, '')}')`;
-    if (videoTitle) videoTitle.innerText = `Відеоогляд: ${product.name}`;
+    if (video && videoFrame) {
+        const videoId = String(product.videoUrl || '').match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/)?.[1];
+        video.hidden = !videoId;
+        videoFrame.src = videoId ? `https://www.youtube-nocookie.com/embed/${videoId}` : '';
+        videoFrame.title = videoId ? `Відеоогляд: ${product.name}` : 'Відеоогляд товару';
+    }
     if (highlights) {
         highlights.innerHTML = '';
         (product.highlights?.length ? product.highlights : categoryHighlights[product.category] || []).forEach(item => {

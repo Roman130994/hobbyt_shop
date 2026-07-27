@@ -711,6 +711,11 @@
                 <label>Опис товару</label>
                 <textarea id="edit-desc" rows="5" placeholder="Коротко опишіть товар, його призначення та переваги."></textarea>
             </div>
+            <div class="form-group">
+                <label>YouTube-відео <small>(необов’язково)</small></label>
+                <input type="url" id="edit-video-url" placeholder="https://www.youtube.com/watch?v=...">
+                <small style="color:#888; display:block; margin-top:7px;">Вставте посилання з YouTube. Плеєр з’явиться під описом і характеристиками товару.</small>
+            </div>
             <div class="form-group"><label>Характеристики товару</label><div id="specifications-editor"></div><button type="button" class="add-specification" onclick="addSpecificationRow()"><i class="fa fa-plus"></i> Додати характеристику</button><small style="color:#888; display:block; margin-top:7px;">Виберіть атрибут, введіть значення — після збереження він автоматично з’явиться у таблиці товару.</small></div>
             <div class="form-group"><label>Переваги товару</label><textarea id="edit-highlights" rows="6" placeholder="Міцна конструкція для регулярних тренувань&#10;Зручне кріплення та швидке налаштування&#10;Підходить для дому й залу"></textarea><small style="color:#888; display:block; margin-top:7px;">Кожен новий рядок стане окремою перевагою праворуч на сторінці товару.</small></div>
             <div class="modal-footer">
@@ -773,7 +778,7 @@
             oldPrice: row.old_price ? `${Number(row.old_price).toLocaleString('uk-UA')} ₴` : null,
             image: (row.images || [])[0] || '4.png', gallery: row.images || [], rating: 5,
             category: row.category, popular: row.is_popular, inStock: row.in_stock !== false,
-            description: row.description || '', specifications: row.specifications || {}, highlights: row.highlights || [], variants: row.variants || { enabled: false, items: [] }, sku: row.sku
+            description: row.description || '', videoUrl: row.video_url || '', specifications: row.specifications || {}, highlights: row.highlights || [], variants: row.variants || { enabled: false, items: [] }, sku: row.sku
         });
 
         async function syncProductsFromDatabase() {
@@ -1251,6 +1256,7 @@
             setVariants(product.variants);
             setHighlights(product.highlights || []);
             document.getElementById('edit-desc').value = product.description || '';
+            document.getElementById('edit-video-url').value = product.videoUrl || '';
             setSpecificationRows(product.specifications);
             editingImages = product.gallery?.length ? [...product.gallery] : (product.image ? [product.image] : []);
             renderProductImagePreviews();
@@ -1269,6 +1275,7 @@
             setVariants();
             setHighlights();
             document.getElementById('edit-desc').value = '';
+            document.getElementById('edit-video-url').value = '';
             setSpecificationRows();
             editingImages = [];
             renderProductImagePreviews();
@@ -1287,6 +1294,7 @@
                 price: toNumber(document.getElementById('edit-price').value),
                 category: document.getElementById('edit-category').value,
                 description: document.getElementById('edit-desc').value,
+                video_url: document.getElementById('edit-video-url').value.trim() || null,
                 old_price: toNumber(document.getElementById('edit-old-price').value) || null,
                 in_stock: document.getElementById('edit-stock').checked,
                 is_popular: document.getElementById('edit-popular').checked,
