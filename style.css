@@ -526,6 +526,13 @@ input:focus{
 #related-products {
     gap: 20px;
 }
+.view-more-link {
+    color: #0E5EA3;
+    text-decoration: none;
+}
+.view-more-link:hover {
+    text-decoration: underline;
+}
 #related-products .col-4 {
     flex-basis: calc(25% - 15px);
     box-sizing: border-box;
