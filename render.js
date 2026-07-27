@@ -585,7 +585,6 @@ function renderCheckout() {
     const orderForm = document.getElementById('checkout-form');
     if (orderForm && !orderForm.dataset.initialized) {
         orderForm.dataset.initialized = 'true';
-        let checkoutStep = 'delivery';
         const customerStep = document.getElementById('customer-details-step');
         const deliveryStep = document.getElementById('delivery-payment-step');
         const notesStep = document.getElementById('checkout-notes-step');
@@ -599,23 +598,15 @@ function renderCheckout() {
             customerStep?.querySelectorAll('input, select, textarea').forEach(field => { field.disabled = disabled; });
         }
 
-        function setCheckoutStep(step) {
-            checkoutStep = step;
-            const showCustomer = step === 'customer';
-            if (customerStep) customerStep.hidden = !showCustomer;
-            if (deliveryStep) deliveryStep.hidden = showCustomer;
-            if (notesStep) notesStep.hidden = !showCustomer;
-            if (privacyPolicy) privacyPolicy.hidden = !showCustomer;
-            if (termsCheck) termsCheck.hidden = !showCustomer;
-            if (doNotCallCheck) doNotCallCheck.hidden = !showCustomer;
-            toggleCustomerFields(!showCustomer);
-            termsCheck?.querySelectorAll('input').forEach(field => { field.disabled = !showCustomer; });
-            doNotCallCheck?.querySelectorAll('input').forEach(field => { field.disabled = !showCustomer; });
-            if (submitButton) submitButton.textContent = showCustomer ? 'ПІДТВЕРДИТИ ЗАМОВЛЕННЯ' : 'ПРОДОВЖИТИ';
-            if (steps) steps.innerHTML = showCustomer
-                ? '<span>1. Кошик</span><span>2. Доставка й оплата</span><strong>3. Дані покупця</strong>'
-                : '<span>1. Кошик</span><strong>2. Доставка й оплата</strong><span>3. Дані покупця</span>';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+        function showSingleCheckoutStep() {
+            [customerStep, deliveryStep, notesStep, privacyPolicy, termsCheck, doNotCallCheck].forEach(section => {
+                if (section) section.hidden = false;
+            });
+            toggleCustomerFields(false);
+            termsCheck?.querySelectorAll('input').forEach(field => { field.disabled = false; });
+            doNotCallCheck?.querySelectorAll('input').forEach(field => { field.disabled = false; });
+            if (submitButton) submitButton.textContent = 'ПІДТВЕРДИТИ ЗАМОВЛЕННЯ';
+            if (steps) steps.innerHTML = '<span>1. Кошик</span><strong>2. Оформлення замовлення</strong>';
         }
 
         document.querySelectorAll('input[name="delivery_method"]').forEach(input => input.addEventListener('change', renderDeliveryFields));
@@ -628,15 +619,10 @@ function renderCheckout() {
                 : 'Введіть код купона.';
         });
         renderDeliveryFields();
-        setCheckoutStep('delivery');
+        showSingleCheckoutStep();
         orderForm.onsubmit = function(e) {
             e.preventDefault();
-
-            if (checkoutStep === 'delivery') {
-                if (!orderForm.reportValidity()) return;
-                setCheckoutStep('customer');
-                return;
-            }
+            if (!orderForm.reportValidity()) return;
             
             // Collect form data
             const isCorp = document.getElementById('corp-order').checked;

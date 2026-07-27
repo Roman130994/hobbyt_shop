@@ -1362,7 +1362,13 @@ body.dark-theme img.menu-icon {
 .checkout-col-left {
     flex: 1;
     min-width: 300px;
+    display: flex;
+    flex-direction: column;
 }
+.checkout-col-left #delivery-payment-step { order: 1; }
+.checkout-col-left .coupon-section { order: 2; }
+.checkout-col-left #customer-details-step { order: 3; margin-top: 28px; }
+.checkout-col-left #checkout-notes-step { order: 4; margin-top: 20px; }
 .checkout-col-right {
     flex: 1;
     min-width: 300px;
