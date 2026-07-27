@@ -134,6 +134,8 @@ function renderSingleProduct() {
 function renderProductDetails(product) {
     const description = document.getElementById('ProductDesc');
     const specifications = document.getElementById('ProductSpecifications');
+    const video = document.getElementById('ProductVideo');
+    const videoTitle = document.getElementById('ProductVideoTitle');
     const categoryNames = {
         handles: 'Ручки для тренувань',
         sets: 'Сети для тренувань',
@@ -141,23 +143,28 @@ function renderProductDetails(product) {
         tables: 'Столи для тренувань'
     };
     const categorySpecs = {
-        handles: [['Матеріал', 'Міцний полімер'], ['Призначення', 'Тренування хвату та кисті'], ['Комплектація', 'Ручка, карабін']],
-        sets: [['Матеріал', 'Міцний полімер і метал'], ['Призначення', 'Комплексне тренування рук'], ['Комплектація', 'Набір тренувальних аксесуарів']],
-        blocks: [['Матеріал', 'Сталь'], ['Призначення', 'Робота з навантаженням'], ['Комплектація', 'Блок і кріплення']],
-        tables: [['Матеріал', 'Сталь і зносостійке покриття'], ['Призначення', 'Тренування з армрестлінгу'], ['Комплектація', 'Основна конструкція товару']]
+        handles: [['Діаметр ручки', product.name.includes('60') ? '60 мм' : '50 мм'], ['Матеріал', 'Ударостійкий полімер'], ['Вага', '0,18 кг'], ['Кріплення', 'Карабін у комплекті']],
+        sets: [['Матеріал', 'Полімер і сталь'], ['Кількість елементів', '3 предмети'], ['Призначення', 'Тренування кисті та передпліччя'], ['Комплектація', 'Сет у фірмовій упаковці']],
+        blocks: [['Матеріал', 'Сталь'], ['Максимальне навантаження', '120 кг'], ['Тип кріплення', 'Карабін'], ['Комплектація', 'Блок і елементи кріплення']],
+        tables: [['Матеріал рами', 'Сталь'], ['Покриття', 'Зносостійка фарба'], ['Призначення', 'Тренування з армрестлінгу'], ['Комплектація', 'Основна конструкція товару']]
     };
     const specs = [
         ['Категорія', categoryNames[product.category] || 'Тренувальне обладнання'],
         ...categorySpecs[product.category],
-        ['Стан', 'Тестовий опис — дані будуть оновлені']
+        ['Гарантія', '12 місяців']
     ];
 
     if (description) {
-        description.innerText = `${product.description || 'Тестовий опис товару.'} Цей тестовий текст показує, як виглядатиме розгорнутий опис після додавання реальних характеристик, фото та інструкцій.`;
+        description.innerHTML = `
+            <h2>${product.name} для результативних тренувань</h2>
+            <p>${product.description || 'Тренувальний товар для регулярних занять.'} Продумана конструкція допомагає зосередитися на техніці й поступово збільшувати навантаження.</p>
+            <p>Це тестовий приклад повного опису. Пізніше тут буде ваш реальний текст: переваги, рекомендації з використання та особливості конкретної моделі.</p>`;
     }
     if (specifications) {
         specifications.innerHTML = specs.map(([label, value]) => `<tr><th>${label}</th><td>${value}</td></tr>`).join('');
     }
+    if (video) video.style.backgroundImage = `linear-gradient(rgba(12, 12, 12, .4), rgba(12, 12, 12, .72)), url('${product.image.replace(/^images\//, '')}')`;
+    if (videoTitle) videoTitle.innerText = `Відеоогляд: ${product.name}`;
 }
 
 function renderProductGallery(product, mainImage) {
