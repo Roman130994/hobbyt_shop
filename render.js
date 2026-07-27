@@ -418,11 +418,97 @@ function renderCart() {
 }
 
 const deliveryTemplates = {
-    nova_branch: `<div class="form-group"><label for="np-city">Місто Нової Пошти <span class="required">*</span></label><input id="np-city" type="text" placeholder="Почніть вводити місто" required></div><div class="form-group"><label for="np-branch">Відділення <span class="required">*</span></label><input id="np-branch" type="text" placeholder="Номер або назва відділення" required><small>Після підключення API тут буде пошук реальних відділень.</small></div>`,
-    nova_courier: `<div class="form-group"><label for="np-courier-city">Місто <span class="required">*</span></label><input id="np-courier-city" type="text" placeholder="Наприклад, Київ" required></div><div class="form-row"><div class="form-group half"><label for="np-courier-street">Вулиця <span class="required">*</span></label><input id="np-courier-street" type="text" required></div><div class="form-group half"><label for="np-courier-house">Будинок <span class="required">*</span></label><input id="np-courier-house" type="text" required></div></div>`,
+    nova_branch: `<div class="form-group"><label for="np-city">Місто Нової Пошти <span class="required">*</span></label><input id="np-city" type="text" autocomplete="off" placeholder="Почніть вводити місто" required><select id="np-city-results" class="nova-results" size="4" hidden aria-label="Варіанти міст"></select></div><div class="form-group"><label for="np-branch">Відділення <span class="required">*</span></label><input id="np-branch" type="text" autocomplete="off" placeholder="Спочатку виберіть місто" disabled required><select id="np-branch-results" class="nova-results" size="4" hidden aria-label="Варіанти відділень"></select><small id="np-branch-hint">Оберіть місто зі списку, щоб знайти відділення.</small></div>`,
+    nova_courier: `<div class="form-group"><label for="np-courier-city">Місто <span class="required">*</span></label><input id="np-courier-city" type="text" autocomplete="off" placeholder="Почніть вводити місто" required><select id="np-courier-city-results" class="nova-results" size="4" hidden aria-label="Варіанти міст"></select></div><div class="form-row"><div class="form-group half"><label for="np-courier-street">Вулиця <span class="required">*</span></label><input id="np-courier-street" type="text" required></div><div class="form-group half"><label for="np-courier-house">Будинок <span class="required">*</span></label><input id="np-courier-house" type="text" required></div></div>`,
     ukrposhta: `<div class="form-group"><label for="ukr-city">Місто / село <span class="required">*</span></label><input id="ukr-city" type="text" required></div><div class="form-group"><label for="ukr-index">Поштовий індекс <span class="required">*</span></label><input id="ukr-index" type="text" inputmode="numeric" required></div>`,
     pickup: `<div class="form-group"><label for="pickup-location">Точка самовивозу</label><select id="pickup-location"><option>Узгодити з менеджером</option></select><small>Після замовлення ми підтвердимо час і адресу самовивозу.</small></div>`
 };
+
+async function novaPoshtaLookup(action, query, cityRef = '') {
+    const response = await fetch(`${window.HOBBYT_SUPABASE_URL}/functions/v1/nova-poshta`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            apikey: window.HOBBYT_SUPABASE_KEY
+        },
+        body: JSON.stringify({ action, query, cityRef })
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'Не вдалося отримати дані Нової Пошти');
+    return result.data || [];
+}
+
+function fillNovaResults(select, items, formatItem) {
+    select.innerHTML = items.map(item => `<option value="${item.ref}">${formatItem(item)}</option>`).join('');
+    select.hidden = items.length === 0;
+}
+
+function attachNovaCitySearch(inputId, resultsId, onSelect) {
+    const input = document.getElementById(inputId);
+    const results = document.getElementById(resultsId);
+    if (!input || !results) return;
+    let timer;
+    input.addEventListener('input', () => {
+        clearTimeout(timer);
+        input.dataset.npRef = '';
+        results.hidden = true;
+        if (input.value.trim().length < 2) return;
+        timer = setTimeout(async () => {
+            try {
+                const cities = await novaPoshtaLookup('cities', input.value);
+                fillNovaResults(results, cities, city => city.name);
+            } catch (error) {
+                console.error('Nova Poshta cities:', error);
+            }
+        }, 300);
+    });
+    results.addEventListener('change', () => {
+        const option = results.options[results.selectedIndex];
+        if (!option) return;
+        input.value = option.text;
+        input.dataset.npRef = option.value;
+        results.hidden = true;
+        onSelect?.(option.value);
+    });
+}
+
+function attachNovaBranchSearch() {
+    const cityInput = document.getElementById('np-city');
+    const branchInput = document.getElementById('np-branch');
+    const branchResults = document.getElementById('np-branch-results');
+    const hint = document.getElementById('np-branch-hint');
+    if (!cityInput || !branchInput || !branchResults) return;
+
+    attachNovaCitySearch('np-city', 'np-city-results', () => {
+        branchInput.disabled = false;
+        branchInput.placeholder = 'Почніть вводити номер або назву';
+        if (hint) hint.textContent = 'Почніть вводити номер або назву відділення.';
+    });
+
+    let timer;
+    branchInput.addEventListener('input', () => {
+        clearTimeout(timer);
+        branchResults.hidden = true;
+        const cityRef = cityInput.dataset.npRef;
+        if (!cityRef || branchInput.value.trim().length < 2) return;
+        timer = setTimeout(async () => {
+            try {
+                const branches = await novaPoshtaLookup('warehouses', branchInput.value, cityRef);
+                fillNovaResults(branchResults, branches, branch => branch.number ? `${branch.number}. ${branch.name}` : branch.name);
+            } catch (error) {
+                console.error('Nova Poshta branches:', error);
+                if (hint) hint.textContent = 'Не вдалося знайти відділення. Спробуйте ще раз.';
+            }
+        }, 300);
+    });
+    branchResults.addEventListener('change', () => {
+        const option = branchResults.options[branchResults.selectedIndex];
+        if (!option) return;
+        branchInput.value = option.text;
+        branchInput.dataset.npRef = option.value;
+        branchResults.hidden = true;
+    });
+}
 
 function renderDeliveryFields() {
     const container = document.getElementById('delivery-fields');
@@ -432,6 +518,8 @@ function renderDeliveryFields() {
     const shippingText = document.querySelector('.shipping-row div');
     const names = { nova_branch: 'Нова Пошта — відділення', nova_courier: 'Нова Пошта — кур’єр', ukrposhta: 'Укрпошта', pickup: 'Самовивіз' };
     if (shippingText) shippingText.textContent = names[selected.value];
+    if (selected.value === 'nova_branch') attachNovaBranchSearch();
+    if (selected.value === 'nova_courier') attachNovaCitySearch('np-courier-city', 'np-courier-city-results');
 }
 
 function renderCheckout() {
