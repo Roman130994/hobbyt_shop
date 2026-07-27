@@ -183,7 +183,7 @@ function renderSingleProduct() {
         }
         if (descEl) descEl.innerText = product.description || "Опис скоро з'явиться...";
         if (catEl) catEl.innerText = "Головна / " + (product.category === 'popular' ? 'Популярні' : product.category);
-        if (skuEl) skuEl.innerText = `Код: HBT-${String(product.id).padStart(3, '0')}`;
+        if (skuEl) skuEl.innerText = `Код: ${product.sku || `HBT-${String(product.id).padStart(3, '0')}`}`;
         document.title = `${product.name} | Hobbyt Equipment`;
 
         renderProductGallery(product, imagePath);

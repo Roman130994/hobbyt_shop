@@ -117,6 +117,7 @@
         .product-image-preview button { position: absolute; top: -7px; right: -7px; border: 0; background: #b72d2d; color: #fff; width: 21px; height: 21px; padding: 0; border-radius: 50%; cursor: pointer; }
         .editor-help { color: #999; font-size: 13px; margin: 0 0 16px; line-height: 1.5; }
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .form-row.product-basics { grid-template-columns: 1.3fr .8fr .9fr; }
         .checkbox-field { display: flex; align-items: center; gap: 9px; min-height: 42px; color: #ddd; }
         .checkbox-field input { width: auto; }
         .specification-row { display: grid; grid-template-columns: minmax(130px, .9fr) 1.2fr 36px; gap: 8px; margin-bottom: 8px; }
@@ -189,6 +190,8 @@
         .modal-box h3 { margin-bottom: 20px; }
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; color: #aaa; font-size: 14px; }
+        .form-group label.checkbox-field { display: flex; align-items: center; gap: 9px; margin-bottom: 0; }
+        .form-group label.checkbox-field input { flex: 0 0 auto; width: auto; margin: 0; }
         .form-group input, .form-group textarea, .form-group select {
             width: 100%;
             padding: 10px;
@@ -702,7 +705,7 @@
             <h3 id="modal-title">Редагувати товар</h3>
             <input type="hidden" id="edit-id">
             <p class="editor-help">Тут зберігається саме один товар: після збереження дані автоматично з’являться у каталозі, картці та кошику.</p>
-            <div class="form-row"><div class="form-group"><label>Назва товару</label><input type="text" id="edit-name" placeholder="Наприклад, Ручка для тяги"></div><div class="form-group"><label>Категорія</label><select id="edit-category"><option value="handles">Ручки</option><option value="sets">Сети</option><option value="blocks">Блоки</option><option value="tables">Столи</option></select></div></div>
+            <div class="form-row product-basics"><div class="form-group"><label>Назва товару</label><input type="text" id="edit-name" placeholder="Наприклад, Ручка для тяги"></div><div class="form-group"><label>Код товару</label><input type="text" id="edit-sku" placeholder="Наприклад, HBT-001"></div><div class="form-group"><label>Категорія</label><select id="edit-category"><option value="handles">Ручки</option><option value="sets">Сети</option><option value="blocks">Блоки</option><option value="tables">Столи</option></select></div></div>
             <div class="form-row"><div class="form-group"><label>Ціна, ₴</label><input type="number" min="0" id="edit-price" placeholder="0"></div><div class="form-group"><label>Стара ціна, ₴ <small>(необов’язково)</small></label><input type="number" min="0" id="edit-old-price" placeholder="Наприклад, 1 590"></div></div>
             <div class="form-row"><label class="checkbox-field"><input type="checkbox" id="edit-stock" checked> Є в наявності</label><label class="checkbox-field"><input type="checkbox" id="edit-popular"> Показувати в «Популярних товарах»</label></div>
             <div class="form-group"><label class="checkbox-field"><input type="checkbox" id="edit-variants-enabled" onchange="toggleVariantsPanel()"> Використовувати модифікації товару</label><div class="variants-panel" id="variants-panel"><p class="editor-help">Кожна модифікація має власну назву, ціну, залишок і код.</p><div id="variants-editor"></div><button type="button" class="add-specification" onclick="addVariantRow()"><i class="fa fa-plus"></i> Додати модифікацію</button></div></div>
@@ -1248,6 +1251,7 @@
             document.getElementById('modal-title').innerText = 'Редагувати товар';
             document.getElementById('edit-id').value = product.id;
             document.getElementById('edit-name').value = product.name;
+            document.getElementById('edit-sku').value = product.sku || '';
             document.getElementById('edit-price').value = toNumber(product.price);
             document.getElementById('edit-old-price').value = product.oldPrice ? toNumber(product.oldPrice) : '';
             document.getElementById('edit-category').value = categoryLabels[product.category] ? product.category : 'handles';
@@ -1267,6 +1271,7 @@
             document.getElementById('modal-title').innerText = 'Додати новий товар';
             document.getElementById('edit-id').value = 'new';
             document.getElementById('edit-name').value = '';
+            document.getElementById('edit-sku').value = '';
             document.getElementById('edit-price').value = '';
             document.getElementById('edit-old-price').value = '';
             document.getElementById('edit-category').value = 'handles';
@@ -1291,6 +1296,7 @@
             const saveButton = document.querySelector('#edit-modal .btn-edit');
             const newProduct = {
                 name: document.getElementById('edit-name').value,
+                sku: document.getElementById('edit-sku').value.trim(),
                 price: toNumber(document.getElementById('edit-price').value),
                 category: document.getElementById('edit-category').value,
                 description: document.getElementById('edit-desc').value,
@@ -1314,7 +1320,7 @@
                 if (!newProduct.images.length) newProduct.images = ['4.png'];
                 let error;
                 if (idVal === 'new') {
-                    ({ error } = await supabaseClient.from('products').insert({ ...newProduct, slug: productSlug(newProduct.name), sku: `HBT-${String(productsData.length + 1).padStart(3, '0')}`, sort_order: productsData.length + 1 }));
+                    ({ error } = await supabaseClient.from('products').insert({ ...newProduct, slug: productSlug(newProduct.name), sku: newProduct.sku || `HBT-${String(productsData.length + 1).padStart(3, '0')}`, sort_order: productsData.length + 1 }));
                 } else {
                     ({ error } = await supabaseClient.from('products').update(newProduct).eq('id', Number(idVal)));
                 }
