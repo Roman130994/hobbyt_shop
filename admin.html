@@ -1486,24 +1486,23 @@
 
         async function loadNovaSenderContactsAndWarehouses(saved = {}) {
             const senderSelect = document.getElementById('np-sender-ref');
-            const sender = senderSelect?.selectedOptions?.[0];
             const senderRef = senderSelect?.value;
-            const cityRef = sender?.dataset.cityRef || saved.city_ref || '';
             const status = document.getElementById('np-sender-status');
             if (!senderRef) return;
             try {
-                status.textContent = 'Завантажуємо контакти й відділення…';
-                const [contacts, warehouses] = await Promise.all([
+                status.textContent = 'Завантажуємо контакти й адресу відправника…';
+                const [contacts, addresses] = await Promise.all([
                     novaPoshtaAdmin('sender_contacts', { senderRef }),
-                    cityRef ? novaPoshtaAdmin('warehouses', { cityRef, query: '' }) : Promise.resolve([])
+                    novaPoshtaAdmin('sender_addresses', { senderRef })
                 ]);
+                const cityRef = addresses[0]?.city_ref || saved.city_ref || '';
                 document.getElementById('np-sender-city-ref').value = cityRef;
                 fillSelect('np-sender-contact-ref', contacts, 'Оберіть контакт', saved.contact_ref);
-                fillSelect('np-sender-address-ref', warehouses, 'Оберіть відділення', saved.address_ref);
+                fillSelect('np-sender-address-ref', addresses, 'Оберіть адресу відправника', saved.address_ref);
                 const contact = document.getElementById('np-sender-contact-ref');
                 if (saved.phone) document.getElementById('np-sender-phone').value = saved.phone;
                 contact.onchange = () => { document.getElementById('np-sender-phone').value = contact.selectedOptions[0]?.dataset.phone || ''; };
-                status.textContent = cityRef ? 'Оберіть контакт і відділення, потім збережіть.' : 'Не вдалося визначити місто відправника. Оберіть його в кабінеті Нової Пошти.';
+                status.textContent = addresses.length ? 'Оберіть контакт і адресу відправника, потім збережіть.' : 'У кабінеті Нової Пошти не знайдено адресу відправника.';
             } catch (error) {
                 status.textContent = error.message;
                 showToast(error.message, true);

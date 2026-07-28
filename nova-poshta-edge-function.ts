@@ -2,7 +2,9 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const allowedOrigins = new Set([
   "https://hobbytequipment.com",
+  "http://hobbytequipment.com",
   "https://www.hobbytequipment.com",
+  "http://www.hobbytequipment.com",
   "https://roman130994.github.io",
 ]);
 
@@ -32,7 +34,7 @@ Deno.serve(async (req) => {
     const { action, query = "", cityRef = "", senderRef = "" } = await req.json();
     const search = String(query).trim();
 
-    if (!['cities', 'warehouses', 'senders', 'sender_contacts'].includes(action)) {
+    if (!['cities', 'warehouses', 'senders', 'sender_contacts', 'sender_addresses'].includes(action)) {
       return Response.json({ error: "Невідома дія" }, { status: 400, headers });
     }
     if (action === 'cities' && search.length < 1) {
@@ -42,8 +44,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Спочатку виберіть місто" }, { status: 400, headers });
     }
 
-    if (['senders', 'sender_contacts'].includes(action)) await requireAdminSession(req);
-    if (action === 'sender_contacts' && !senderRef) return Response.json({ error: 'Оберіть відправника.' }, { status: 400, headers });
+    if (['senders', 'sender_contacts', 'sender_addresses'].includes(action)) await requireAdminSession(req);
+    if (['sender_contacts', 'sender_addresses'].includes(action) && !senderRef) return Response.json({ error: 'Оберіть відправника.' }, { status: 400, headers });
 
     const body = action === 'cities'
       ? {
@@ -62,10 +64,15 @@ Deno.serve(async (req) => {
           modelName: 'Counterparty',
           calledMethod: 'getCounterparties',
           methodProperties: { CounterpartyProperty: 'Sender', Page: '1' },
-        } : {
+        } : action === 'sender_contacts' ? {
           apiKey: Deno.env.get('NOVA_POSHTA_API_KEY'),
           modelName: 'Counterparty',
           calledMethod: 'getCounterpartyContactPersons',
+          methodProperties: { Ref: senderRef, Page: '1' },
+        } : {
+          apiKey: Deno.env.get('NOVA_POSHTA_API_KEY'),
+          modelName: 'Counterparty',
+          calledMethod: 'getCounterpartyAddresses',
           methodProperties: { Ref: senderRef, Page: '1' },
         };
 
@@ -83,8 +90,9 @@ Deno.serve(async (req) => {
     const data = action === 'cities'
       ? result.data.map((item: any) => ({ ref: item.Ref, name: item.Description }))
       : action === 'warehouses' ? result.data.map((item: any) => ({ ref: item.Ref, name: item.Description, number: item.Number || '' }))
-      : action === 'senders' ? result.data.map((item: any) => ({ ref: item.Ref, name: item.Description || item.FirstName || 'Відправник', city_ref: item.City || item.CityRef || '' }))
-      : result.data.map((item: any) => ({ ref: item.Ref, name: item.Description || [item.LastName, item.FirstName, item.MiddleName].filter(Boolean).join(' '), phone: item.Phones || item.Phone || '' }));
+      : action === 'senders' ? result.data.map((item: any) => ({ ref: item.Ref, name: item.Description || item.FirstName || 'Відправник' }))
+      : action === 'sender_contacts' ? result.data.map((item: any) => ({ ref: item.Ref, name: item.Description || [item.LastName, item.FirstName, item.MiddleName].filter(Boolean).join(' '), phone: item.Phones || item.Phone || '' }))
+      : result.data.map((item: any) => ({ ref: item.Ref, name: item.Description || item.CityDescription || 'Адреса відправника', city_ref: item.City || item.CityRef || '' }));
 
     return Response.json({ data }, {
       headers: { ...headers, 'Content-Type': 'application/json' },
