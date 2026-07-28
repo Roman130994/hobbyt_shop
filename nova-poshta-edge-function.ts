@@ -90,7 +90,8 @@ Deno.serve(async (req) => {
       headers: { ...headers, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return Response.json({ error: error.message || 'Сталася помилка' }, {
+    const message = error instanceof Error ? error.message : 'Сталася помилка';
+    return Response.json({ error: message }, {
       status: 500,
       headers: { ...headers, 'Content-Type': 'application/json' },
     });
