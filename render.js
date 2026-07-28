@@ -266,6 +266,22 @@ async function setupProductReviews(productId) {
     const photoPreview = document.getElementById('ReviewPhotoPreview');
     const photoPreviewImage = photoPreview?.querySelector('img');
     const photoRemove = document.getElementById('ReviewPhotoRemove');
+    const ratingInput = document.getElementById('ReviewRating');
+    const ratingPicker = document.getElementById('ReviewRatingPicker');
+    const ratingLabel = document.getElementById('ReviewRatingLabel');
+    const ratingLabels = { 1: 'Погано', 2: 'Слабко', 3: 'Нормально', 4: 'Добре', 5: 'Дуже добре' };
+    const setRating = rating => {
+        const value = Math.min(5, Math.max(1, Number(rating) || 5));
+        if (ratingInput) ratingInput.value = String(value);
+        ratingPicker?.querySelectorAll('button').forEach(button => {
+            const active = Number(button.dataset.rating) <= value;
+            button.classList.toggle('is-active', active);
+            button.setAttribute('aria-checked', String(Number(button.dataset.rating) === value));
+        });
+        if (ratingLabel) ratingLabel.textContent = ratingLabels[value];
+    };
+    ratingPicker?.querySelectorAll('button').forEach(button => button.addEventListener('click', () => setRating(button.dataset.rating)));
+    setRating(5);
     let previewUrl = '';
     const clearReviewPhoto = () => {
         if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -317,6 +333,7 @@ async function setupProductReviews(productId) {
             if (error) throw error;
             form.reset();
             clearReviewPhoto();
+            setRating(5);
             message.textContent = 'Дякуємо! Ваш відгук успішно надіслано.';
         } catch (error) {
             message.textContent = `Не вдалося надіслати відгук: ${error.message || 'спробуйте пізніше'}`;

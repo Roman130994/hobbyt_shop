@@ -1668,6 +1668,11 @@ body.dark-theme img.menu-icon {
 .review-form { margin-top: 20px; }
 .review-form h3 { margin: 0 0 16px; }
 .review-message { min-height: 20px; color: #9bc9f1; margin: 10px 0 0; }
+.review-rating-picker { display: flex; align-items: center; gap: 3px; min-height: 46px; }
+.review-rating-picker button { border: 0; background: transparent; padding: 0 2px; color: #515151; cursor: pointer; font-size: 31px; line-height: 1; transition: color .15s ease, transform .15s ease; }
+.review-rating-picker button:hover, .review-rating-picker button.is-active { color: #f4b942; }
+.review-rating-picker button:hover { transform: scale(1.12); }
+.review-rating-picker span { margin-left: 9px; color: #a8a8a8; font-size: 14px; }
 .review-photo-picker { min-height: 132px; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 20px; border: 1px dashed #4a4a4a; border-radius: 10px; background: #171717; color: #d9d9d9; cursor: pointer; transition: .18s ease; position: relative; overflow: hidden; }
 .review-photo-picker:hover, .review-photo-picker.is-dragging { border-color: #1683d8; background: #0e1a26; }
 .review-photo-picker input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
