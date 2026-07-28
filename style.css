@@ -1643,6 +1643,13 @@ body.dark-theme img.menu-icon {
     .footer-col-2 img { width: 145px; }
 }
 
+.name-field-error {
+    display: block;
+    color: #ff7469;
+    font-size: 12px;
+    margin-top: 6px;
+}
+
 @media only screen and (max-width: 390px) {
     .hero-text-col .hero-title { font-size: 30px; }
     .product-card, .popular-products-section .product-card { flex-basis: 84%; }

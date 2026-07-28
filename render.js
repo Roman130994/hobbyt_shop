@@ -676,6 +676,21 @@ function renderCheckout() {
 
         const phoneInput = document.getElementById('phone');
         const emailInput = document.getElementById('email');
+        const ukrainianNameCharacters = /[^А-Яа-яІіЇїЄєҐґ'’\- ]/g;
+        function restrictNameToUkrainian(inputId, errorId) {
+            const input = document.getElementById(inputId);
+            const error = document.getElementById(errorId);
+            if (!input || !error) return;
+            input.addEventListener('input', () => {
+                const cleaned = input.value.replace(ukrainianNameCharacters, '');
+                const hadInvalidCharacters = cleaned !== input.value;
+                input.value = cleaned;
+                input.setCustomValidity(hadInvalidCharacters ? 'Використовуйте лише українські літери.' : '');
+                error.hidden = !hadInvalidCharacters;
+            });
+        }
+        restrictNameToUkrainian('first-name', 'first-name-error');
+        restrictNameToUkrainian('last-name', 'last-name-error');
         const phonePrefix = '+38 ';
         const formatPhone = () => {
             if (!phoneInput) return;
