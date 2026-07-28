@@ -98,6 +98,16 @@
         .order-detail-card { background:#171717; border:1px solid #303030; border-radius:9px; padding:14px; }
         .order-detail-card small { color:#999; display:block; margin-bottom:5px; }
         .order-items-list { margin:0; padding-left:20px; color:#ddd; }
+        .order-tabs { display:flex; gap:8px; border-bottom:1px solid #303030; margin:0 0 18px; overflow-x:auto; }
+        .order-tab { border:0; border-bottom:2px solid transparent; background:transparent; color:#aaa; padding:12px 14px; white-space:nowrap; cursor:pointer; font:inherit; }
+        .order-tab:hover, .order-tab.active { color:#fff; border-bottom-color:#0E5EA3; }
+        .order-product-row { display:grid; grid-template-columns:56px minmax(160px,1fr) 110px 70px 125px; gap:14px; align-items:center; padding:12px 0; border-bottom:1px solid #292929; }
+        .order-product-photo { width:56px; height:56px; object-fit:cover; border-radius:8px; background:#1d1d1d; }
+        .order-product-name { font-weight:600; color:#fff; }
+        .order-product-meta { color:#999; font-size:12px; margin-top:4px; }
+        .order-product-label { display:none; color:#999; font-size:11px; margin-bottom:3px; }
+        .order-empty-tab { padding:28px 12px; text-align:center; color:#999; }
+        @media (max-width:680px) { .order-product-row { grid-template-columns:50px 1fr; gap:10px; } .order-product-row > div:not(:nth-child(2)) { display:flex; gap:5px; } .order-product-label { display:block; } }
         @media (max-width:680px) { .order-detail-grid { grid-template-columns:1fr; } .admin-table { display:block; overflow-x:auto; } }
 
         /* ===== Products editor ===== */
@@ -758,10 +768,10 @@
     </div>
 
     <div id="order-modal" class="modal-overlay">
-        <div class="modal-box" style="width:min(760px,96vw); max-height:90vh; overflow:auto;">
+        <div class="modal-box" style="width:min(1040px,96vw); max-height:90vh; overflow:auto;">
             <h3 id="order-modal-title">Замовлення</h3>
             <div id="order-modal-content"></div>
-            <div class="modal-footer"><button class="btn btn-sm" onclick="closeOrderModal()" style="background:#333;">Закрити</button><button id="create-ttn-button" class="btn btn-sm" style="display:none;"><i class="fa fa-truck"></i> Створити ТТН</button></div>
+            <div class="modal-footer"><button class="btn btn-sm" onclick="closeOrderModal()" style="background:#333;">Закрити</button></div>
         </div>
     </div>
 
@@ -1734,22 +1744,53 @@
         async function openOrderModal(orderId) {
             const order = managedOrders.find(item => Number(item.id) === Number(orderId));
             if (!order) return;
+            document.getElementById('order-modal-title').textContent = `Замовлення №${order.id}`;
+            document.getElementById('order-modal').style.display = 'flex';
+            renderOrderModalTab(order.id, 'products');
+        }
+
+        function orderItemPrice(item) {
+            return Number(String(item.price || 0).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+        }
+
+        function renderOrderModalTab(orderId, activeTab) {
+            const order = managedOrders.find(item => Number(item.id) === Number(orderId));
+            if (!order) return;
             const delivery = getNovaPoshtaDelivery(order);
             const items = Array.isArray(order.items) ? order.items : parseOrderJson(order.items) || [];
-            document.getElementById('order-modal-title').textContent = `Замовлення №${order.id}`;
-            document.getElementById('order-modal-content').innerHTML = `
-                <div class="order-detail-grid">
-                    <div class="order-detail-card"><small>Покупець</small><strong>${escapeHtml(order.customer_name || '—')}</strong><br>${escapeHtml(order.phone || '')}<br>${escapeHtml(order.email || '')}</div>
-                    <div class="order-detail-card"><small>Оплата та доставка</small><strong>${escapeHtml(order.payment_method || '—')}</strong><br>${escapeHtml(order.delivery_method || '—')}<br>${escapeHtml(order.delivery_details || '—')}</div>
-                    <div class="order-detail-card"><small>Сума</small><strong>${orderMoney(order.total)}</strong></div>
-                    <div class="order-detail-card"><small>Статус</small><strong>${escapeHtml(order.status === 'new' ? 'Нове' : order.status || '—')}</strong>${order.ttn_number ? `<br><small style="margin-top:10px;">ТТН</small><strong>${escapeHtml(order.ttn_number)}</strong>` : ''}</div>
-                </div>
-                <div class="order-detail-card"><small>Товари</small><ul class="order-items-list">${items.map(item => `<li>${escapeHtml(item.name || 'Товар')} × ${Number(item.quantity || 1)} — ${orderMoney(Number(item.price || 0) * Number(item.quantity || 1))}${item.variant ? ` (${escapeHtml(item.variant)})` : ''}</li>`).join('') || '<li>Немає даних</li>'}</ul></div>`;
-            const ttnButton = document.getElementById('create-ttn-button');
-            const canCreate = isNovaPoshtaOrder(order) && !order.ttn_number;
-            ttnButton.style.display = canCreate ? 'inline-block' : 'none';
-            ttnButton.onclick = () => createTtnForOrder(order);
-            document.getElementById('order-modal').style.display = 'flex';
+            const content = document.getElementById('order-modal-content');
+            const tabs = [
+                ['products', 'Товари', 'fa-cube'],
+                ['ttn', 'ТТН', 'fa-truck'],
+                ['delivery', 'Доставка', 'fa-map-marker'],
+                ['documents', 'Документи', 'fa-folder-open']
+            ];
+            const tabHeader = `<div class="order-tabs">${tabs.map(([id, label, icon]) => `<button class="order-tab ${activeTab === id ? 'active' : ''}" onclick="renderOrderModalTab(${Number(order.id)}, '${id}')"><i class="fa ${icon}"></i> ${label}</button>`).join('')}</div>`;
+            let body = '';
+
+            if (activeTab === 'products') {
+                body = `<div class="order-detail-card"><small>Товари у замовленні</small>${items.map(item => {
+                    const quantity = Number(item.quantity || 1);
+                    const price = orderItemPrice(item);
+                    const code = item.code || item.sku || item.product_code || '—';
+                    const variant = item.variant || item.selectedVariant?.name || item.selectedVariant?.value || '';
+                    return `<div class="order-product-row"><img class="order-product-photo" src="${escapeHtml(item.image || '4.png')}" alt="" onerror="this.onerror=null;this.src='4.png'"><div><div class="order-product-name">${escapeHtml(item.name || 'Товар')}</div><div class="order-product-meta">Код: ${escapeHtml(String(code))}${variant ? ` · ${escapeHtml(String(variant))}` : ''}</div></div><div><span class="order-product-label">Ціна</span>${orderMoney(price)}</div><div><span class="order-product-label">К-сть</span>× ${quantity}</div><div><span class="order-product-label">Разом</span><strong>${orderMoney(price * quantity)}</strong></div></div>`;
+                }).join('') || '<div class="order-empty-tab">У цьому замовленні немає збережених товарів.</div>'}<div style="text-align:right;padding-top:16px;font-size:17px;"><span style="color:#999;">Разом: </span><strong>${orderMoney(order.total)}</strong></div></div>`;
+            }
+
+            if (activeTab === 'ttn') {
+                body = `<div class="order-detail-grid"><div class="order-detail-card"><small>Статус ТТН</small><strong>${order.ttn_number ? 'Створено' : 'Ще не створено'}</strong>${order.ttn_number ? `<br><small style="margin-top:10px;">Номер ТТН</small><strong>${escapeHtml(order.ttn_number)}</strong>` : ''}</div><div class="order-detail-card"><small>Спосіб доставки</small><strong>${escapeHtml(order.delivery_method || '—')}</strong></div></div><div id="ttn-sender-panel">${isNovaPoshtaOrder(order) && !order.ttn_number ? `<button class="btn btn-sm btn-edit" onclick="createTtnForOrder(${Number(order.id)})"><i class="fa fa-truck"></i> Створити ТТН</button>` : order.ttn_number ? '<div class="order-detail-card">ТТН уже збережено в цьому замовленні.</div>' : '<div class="order-empty-tab">ТТН доступна лише для способів доставки Нової Пошти.</div>'}</div>`;
+            }
+
+            if (activeTab === 'delivery') {
+                body = `<div class="order-detail-grid"><div class="order-detail-card"><small>Спосіб доставки</small><strong>${escapeHtml(order.delivery_method || '—')}</strong></div><div class="order-detail-card"><small>Оплата</small><strong>${escapeHtml(order.payment_method || '—')}</strong></div><div class="order-detail-card"><small>Покупець</small><strong>${escapeHtml(order.customer_name || '—')}</strong><br>${escapeHtml(order.phone || '')}<br>${escapeHtml(order.email || '')}</div><div class="order-detail-card"><small>Місто й відділення</small><strong>${escapeHtml(delivery.city || '—')}</strong><br>${escapeHtml(delivery.warehouse || order.delivery_details || '—')}</div></div>${order.notes ? `<div class="order-detail-card"><small>Нотатка до замовлення</small>${escapeHtml(order.notes)}</div>` : ''}`;
+            }
+
+            if (activeTab === 'documents') {
+                body = `<div class="order-empty-tab"><i class="fa fa-folder-open" style="font-size:26px;display:block;margin-bottom:10px;"></i><strong style="color:#ddd;">Документи замовлення</strong><br><span>Тут згодом будуть продажі, надходження від постачальників і переміщення між складами.</span></div>`;
+            }
+
+            content.innerHTML = tabHeader + body;
         }
 
         function closeOrderModal() { document.getElementById('order-modal').style.display = 'none'; }
@@ -1757,8 +1798,10 @@
         async function createTtnForOrder(order) {
             const profiles = await getSenderProfiles();
             if (!profiles.length) return showToast('Спочатку додайте профіль у розділі «Відправники НП».', true);
-            document.getElementById('order-modal-content').insertAdjacentHTML('beforeend', `
-                <div class="order-detail-card" id="ttn-sender-panel" style="margin-top:14px;">
+            const panel = document.getElementById('ttn-sender-panel');
+            if (!panel) return;
+            panel.innerHTML = `
+                <div class="order-detail-card" style="margin-top:14px;">
                     <small>Створення ТТН</small>
                     <label style="display:block;margin:8px 0;">Виберіть відправника</label>
                     <select id="ttn-sender-profile" style="width:100%;margin-bottom:12px;">${profiles.map(profile => `<option value="${escapeHtml(profile.id)}">${escapeHtml(profile.name || 'Без назви')}</option>`).join('')}</select>
@@ -1766,8 +1809,7 @@
                     <select id="ttn-payer" style="width:100%;margin-bottom:12px;"><option value="Sender">Відправник оплачує</option><option value="Recipient">Отримувач оплачує</option></select>
                     <div class="row" style="gap:14px;"><div class="col-2 form-group" style="flex:1;"><label>Вага, кг</label><input id="ttn-weight" type="number" min="0.1" step="0.1" value="1"></div><div class="col-2 form-group" style="flex:1;"><label>Опис посилки</label><input id="ttn-description" value="Товари для армреслінгу"></div></div>
                     <button class="btn btn-sm" onclick="confirmTtnSender(${Number(order.id)})"><i class="fa fa-truck"></i> Продовжити створення ТТН</button>
-                </div>`);
-            document.getElementById('create-ttn-button').style.display = 'none';
+                </div>`;
         }
 
         async function confirmTtnSender(orderId) {
