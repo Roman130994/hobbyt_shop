@@ -766,7 +766,7 @@ function renderCheckout() {
                 if (error) throw error;
             } catch (error) {
                 console.warn('Замовлення не збережено в статистиці:', error);
-                alert('Не вдалося зберегти замовлення. Будь ласка, спробуйте ще раз або зв’яжіться з нами.');
+                alert(`Не вдалося зберегти замовлення: ${error.message || 'невідома помилка'}`);
                 return;
             }
 
