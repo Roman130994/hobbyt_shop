@@ -77,6 +77,7 @@
                     <div class="product-summary-header">
                         <h1 id="ProductName">Назва товару</h1>
                         <p id="ProductCategory">Головна / Товари</p>
+                        <div><button type="button" class="favorite-toggle product-favorite-toggle" id="ProductFavorite" aria-label="Додати в обране"><i class="fa fa-heart-o"></i> В обране</button><a class="favorites-link" href="products.html?favorites=1">Переглянути обране</a></div>
                     </div>
                     <div class="product-price-row">
                         <div class="product-price-stack"><span id="ProductOldPrice" class="old-price product-old-price" hidden></span><div class="product-current-price"><h4 id="ProductPrice">0 ₴</h4><span id="ProductDiscount" class="product-discount" hidden></span></div></div>
@@ -114,6 +115,18 @@
         <div class="product-video" id="ProductVideo" hidden>
             <iframe id="ProductVideoFrame" title="Відеоогляд товару" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
         </div>
+    </section>
+    <section class="small-container reviews-section" id="ProductReviewsSection" aria-label="Відгуки про товар">
+        <div class="row row-2"><h2>Відгуки покупців</h2><span id="ProductReviewsCount" class="reviews-count"></span></div>
+        <div id="ProductReviewsList" class="reviews-list"><p class="reviews-empty">Завантаження відгуків…</p></div>
+        <form id="ProductReviewForm" class="review-form">
+            <h3>Залишити відгук</h3>
+            <input type="hidden" id="ReviewProductId">
+            <div class="form-row"><div class="form-group half"><label for="ReviewAuthor">Ваше ім’я *</label><input id="ReviewAuthor" required maxlength="80"></div><div class="form-group half"><label for="ReviewRating">Оцінка *</label><select id="ReviewRating" required><option value="5">★★★★★ — 5</option><option value="4">★★★★☆ — 4</option><option value="3">★★★☆☆ — 3</option><option value="2">★★☆☆☆ — 2</option><option value="1">★☆☆☆☆ — 1</option></select></div></div>
+            <div class="form-group"><label for="ReviewText">Ваш відгук *</label><textarea id="ReviewText" rows="4" required maxlength="1200" placeholder="Поділіться враженням від товару"></textarea></div>
+            <div class="form-group"><label for="ReviewPhoto">Фото <small>(необов’язково)</small></label><input id="ReviewPhoto" type="file" accept="image/*"></div>
+            <button class="btn" type="submit">Надіслати на модерацію</button><p id="ReviewMessage" class="review-message" aria-live="polite"></p>
+        </form>
     </section>
     <!-- title -->
     <div class="small-container">

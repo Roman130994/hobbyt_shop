@@ -1,6 +1,7 @@
 let currentSort = 'default';
 let shopProducts = [...productsData];
 const selectedVariants = new Map();
+const favoritesStorageKey = 'hobbytFavorites';
 
 function formatPrice(value) {
     return `${Number(value || 0).toLocaleString('uk-UA')} ₴`;
@@ -14,6 +15,27 @@ function checkoutImagePath(value) {
     const image = String(value || '').trim();
     if (!image) return '4.png';
     return image.replace(/^images\//i, '');
+}
+
+function getFavorites() {
+    try { return JSON.parse(localStorage.getItem(favoritesStorageKey)) || []; } catch (_) { return []; }
+}
+
+function isFavorite(productId) {
+    return getFavorites().map(String).includes(String(productId));
+}
+
+function toggleFavorite(productId, button) {
+    const current = getFavorites().map(String);
+    const id = String(productId);
+    const next = current.includes(id) ? current.filter(item => item !== id) : [...current, id];
+    localStorage.setItem(favoritesStorageKey, JSON.stringify(next));
+    const active = next.includes(id);
+    document.querySelectorAll(`[data-favorite-id="${CSS.escape(id)}"]`).forEach(element => {
+        element.classList.toggle('is-favorite', active);
+        element.innerHTML = `<i class="fa fa-heart${active ? '' : '-o'}"></i>${element.classList.contains('product-favorite-toggle') ? (active ? ' В обраному' : ' В обране') : ''}`;
+    });
+    if (button) button.blur();
 }
 
 function mapDatabaseProduct(row) {
@@ -38,7 +60,8 @@ function mapDatabaseProduct(row) {
         highlights: row.highlights || [],
         variants: row.variants || { enabled: false, items: [] },
         videoUrl: row.video_url,
-        inStock: row.in_stock
+        inStock: row.in_stock,
+        stockQuantity: row.stock_quantity
     };
 }
 
@@ -63,6 +86,8 @@ function renderProducts(containerId, categoryFilter = null, limit = null, page =
     if (!container) return;
 
     let products = [...shopProducts];
+    const favoritesOnly = new URLSearchParams(window.location.search).get('favorites') === '1';
+    if (favoritesOnly) products = products.filter(product => isFavorite(product.id));
     if (categoryFilter) {
         if (categoryFilter === 'popular') {
             products = products.filter(p => p.popular === true);
@@ -104,8 +129,10 @@ function renderProducts(containerId, categoryFilter = null, limit = null, page =
             ? `<p><span class="old-price">${p.oldPrice}</span> ${p.price}</p>` 
             : `<p>${p.price}</p>`;
 
+        const unavailable = p.inStock === false || (p.stockQuantity !== null && p.stockQuantity !== undefined && Number(p.stockQuantity) < 1);
         productCard.innerHTML = `
             ${discountBadge}
+            <button type="button" class="favorite-toggle product-card-favorite ${isFavorite(p.id) ? 'is-favorite' : ''}" data-favorite-id="${p.id}" onclick="toggleFavorite(${p.id}, this)" aria-label="Додати в обране"><i class="fa fa-heart${isFavorite(p.id) ? '' : '-o'}"></i></button>
             <a href="product_details.html?id=${p.id}"><img src="${p.image.replace(/^images\//, '')}" alt="${p.name}"></a>
             <a href="product_details.html?id=${p.id}"><h4>${p.name}</h4></a>
             <div class="rating">
@@ -113,7 +140,7 @@ function renderProducts(containerId, categoryFilter = null, limit = null, page =
                 ${'<i class="fa fa-star-o"></i>'.repeat(5 - Math.floor(p.rating || 5))}
             </div>
             ${priceHTML}
-            <button onclick="addToCart(${p.id})" class="add-to-cart-btn">В кошик</button>
+            <button onclick="addToCart(${p.id})" class="add-to-cart-btn" ${unavailable ? 'disabled' : ''}>${unavailable ? 'Немає в наявності' : 'В кошик'}</button>
         `;
         return productCard.outerHTML;
     }).join('');
@@ -184,6 +211,9 @@ function renderSingleProduct() {
         if (descEl) descEl.innerText = product.description || "Опис скоро з'явиться...";
         if (catEl) catEl.innerText = "Головна / " + (product.category === 'popular' ? 'Популярні' : product.category);
         if (skuEl) skuEl.innerText = `Код: ${product.sku || `HBT-${String(product.id).padStart(3, '0')}`}`;
+        const stockEl = document.querySelector('.product-status .in-stock');
+        const unavailable = product.inStock === false || (product.stockQuantity !== null && product.stockQuantity !== undefined && Number(product.stockQuantity) < 1);
+        if (stockEl) stockEl.innerHTML = `<i class="fa ${unavailable ? 'fa-times-circle' : 'fa-check-circle'}" aria-hidden="true"></i>${unavailable ? 'Немає в наявності' : product.stockQuantity !== null && product.stockQuantity !== undefined ? `В наявності: ${product.stockQuantity} шт.` : 'В наявності'}`;
         document.title = `${product.name} | Hobbyt Equipment`;
         updateProductSeo(product, imagePath, hasDiscount);
 
@@ -191,6 +221,14 @@ function renderSingleProduct() {
         renderProductDetails(product);
         renderProductVariants(product);
         renderRelatedProducts(product);
+        const favoriteButton = document.getElementById('ProductFavorite');
+        if (favoriteButton) {
+            favoriteButton.dataset.favoriteId = product.id;
+            favoriteButton.classList.toggle('is-favorite', isFavorite(product.id));
+            favoriteButton.innerHTML = `<i class="fa fa-heart${isFavorite(product.id) ? '' : '-o'}"></i> ${isFavorite(product.id) ? 'В обраному' : 'В обране'}`;
+            favoriteButton.onclick = () => toggleFavorite(product.id, favoriteButton);
+        }
+        setupProductReviews(product.id);
         
         // Додаємо дію для кнопки кошика
         const cartBtn = document.querySelector('.single-product .btn');
@@ -198,6 +236,56 @@ function renderSingleProduct() {
             cartBtn.setAttribute('onclick', `addProductPageToCart(${product.id}); return false;`);
         }
     }
+}
+
+function reviewStars(rating) {
+    return '<i class="fa fa-star"></i>'.repeat(Number(rating || 0)) + '<i class="fa fa-star-o"></i>'.repeat(5 - Number(rating || 0));
+}
+
+async function setupProductReviews(productId) {
+    const list = document.getElementById('ProductReviewsList');
+    const count = document.getElementById('ProductReviewsCount');
+    const form = document.getElementById('ProductReviewForm');
+    const idInput = document.getElementById('ReviewProductId');
+    if (!list || !form || !idInput || !window.supabase) return;
+    idInput.value = productId;
+    const client = window.supabase.createClient(window.HOBBYT_SUPABASE_URL, window.HOBBYT_SUPABASE_KEY);
+    try {
+        const { data, error } = await client.from('product_reviews').select('*').eq('product_id', productId).eq('is_approved', true).order('created_at', { ascending: false });
+        if (error) throw error;
+        const reviews = data || [];
+        if (count) count.textContent = reviews.length ? `${reviews.length} ${reviews.length === 1 ? 'відгук' : 'відгуки'}` : '';
+        list.innerHTML = reviews.length ? reviews.map(review => `<article class="review-card"><div class="review-head"><strong>${escapeProductText(review.author_name)}</strong><span class="review-stars">${reviewStars(review.rating)}</span></div><p>${escapeProductText(review.body)}</p>${review.photo_url ? `<img src="${escapeProductText(review.photo_url)}" alt="Фото від покупця" class="review-photo">` : ''}</article>`).join('') : '<p class="reviews-empty">Ще немає відгуків. Будьте першим покупцем, який поділиться враженням.</p>';
+    } catch (_) {
+        list.innerHTML = '<p class="reviews-empty">Відгуки скоро будуть доступні.</p>';
+    }
+    if (form.dataset.bound) return;
+    form.dataset.bound = 'true';
+    form.addEventListener('submit', async event => {
+        event.preventDefault();
+        const message = document.getElementById('ReviewMessage');
+        const author = document.getElementById('ReviewAuthor').value.trim();
+        const body = document.getElementById('ReviewText').value.trim();
+        const rating = Number(document.getElementById('ReviewRating').value);
+        const image = document.getElementById('ReviewPhoto').files?.[0];
+        if (!author || !body) return;
+        message.textContent = 'Надсилання…';
+        try {
+            let photoUrl = null;
+            if (image) {
+                const safeName = `${Date.now()}-${image.name.replace(/[^a-zA-Z0-9._-]/g, '-')}`;
+                const { error: uploadError } = await client.storage.from('review-images').upload(`${productId}/${safeName}`, image, { contentType: image.type });
+                if (uploadError) throw uploadError;
+                photoUrl = client.storage.from('review-images').getPublicUrl(`${productId}/${safeName}`).data.publicUrl;
+            }
+            const { error } = await client.from('product_reviews').insert({ product_id: productId, author_name: author, body, rating, photo_url: photoUrl });
+            if (error) throw error;
+            form.reset();
+            message.textContent = 'Дякуємо! Відгук з’явиться після перевірки.';
+        } catch (error) {
+            message.textContent = `Не вдалося надіслати відгук: ${error.message || 'спробуйте пізніше'}`;
+        }
+    });
 }
 
 function updateProductSeo(product, imagePath, hasDiscount) {
@@ -382,6 +470,10 @@ function addToCart(productId) {
     const product = shopProducts.find(p => p.id === productId);
     
     if (product) {
+        if (product.inStock === false || (product.stockQuantity !== null && product.stockQuantity !== undefined && Number(product.stockQuantity) < 1)) {
+            alert('Цього товару немає в наявності.');
+            return;
+        }
         cart.push({...product, quantity: 1});
         localStorage.setItem('hobbytCart', JSON.stringify(cart));
         updateCartBadge();
@@ -777,7 +869,7 @@ function renderCheckout() {
             try {
                 const client = window.supabase?.createClient(window.HOBBYT_SUPABASE_URL, window.HOBBYT_SUPABASE_KEY);
                 if (!client) throw new Error('Не вдалося підключитися до бази замовлень.');
-                const { error } = await client.from('orders').insert(orderRecord);
+                const { error } = await client.rpc('place_order', { payload: orderRecord });
                 if (error) throw error;
             } catch (error) {
                 console.warn('Замовлення не збережено в статистиці:', error);

@@ -555,6 +555,7 @@
             <li onclick="switchSection('pages')" id="menu-pages"><i class="fa fa-file-text"></i> Сторінки</li>
             <li onclick="switchSection('orders')" id="menu-orders"><i class="fa fa-truck"></i> Замовлення</li>
             <li onclick="switchSection('senders')" id="menu-senders"><i class="fa fa-address-card"></i> Відправники НП</li>
+            <li onclick="switchSection('reviews')" id="menu-reviews"><i class="fa fa-star"></i> Відгуки</li>
             <li onclick="switchSection('stats')" id="menu-stats"><i class="fa fa-pie-chart"></i> Статистика</li>
             <li><i class="fa fa-cog"></i> Налаштування</li>
         </ul>
@@ -686,6 +687,12 @@
                 <div id="np-sender-profiles" class="editor-help">Завантаження профілів…</div>
             </div>
         </div>
+        <div id="section-reviews" class="admin-section" style="display: none;">
+            <div class="admin-content-box">
+                <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Відгуки покупців</h3><p class="editor-help" style="margin:0;">Схвалюй відгуки перед показом на сайті або видаляй небажані.</p></div><button class="btn btn-sm" onclick="loadAdminReviews()"><i class="fa fa-refresh"></i> Оновити</button></div>
+                <div id="admin-reviews-list" class="editor-help">Завантаження відгуків…</div>
+            </div>
+        </div>
         <div id="section-orders" class="admin-section" style="display: none;">
             <div class="admin-content-box">
                 <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Усі замовлення</h3><p class="editor-help" style="margin:0;">Натисни «Відкрити», щоб побачити деталі й створити ТТН.</p></div><button class="btn btn-sm" onclick="loadOrdersSection()"><i class="fa fa-refresh"></i> Оновити</button></div>
@@ -746,7 +753,7 @@
             <input type="hidden" id="edit-id">
             <p class="editor-help">Тут зберігається саме один товар: після збереження дані автоматично з’являться у каталозі, картці та кошику.</p>
             <div class="form-row product-basics"><div class="form-group"><label>Назва товару</label><input type="text" id="edit-name" placeholder="Наприклад, Ручка для тяги"></div><div class="form-group"><label>Код товару</label><input type="text" id="edit-sku" placeholder="Наприклад, HBT-001"></div><div class="form-group"><label>Категорія</label><select id="edit-category"><option value="handles">Ручки</option><option value="sets">Сети</option><option value="blocks">Блоки</option><option value="tables">Столи</option></select></div></div>
-            <div class="form-row"><div class="form-group"><label>Ціна, ₴</label><input type="number" min="0" id="edit-price" placeholder="0"></div><div class="form-group"><label>Стара ціна, ₴ <small>(необов’язково)</small></label><input type="number" min="0" id="edit-old-price" placeholder="Наприклад, 1 590"></div></div>
+            <div class="form-row"><div class="form-group"><label>Ціна, ₴</label><input type="number" min="0" id="edit-price" placeholder="0"></div><div class="form-group"><label>Стара ціна, ₴ <small>(необов’язково)</small></label><input type="number" min="0" id="edit-old-price" placeholder="Наприклад, 1 590"></div><div class="form-group"><label>Залишок на складі <small>(порожньо = не ведеться)</small></label><input type="number" min="0" id="edit-stock-quantity" placeholder="Наприклад, 12"></div></div>
             <div class="form-row"><label class="checkbox-field"><input type="checkbox" id="edit-stock" checked> Є в наявності</label><label class="checkbox-field"><input type="checkbox" id="edit-popular"> Показувати в «Популярних товарах»</label></div>
             <div class="form-group"><label class="checkbox-field"><input type="checkbox" id="edit-variants-enabled" onchange="toggleVariantsPanel()"> Використовувати модифікації товару</label><div class="variants-panel" id="variants-panel"><p class="editor-help">Кожна модифікація має власну назву, ціну, залишок і код.</p><div id="variants-editor"></div><button type="button" class="add-specification" onclick="addVariantRow()"><i class="fa fa-plus"></i> Додати модифікацію</button></div></div>
             <div class="form-group"><label>Фотографії товару</label><label class="image-picker"><input type="file" id="edit-images" accept="image/*" multiple onchange="addProductImages(this.files)"><i class="fa fa-cloud-upload"></i> Додати фото<small>Перше фото буде головним. Можна обрати кілька.</small></label><div class="product-image-previews" id="product-image-previews"></div></div>
@@ -846,7 +853,7 @@
             id: row.id, name: row.name, price: `${Number(row.price).toLocaleString('uk-UA')} ₴`,
             oldPrice: row.old_price ? `${Number(row.old_price).toLocaleString('uk-UA')} ₴` : null,
             image: (row.images || [])[0] || '4.png', gallery: row.images || [], rating: 5,
-            category: row.category, popular: row.is_popular, inStock: row.in_stock !== false,
+            category: row.category, popular: row.is_popular, inStock: row.in_stock !== false, stockQuantity: row.stock_quantity,
             description: row.description || '', videoUrl: row.video_url || '', specifications: row.specifications || {}, highlights: row.highlights || [], variants: row.variants || { enabled: false, items: [] }, sku: row.sku
         });
 
@@ -915,13 +922,41 @@
                 'pages': 'Редагування сторінок',
                 'orders': 'Замовлення',
                 'senders': 'Відправники Нової Пошти',
+                'reviews': 'Відгуки покупців',
                 'stats': 'Статистика та Фінанси'
             };
             document.querySelector('.admin-header h1').innerText = titles[sectionId];
             if(sectionId === 'stats') loadStats();
             if(sectionId === 'orders') loadOrdersSection();
             if(sectionId === 'senders') loadSenderProfiles();
+            if(sectionId === 'reviews') loadAdminReviews();
             if(sectionId === 'dashboard') loadDashboard();
+        }
+
+        async function loadAdminReviews() {
+            const list = document.getElementById('admin-reviews-list');
+            if (!list) return;
+            list.textContent = 'Завантаження відгуків…';
+            try {
+                const { data, error } = await supabaseClient.from('product_reviews').select('*, products(name)').order('created_at', { ascending: false });
+                if (error) throw error;
+                list.innerHTML = data?.length ? data.map(review => `<article class="order-detail-card" style="margin-bottom:12px;"><div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;"><div><strong>${escapeHtml(review.author_name)}</strong> <span style="color:#f4b942;">${'★'.repeat(review.rating)}</span><br><small>${escapeHtml(review.products?.name || 'Товар')} · ${orderDate(review.created_at)}</small></div><span style="color:${review.is_approved ? '#75cc91' : '#ffb36b'};">${review.is_approved ? 'Опубліковано' : 'Очікує модерації'}</span></div><p style="color:#ddd;line-height:1.5;">${escapeHtml(review.body)}</p>${review.photo_url ? `<img src="${escapeHtml(review.photo_url)}" style="width:100px;height:100px;object-fit:cover;border-radius:7px;">` : ''}<div style="margin-top:12px;">${!review.is_approved ? `<button class="btn-sm btn-edit" onclick="approveReview(${Number(review.id)})">Схвалити</button>` : ''}<button class="btn-sm btn-delete" onclick="deleteReview(${Number(review.id)})">Видалити</button></div></article>`).join('') : 'Відгуків ще немає.';
+            } catch (error) { list.textContent = `Не вдалося завантажити відгуки: ${error.message}`; }
+        }
+
+        async function approveReview(id) {
+            const { error } = await supabaseClient.from('product_reviews').update({ is_approved: true }).eq('id', id);
+            if (error) return showToast(error.message, true);
+            await loadAdminReviews();
+            showToast('Відгук опубліковано.');
+        }
+
+        async function deleteReview(id) {
+            if (!confirm('Видалити цей відгук?')) return;
+            const { error } = await supabaseClient.from('product_reviews').delete().eq('id', id);
+            if (error) return showToast(error.message, true);
+            await loadAdminReviews();
+            showToast('Відгук видалено.');
         }
 
         // === Temp variable to hold uploaded image data ===
@@ -1209,7 +1244,7 @@
                     <div class="admin-product-body">
                         <span class="product-category-badge">${escapeHtml(categoryLabels[p.category] || 'Інше')}</span>
                         <div class="admin-product-name">${escapeHtml(p.name)}</div>
-                        <div class="admin-product-price">${escapeHtml(p.price)}</div>
+                        <div class="admin-product-price">${escapeHtml(p.price)}</div><small style="color:${p.stockQuantity !== null && p.stockQuantity !== undefined && p.stockQuantity <= 3 ? '#ffb36b' : '#999'};">${p.stockQuantity === null || p.stockQuantity === undefined ? 'Залишок не ведеться' : `На складі: ${p.stockQuantity} шт.`}</small>
                         <div class="admin-product-actions">
                             <button class="btn-sm btn-edit" onclick="openEditModal(${Number(p.id)})"><i class="fa fa-pencil"></i> Редагувати</button>
                             <button class="btn-sm btn-delete" onclick="deleteProduct(${Number(p.id)})" title="Видалити"><i class="fa fa-trash"></i></button>
@@ -1334,6 +1369,7 @@
             document.getElementById('edit-old-price').value = product.oldPrice ? toNumber(product.oldPrice) : '';
             document.getElementById('edit-category').value = categoryLabels[product.category] ? product.category : 'handles';
             document.getElementById('edit-stock').checked = product.inStock !== false;
+            document.getElementById('edit-stock-quantity').value = product.stockQuantity ?? '';
             document.getElementById('edit-popular').checked = !!product.popular;
             setVariants(product.variants);
             setHighlights(product.highlights || []);
@@ -1354,6 +1390,7 @@
             document.getElementById('edit-old-price').value = '';
             document.getElementById('edit-category').value = 'handles';
             document.getElementById('edit-stock').checked = true;
+            document.getElementById('edit-stock-quantity').value = '';
             document.getElementById('edit-popular').checked = false;
             setVariants();
             setHighlights();
@@ -1381,6 +1418,7 @@
                 video_url: document.getElementById('edit-video-url').value.trim() || null,
                 old_price: toNumber(document.getElementById('edit-old-price').value) || null,
                 in_stock: document.getElementById('edit-stock').checked,
+                stock_quantity: document.getElementById('edit-stock-quantity').value === '' ? null : Number(document.getElementById('edit-stock-quantity').value),
                 is_popular: document.getElementById('edit-popular').checked,
                 specifications: collectSpecifications(),
                 variants: collectVariants(),
@@ -1803,7 +1841,7 @@
             }
 
             if (activeTab === 'ttn') {
-                body = `<div class="order-detail-grid"><div class="order-detail-card"><small>Статус ТТН</small><strong>${order.ttn_number ? 'Створено' : 'Ще не створено'}</strong>${order.ttn_number ? `<br><small style="margin-top:10px;">Номер ТТН</small><strong>${escapeHtml(order.ttn_number)}</strong>` : ''}</div><div class="order-detail-card"><small>Спосіб доставки</small><strong>${escapeHtml(order.delivery_method || '—')}</strong></div></div><div id="ttn-sender-panel">${isNovaPoshtaOrder(order) && !order.ttn_number ? `<button class="btn btn-sm btn-edit" onclick='createTtnForOrder(${modalOrderId})'><i class="fa fa-truck"></i> Створити ТТН</button>` : order.ttn_number ? '<div class="order-detail-card">ТТН уже збережено в цьому замовленні.</div>' : '<div class="order-empty-tab">ТТН доступна лише для способів доставки Нової Пошти.</div>'}</div>`;
+                body = `<div class="order-detail-grid"><div class="order-detail-card"><small>Статус ТТН</small><strong>${order.ttn_number ? 'Створено' : 'Ще не створено'}</strong>${order.ttn_number ? `<br><small style="margin-top:10px;">Номер ТТН</small><strong>${escapeHtml(order.ttn_number)}</strong><br><button class="btn-sm btn-edit" style="margin-top:12px;" onclick='printOrderDocument(${modalOrderId}, "ttn")'><i class="fa fa-print"></i> Друк даних ТТН</button>` : ''}</div><div class="order-detail-card"><small>Спосіб доставки</small><strong>${escapeHtml(order.delivery_method || '—')}</strong></div></div><div id="ttn-sender-panel">${isNovaPoshtaOrder(order) && !order.ttn_number ? `<button class="btn btn-sm btn-edit" onclick='createTtnForOrder(${modalOrderId})'><i class="fa fa-truck"></i> Створити ТТН</button>` : order.ttn_number ? '<div class="order-detail-card">ТТН уже збережено в цьому замовленні.</div>' : '<div class="order-empty-tab">ТТН доступна лише для способів доставки Нової Пошти.</div>'}</div>`;
             }
 
             if (activeTab === 'delivery') {
@@ -1811,7 +1849,7 @@
             }
 
             if (activeTab === 'documents') {
-                body = `<div class="order-empty-tab"><i class="fa fa-folder-open" style="font-size:26px;display:block;margin-bottom:10px;"></i><strong style="color:#ddd;">Документи замовлення</strong><br><span>Тут згодом будуть продажі, надходження від постачальників і переміщення між складами.</span></div>`;
+                body = `<div class="order-detail-card"><small>Документи продажу</small><p style="color:#aaa;line-height:1.5;">Видаткову можна надрукувати або зберегти як PDF через системне вікно друку.</p><button class="btn btn-sm btn-edit" onclick='printOrderDocument(${modalOrderId}, "invoice")'><i class="fa fa-print"></i> Друк видаткової</button></div><div class="order-empty-tab"><i class="fa fa-folder-open" style="font-size:26px;display:block;margin-bottom:10px;"></i><strong style="color:#ddd;">Майбутні документи</strong><br><span>Надходження від постачальників і переміщення між складами підключимо разом зі складським обліком.</span></div>`;
             }
 
             content.innerHTML = tabHeader + body;
@@ -1821,6 +1859,22 @@
             document.getElementById('order-modal').style.display = 'none';
             document.getElementById('delete-order-button').style.display = 'none';
             openedOrder = null;
+        }
+
+        function printOrderDocument(orderId, type) {
+            const order = managedOrders.find(item => String(item.id) === String(orderId)) || openedOrder;
+            if (!order) return showToast('Замовлення не знайдено.', true);
+            const items = Array.isArray(order.items) ? order.items : parseOrderJson(order.items) || [];
+            const delivery = getNovaPoshtaDelivery(order);
+            const title = type === 'ttn' ? `Дані ТТН №${order.ttn_number || '—'}` : `Видаткова накладна №${order.id}`;
+            const rows = items.map(item => `<tr><td>${escapeHtml(item.name || 'Товар')}</td><td>${escapeHtml(String(item.code || item.sku || '—'))}</td><td>${Number(item.quantity || 1)}</td><td>${orderMoney(orderItemPrice(item))}</td><td>${orderMoney(orderItemPrice(item) * Number(item.quantity || 1))}</td></tr>`).join('');
+            const details = type === 'ttn'
+                ? `<p><strong>Номер ТТН:</strong> ${escapeHtml(order.ttn_number || '—')}</p><p><strong>Отримувач:</strong> ${escapeHtml(order.customer_name || '—')}, ${escapeHtml(order.phone || '')}</p><p><strong>Доставка:</strong> ${escapeHtml(order.delivery_method || '—')}<br>${escapeHtml(delivery.city || '')} ${escapeHtml(delivery.warehouse || order.delivery_details || '')}</p>`
+                : `<p><strong>Покупець:</strong> ${escapeHtml(order.customer_name || '—')}</p><p><strong>Дата:</strong> ${escapeHtml(orderDate(order.created_at))}</p><p><strong>Оплата:</strong> ${escapeHtml(order.payment_method || '—')}</p>`;
+            const printWindow = window.open('', '_blank', 'width=900,height=700');
+            if (!printWindow) return showToast('Браузер заблокував вікно друку. Дозвольте спливні вікна для сайту.', true);
+            printWindow.document.write(`<!doctype html><html lang="uk"><head><meta charset="utf-8"><title>${title}</title><style>body{font:15px Arial,sans-serif;color:#111;margin:36px}h1{font-size:25px;margin:0 0 24px}table{width:100%;border-collapse:collapse;margin-top:26px}th,td{border:1px solid #bbb;padding:9px;text-align:left}th{background:#eee}.total{text-align:right;font-size:18px;margin-top:18px}@media print{body{margin:14mm}}</style></head><body><h1>${title}</h1>${details}<table><thead><tr><th>Товар</th><th>Код</th><th>К-сть</th><th>Ціна</th><th>Сума</th></tr></thead><tbody>${rows || '<tr><td colspan="5">Немає товарів</td></tr>'}</tbody></table><p class="total"><strong>Разом: ${orderMoney(order.total)}</strong></p><script>window.onload=()=>window.print()<\/script></body></html>`);
+            printWindow.document.close();
         }
 
         async function updateOrderStatus(orderId, status) {
