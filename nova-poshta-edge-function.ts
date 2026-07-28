@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
     const action = body.action;
     const search = String(body.query || "").trim();
 
-    if (["senders", "sender_contacts", "sender_addresses", "create_ttn"].includes(action)) await requireAdminSession(req);
+    if (["senders", "sender_contacts", "sender_addresses", "create_ttn", "print_ttn"].includes(action)) await requireAdminSession(req);
 
     if (action === "cities") {
       if (!search) return Response.json({ error: "Введіть хоча б одну літеру." }, { status: 400, headers });
@@ -154,6 +154,23 @@ Deno.serve(async (req) => {
       const document = documents[0];
       if (!document?.IntDocNumber) throw new Error("Нова Пошта не повернула номер ТТН.");
       return Response.json({ ttn_number: document.IntDocNumber, ttn_ref: document.Ref || "" }, { headers: { ...headers, "Content-Type": "application/json" } });
+    }
+
+    if (action === "print_ttn") {
+      const documentRef = String(body.ttn_ref || "").trim();
+      const apiKey = Deno.env.get("NOVA_POSHTA_API_KEY");
+      if (!documentRef) throw new Error("У замовленні не збережено службовий код ТТН Нової Пошти.");
+      if (!apiKey) throw new Error("Не налаштовано ключ Нової Пошти.");
+
+      // This address returns the original Nova Poshta print form. The API key remains only on the server.
+      const printResponse = await fetch(
+        `https://my.novaposhta.ua/orders/printDocument/orders/${encodeURIComponent(documentRef)}/type/pdf/apiKey/${encodeURIComponent(apiKey)}`,
+      );
+      if (!printResponse.ok) throw new Error("Нова Пошта не повернула PDF ТТН. Спробуйте ще раз через хвилину.");
+      const pdf = await printResponse.arrayBuffer();
+      return new Response(pdf, {
+        headers: { ...headers, "Content-Type": "application/pdf", "Content-Disposition": "inline" },
+      });
     }
 
     return Response.json({ error: "Невідома дія." }, { status: 400, headers });
