@@ -669,15 +669,15 @@
         <div id="section-orders" class="admin-section" style="display: none;">
             <div class="admin-content-box" style="margin-bottom:20px;">
                 <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Дані відправника Нової Пошти</h3><p class="editor-help" style="margin:0;">Заповнюються один раз. API-ключ тут не потрібен.</p></div></div>
+                <button class="btn btn-sm" type="button" onclick="loadNovaSenderOptions()" style="margin-bottom:18px;"><i class="fa fa-refresh"></i> Завантажити мої дані з Нової Пошти</button>
+                <p id="np-sender-status" class="editor-help" style="margin-top:-8px;">Натисни кнопку — обери відправника, контакт і відділення зі списку.</p>
+                <input id="np-sender-city-ref" type="hidden">
+                <div class="form-group"><label>Відправник</label><select id="np-sender-ref" onchange="loadNovaSenderContactsAndWarehouses()"><option value="">Спочатку завантажте дані</option></select></div>
                 <div class="row" style="gap:14px;">
-                    <div class="col-2 form-group" style="flex:1;"><label>Місто відправника (Ref)</label><input id="np-sender-city-ref" placeholder="Ref міста"></div>
-                    <div class="col-2 form-group" style="flex:1;"><label>Відділення / адреса відправника (Ref)</label><input id="np-sender-address-ref" placeholder="Ref відділення або адреси"></div>
-                </div>
-                <div class="row" style="gap:14px;">
-                    <div class="col-2 form-group" style="flex:1;"><label>Контакт відправника (Ref)</label><input id="np-sender-contact-ref" placeholder="Ref контакту"></div>
+                    <div class="col-2 form-group" style="flex:1;"><label>Контакт відправника</label><select id="np-sender-contact-ref"><option value="">Оберіть відправника</option></select></div>
                     <div class="col-2 form-group" style="flex:1;"><label>Телефон відправника</label><input id="np-sender-phone" placeholder="380XXXXXXXXX"></div>
                 </div>
-                <div class="form-group"><label>Відправник / контрагент (Ref)</label><input id="np-sender-ref" placeholder="Ref відправника з кабінету Нової Пошти"></div>
+                <div class="form-group"><label>Відділення відправника</label><select id="np-sender-address-ref"><option value="">Оберіть відправника</option></select></div>
                 <button class="btn btn-sm" onclick="saveNovaSenderSettings()"><i class="fa fa-save"></i> Зберегти дані відправника</button>
             </div>
             <div class="admin-content-box">
@@ -1443,6 +1443,71 @@
             const { error } = await supabaseClient.from('site_settings').upsert({ id: 'nova_poshta_sender', data: sender });
             if (error) return showToast(error.message, true);
             showToast('Дані відправника збережено.');
+        }
+
+        async function novaPoshtaAdmin(action, payload = {}) {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!session) throw new Error('Увійдіть в адмінпанель ще раз.');
+            const response = await fetch(`${window.HOBBYT_SUPABASE_URL}/functions/v1/nova-poshta`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    apikey: window.HOBBYT_SUPABASE_KEY,
+                    Authorization: `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({ action, ...payload })
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Не вдалося отримати дані Нової Пошти');
+            return result.data || [];
+        }
+
+        const fillSelect = (id, items, label, selectedValue = '') => {
+            const select = document.getElementById(id);
+            if (!select) return;
+            select.innerHTML = `<option value="">${label}</option>` + items.map(item => `<option value="${escapeHtml(item.ref)}" data-phone="${escapeHtml(item.phone || '')}" data-city-ref="${escapeHtml(item.city_ref || '')}">${escapeHtml(item.name)}</option>`).join('');
+            select.value = selectedValue || '';
+        };
+
+        async function loadNovaSenderOptions() {
+            const status = document.getElementById('np-sender-status');
+            try {
+                status.textContent = 'Завантажуємо дані з Нової Пошти…';
+                const saved = await loadNovaSenderSettings();
+                const senders = await novaPoshtaAdmin('senders');
+                fillSelect('np-sender-ref', senders, 'Оберіть відправника', saved.sender_ref);
+                if (saved.sender_ref) await loadNovaSenderContactsAndWarehouses(saved);
+                status.textContent = senders.length ? 'Оберіть відправника зі списку.' : 'Відправників не знайдено в цьому кабінеті Нової Пошти.';
+            } catch (error) {
+                status.textContent = error.message;
+                showToast(error.message, true);
+            }
+        }
+
+        async function loadNovaSenderContactsAndWarehouses(saved = {}) {
+            const senderSelect = document.getElementById('np-sender-ref');
+            const sender = senderSelect?.selectedOptions?.[0];
+            const senderRef = senderSelect?.value;
+            const cityRef = sender?.dataset.cityRef || saved.city_ref || '';
+            const status = document.getElementById('np-sender-status');
+            if (!senderRef) return;
+            try {
+                status.textContent = 'Завантажуємо контакти й відділення…';
+                const [contacts, warehouses] = await Promise.all([
+                    novaPoshtaAdmin('sender_contacts', { senderRef }),
+                    cityRef ? novaPoshtaAdmin('warehouses', { cityRef, query: '' }) : Promise.resolve([])
+                ]);
+                document.getElementById('np-sender-city-ref').value = cityRef;
+                fillSelect('np-sender-contact-ref', contacts, 'Оберіть контакт', saved.contact_ref);
+                fillSelect('np-sender-address-ref', warehouses, 'Оберіть відділення', saved.address_ref);
+                const contact = document.getElementById('np-sender-contact-ref');
+                if (saved.phone) document.getElementById('np-sender-phone').value = saved.phone;
+                contact.onchange = () => { document.getElementById('np-sender-phone').value = contact.selectedOptions[0]?.dataset.phone || ''; };
+                status.textContent = cityRef ? 'Оберіть контакт і відділення, потім збережіть.' : 'Не вдалося визначити місто відправника. Оберіть його в кабінеті Нової Пошти.';
+            } catch (error) {
+                status.textContent = error.message;
+                showToast(error.message, true);
+            }
         }
 
         async function loadOrdersSection() {
