@@ -772,7 +772,7 @@
         <div class="modal-box" style="width:min(1040px,96vw); max-height:90vh; overflow:auto;">
             <h3 id="order-modal-title">Замовлення</h3>
             <div id="order-modal-content"></div>
-            <div class="modal-footer"><button class="btn btn-sm" onclick="closeOrderModal()" style="background:#333;">Закрити</button></div>
+            <div class="modal-footer"><button id="delete-order-button" class="btn btn-sm btn-delete" style="display:none; margin-right:auto;" onclick="deleteOpenedOrder()"><i class="fa fa-trash"></i> Видалити замовлення</button><button class="btn btn-sm" onclick="closeOrderModal()" style="background:#333;">Закрити</button></div>
         </div>
     </div>
 
@@ -1756,12 +1756,24 @@
             if (!order) return;
             openedOrder = order;
             document.getElementById('order-modal-title').textContent = `Замовлення №${order.id}`;
+            document.getElementById('delete-order-button').style.display = 'inline-block';
             document.getElementById('order-modal').style.display = 'flex';
             renderOrderModalTab(order.id, 'products');
         }
 
         function orderItemPrice(item) {
             return Number(String(item.price || 0).replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+        }
+
+        const orderStatusOptions = [
+            ['new', 'Нове'],
+            ['processing', 'В обробці'],
+            ['completed', 'Виконано'],
+            ['cancelled', 'Скасовано']
+        ];
+
+        function orderStatusLabel(status) {
+            return orderStatusOptions.find(([value]) => value === status)?.[1] || 'Нове';
         }
 
         function renderOrderModalTab(orderId, activeTab) {
@@ -1795,7 +1807,7 @@
             }
 
             if (activeTab === 'delivery') {
-                body = `<div class="order-detail-grid"><div class="order-detail-card"><small>Спосіб доставки</small><strong>${escapeHtml(order.delivery_method || '—')}</strong></div><div class="order-detail-card"><small>Оплата</small><strong>${escapeHtml(order.payment_method || '—')}</strong></div><div class="order-detail-card"><small>Покупець</small><strong>${escapeHtml(order.customer_name || '—')}</strong><br>${escapeHtml(order.phone || '')}<br>${escapeHtml(order.email || '')}</div><div class="order-detail-card"><small>Місто й відділення</small><strong>${escapeHtml(delivery.city || '—')}</strong><br>${escapeHtml(delivery.warehouse || order.delivery_details || '—')}</div></div>${order.notes ? `<div class="order-detail-card"><small>Нотатка до замовлення</small>${escapeHtml(order.notes)}</div>` : ''}`;
+                body = `<div class="order-detail-grid"><div class="order-detail-card"><small>Статус замовлення</small><select onchange='updateOrderStatus(${modalOrderId}, this.value)' style="width:100%;margin-top:5px;">${orderStatusOptions.map(([value, label]) => `<option value="${value}" ${order.status === value ? 'selected' : ''}>${label}</option>`).join('')}</select></div><div class="order-detail-card"><small>Спосіб доставки</small><strong>${escapeHtml(order.delivery_method || '—')}</strong></div><div class="order-detail-card"><small>Оплата</small><strong>${escapeHtml(order.payment_method || '—')}</strong></div><div class="order-detail-card"><small>Покупець</small><strong>${escapeHtml(order.customer_name || '—')}</strong><br>${escapeHtml(order.phone || '')}<br>${escapeHtml(order.email || '')}</div><div class="order-detail-card"><small>Місто й відділення</small><strong>${escapeHtml(delivery.city || '—')}</strong><br>${escapeHtml(delivery.warehouse || order.delivery_details || '—')}</div></div>${order.notes ? `<div class="order-detail-card"><small>Нотатка до замовлення</small>${escapeHtml(order.notes)}</div>` : ''}`;
             }
 
             if (activeTab === 'documents') {
@@ -1805,7 +1817,33 @@
             content.innerHTML = tabHeader + body;
         }
 
-        function closeOrderModal() { document.getElementById('order-modal').style.display = 'none'; }
+        function closeOrderModal() {
+            document.getElementById('order-modal').style.display = 'none';
+            document.getElementById('delete-order-button').style.display = 'none';
+            openedOrder = null;
+        }
+
+        async function updateOrderStatus(orderId, status) {
+            const order = managedOrders.find(item => String(item.id) === String(orderId)) || openedOrder;
+            if (!order || !orderStatusOptions.some(([value]) => value === status)) return;
+            const { error } = await supabaseClient.from('orders').update({ status }).eq('id', order.id);
+            if (error) return showToast(error.message, true);
+            order.status = status;
+            if (openedOrder) openedOrder.status = status;
+            showToast(`Статус: ${orderStatusLabel(status)}.`);
+            await loadOrdersSection();
+        }
+
+        async function deleteOpenedOrder() {
+            const order = openedOrder;
+            if (!order) return;
+            if (!confirm(`Видалити замовлення №${order.id}? Цю дію не можна скасувати.`)) return;
+            const { error } = await supabaseClient.from('orders').delete().eq('id', order.id);
+            if (error) return showToast(error.message, true);
+            closeOrderModal();
+            await loadOrdersSection();
+            showToast('Замовлення видалено.');
+        }
 
         async function createTtnForOrder(orderOrId) {
             const order = typeof orderOrId === 'object'
