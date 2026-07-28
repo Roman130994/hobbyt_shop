@@ -317,7 +317,7 @@ async function setupProductReviews(productId) {
             if (error) throw error;
             form.reset();
             clearReviewPhoto();
-            message.textContent = 'Дякуємо! Відгук з’явиться після перевірки.';
+            message.textContent = 'Дякуємо! Ваш відгук успішно надіслано.';
         } catch (error) {
             message.textContent = `Не вдалося надіслати відгук: ${error.message || 'спробуйте пізніше'}`;
         }
