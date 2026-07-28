@@ -554,6 +554,8 @@
             <li onclick="switchSection('banners')" id="menu-banners"><i class="fa fa-image"></i> Банери</li>
             <li onclick="switchSection('pages')" id="menu-pages"><i class="fa fa-file-text"></i> Сторінки</li>
             <li onclick="switchSection('orders')" id="menu-orders"><i class="fa fa-truck"></i> Замовлення</li>
+            <li onclick="switchSection('warehouse')" id="menu-warehouse"><i class="fa fa-cubes"></i> Склад</li>
+            <li onclick="switchSection('accounting')" id="menu-accounting"><i class="fa fa-exchange"></i> Облік</li>
             <li onclick="switchSection('senders')" id="menu-senders"><i class="fa fa-address-card"></i> Відправники НП</li>
             <li onclick="switchSection('reviews')" id="menu-reviews"><i class="fa fa-star"></i> Відгуки</li>
             <li onclick="switchSection('stats')" id="menu-stats"><i class="fa fa-pie-chart"></i> Статистика</li>
@@ -698,6 +700,22 @@
                 <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Усі замовлення</h3><p class="editor-help" style="margin:0;">Натисни «Відкрити», щоб побачити деталі й створити ТТН.</p></div><button class="btn btn-sm" onclick="loadOrdersSection()"><i class="fa fa-refresh"></i> Оновити</button></div>
                 <table class="admin-table"><thead><tr><th>№</th><th>Дата</th><th>Покупець</th><th>Доставка</th><th>Сума</th><th></th></tr></thead><tbody id="orders-management-list"></tbody></table>
             </div>
+        </div>
+
+        <div id="section-warehouse" class="admin-section" style="display: none;">
+            <div class="admin-content-box">
+                <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Склад</h3><p class="editor-help" style="margin:0;">Усі товари, їхній код, ціна, характеристики та фактичний залишок.</p></div><button class="btn btn-sm" onclick="loadWarehouseSection()"><i class="fa fa-refresh"></i> Оновити</button></div>
+                <table class="admin-table"><thead><tr><th>Товар</th><th>Код</th><th>Категорія</th><th>Ціна</th><th>Залишок</th><th>Інформація</th></tr></thead><tbody id="warehouse-list"></tbody></table>
+            </div>
+        </div>
+
+        <div id="section-accounting" class="admin-section" style="display: none;">
+            <div class="admin-content-box" style="margin-bottom:20px;">
+                <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Операції зі складом</h3><p class="editor-help" style="margin:0;">Оприбуткування збільшує залишок, списання та продаж зменшують його.</p></div></div>
+                <div class="form-row" style="grid-template-columns:2fr 1fr 2fr;align-items:end;"><div class="form-group"><label>Товар</label><select id="inventory-product"></select></div><div class="form-group"><label>Кількість</label><input id="inventory-quantity" type="number" min="1" value="1"></div><div class="form-group"><label>Коментар</label><input id="inventory-note" placeholder="Наприклад: нова партія або брак"></div></div>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="btn btn-sm" style="background:#27ae60;" onclick="saveInventoryMovement('receipt')"><i class="fa fa-plus"></i> Оприбуткування</button><button class="btn btn-sm" style="background:#e67e22;" onclick="saveInventoryMovement('writeoff')"><i class="fa fa-minus"></i> Списання</button><button class="btn btn-sm" onclick="saveInventoryMovement('sale')"><i class="fa fa-shopping-cart"></i> Продаж</button></div>
+            </div>
+            <div class="admin-content-box"><div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Журнал обліку</h3><p class="editor-help" style="margin:0;">Продажі з сайту також з’являтимуться тут автоматично.</p></div><button class="btn btn-sm" onclick="loadAccountingSection()"><i class="fa fa-refresh"></i> Оновити</button></div><table class="admin-table"><thead><tr><th>Дата</th><th>Операція</th><th>Товар</th><th>Кількість</th><th>Коментар</th></tr></thead><tbody id="inventory-movements-list"></tbody></table></div>
         </div>
 
         <div id="export-box">
@@ -921,6 +939,8 @@
                 'banners': 'Управління банерами',
                 'pages': 'Редагування сторінок',
                 'orders': 'Замовлення',
+                'warehouse': 'Склад',
+                'accounting': 'Облік',
                 'senders': 'Відправники Нової Пошти',
                 'reviews': 'Відгуки покупців',
                 'stats': 'Статистика та Фінанси'
@@ -928,9 +948,67 @@
             document.querySelector('.admin-header h1').innerText = titles[sectionId];
             if(sectionId === 'stats') loadStats();
             if(sectionId === 'orders') loadOrdersSection();
+            if(sectionId === 'warehouse') loadWarehouseSection();
+            if(sectionId === 'accounting') loadAccountingSection();
             if(sectionId === 'senders') loadSenderProfiles();
             if(sectionId === 'reviews') loadAdminReviews();
             if(sectionId === 'dashboard') loadDashboard();
+        }
+
+        function inventoryProductOptions() {
+            return productsData.map(product => `<option value="${Number(product.id)}">${escapeHtml(product.name)} · ${escapeHtml(product.sku || 'без коду')}</option>`).join('');
+        }
+
+        async function loadWarehouseSection() {
+            const list = document.getElementById('warehouse-list');
+            if (!list) return;
+            await syncProductsFromDatabase();
+            list.innerHTML = productsData.map(product => {
+                const stock = product.stockQuantity;
+                const stockLabel = stock === null || stock === undefined ? 'Не ведеться' : `${stock} шт.`;
+                const info = Object.entries(product.specifications || {}).slice(0, 3).map(([key, value]) => `${key}: ${value}`).join(' · ') || '—';
+                return `<tr><td><div style="display:flex;gap:10px;align-items:center;"><img src="${escapeHtml(product.image || '4.png')}" style="width:44px;height:44px;object-fit:cover;border-radius:5px;" onerror="this.src='4.png'"><strong>${escapeHtml(product.name)}</strong></div></td><td>${escapeHtml(product.sku || '—')}</td><td>${escapeHtml(categoryLabels[product.category] || product.category || '—')}</td><td>${escapeHtml(product.price || '—')}</td><td style="color:${stock !== null && stock !== undefined && stock <= 3 ? '#ffb36b' : '#ddd'};">${stockLabel}</td><td><small>${escapeHtml(info)}</small></td></tr>`;
+            }).join('') || '<tr><td colspan="6">Товарів ще немає.</td></tr>';
+        }
+
+        async function loadAccountingSection() {
+            const select = document.getElementById('inventory-product');
+            const list = document.getElementById('inventory-movements-list');
+            if (!select || !list) return;
+            await syncProductsFromDatabase();
+            select.innerHTML = inventoryProductOptions() || '<option value="">Немає товарів</option>';
+            list.innerHTML = '<tr><td colspan="5">Завантаження…</td></tr>';
+            try {
+                const { data, error } = await supabaseClient.from('inventory_movements').select('*, products(name, sku)').order('created_at', { ascending: false }).limit(200);
+                if (error) throw error;
+                const labels = { receipt: 'Оприбуткування', writeoff: 'Списання', sale: 'Продаж' };
+                const colors = { receipt: '#75cc91', writeoff: '#ffb36b', sale: '#75b7ed' };
+                list.innerHTML = data?.length ? data.map(row => `<tr><td>${orderDate(row.created_at)}</td><td style="color:${colors[row.movement_type] || '#ddd'};">${labels[row.movement_type] || row.movement_type}</td><td>${escapeHtml(row.products?.name || 'Видалений товар')}<br><small>${escapeHtml(row.products?.sku || '')}</small></td><td>${row.quantity} шт.</td><td>${escapeHtml(row.note || '—')}</td></tr>`).join('') : '<tr><td colspan="5">Операцій ще немає.</td></tr>';
+            } catch (error) {
+                list.innerHTML = `<tr><td colspan="5" style="color:#e74c3c;">Не вдалося завантажити облік: ${escapeHtml(error.message)}</td></tr>`;
+            }
+        }
+
+        async function saveInventoryMovement(type) {
+            const productId = Number(document.getElementById('inventory-product')?.value);
+            const quantity = Number(document.getElementById('inventory-quantity')?.value);
+            const note = document.getElementById('inventory-note')?.value.trim() || '';
+            const product = productsData.find(item => Number(item.id) === productId);
+            if (!product || !quantity || quantity < 1) return showToast('Оберіть товар і вкажіть кількість.', true);
+            const currentStock = Number(product.stockQuantity || 0);
+            const nextStock = type === 'receipt' ? currentStock + quantity : currentStock - quantity;
+            if (nextStock < 0) return showToast('Неможливо списати більше, ніж є на складі.', true);
+            try {
+                const { error: updateError } = await supabaseClient.from('products').update({ stock_quantity: nextStock, in_stock: nextStock > 0 }).eq('id', productId);
+                if (updateError) throw updateError;
+                const labels = { receipt: 'Оприбуткування', writeoff: 'Списання', sale: 'Ручний продаж' };
+                const { error: movementError } = await supabaseClient.from('inventory_movements').insert({ product_id: productId, movement_type: type, quantity, note: note || labels[type] });
+                if (movementError) throw movementError;
+                document.getElementById('inventory-quantity').value = '1';
+                document.getElementById('inventory-note').value = '';
+                await loadAccountingSection();
+                showToast(`${labels[type]} збережено.`);
+            } catch (error) { showToast(error.message || 'Не вдалося зберегти операцію.', true); }
         }
 
         async function loadAdminReviews() {
@@ -1850,10 +1928,11 @@
             }
 
             if (activeTab === 'documents') {
-                body = `<div class="order-detail-card"><small>Документи продажу</small><p style="color:#aaa;line-height:1.5;">Офіційний PDF ТТН і маркування завантажуються прямо з Нової Пошти. Видаткову можна роздрукувати або зберегти як PDF.</p>${hasTtn ? `<button class="btn btn-sm btn-edit" style="margin-right:8px;" onclick='downloadOfficialTtn(${modalOrderId})'><i class="fa fa-file-pdf-o"></i> Офіційний PDF ТТН</button><button class="btn btn-sm btn-edit" style="margin-right:8px;" onclick='downloadTtnMarking(${modalOrderId})'><i class="fa fa-barcode"></i> Маркування ТТН</button>` : ''}<button class="btn btn-sm btn-edit" onclick='printOrderDocument(${modalOrderId}, "invoice")'><i class="fa fa-print"></i> Друк видаткової</button></div><div class="order-empty-tab"><i class="fa fa-folder-open" style="font-size:26px;display:block;margin-bottom:10px;"></i><strong style="color:#ddd;">Майбутні документи</strong><br><span>Надходження від постачальників і переміщення між складами підключимо разом зі складським обліком.</span></div>`;
+                body = `<div class="order-detail-card"><small>Документи продажу</small><p style="color:#aaa;line-height:1.5;">Офіційний PDF ТТН і маркування завантажуються прямо з Нової Пошти та зберігаються в документах цього замовлення.</p>${hasTtn ? `<button class="btn btn-sm btn-edit" style="margin-right:8px;" onclick='downloadOfficialTtn(${modalOrderId})'><i class="fa fa-file-pdf-o"></i> Офіційний PDF ТТН</button><button class="btn btn-sm btn-edit" style="margin-right:8px;" onclick='downloadTtnMarking(${modalOrderId})'><i class="fa fa-barcode"></i> Маркування ТТН</button>` : ''}<button class="btn btn-sm btn-edit" onclick='printOrderDocument(${modalOrderId}, "invoice")'><i class="fa fa-print"></i> Друк видаткової</button></div><div class="order-detail-card" style="margin-top:14px;"><small>Збережені документи замовлення</small><div id="order-documents-list" class="editor-help" style="margin-top:10px;">Завантаження…</div></div><div class="order-empty-tab"><i class="fa fa-folder-open" style="font-size:26px;display:block;margin-bottom:10px;"></i><strong style="color:#ddd;">Майбутні документи</strong><br><span>Надходження від постачальників і переміщення між складами підключимо разом зі складським обліком.</span></div>`;
             }
 
             content.innerHTML = tabHeader + body;
+            if (activeTab === 'documents') loadOrderDocuments(order.id);
         }
 
         function closeOrderModal() {
@@ -1893,7 +1972,9 @@
                     const result = await response.json().catch(() => ({}));
                     throw new Error(result.error || 'Не вдалося завантажити офіційний PDF ТТН.');
                 }
-                const pdfUrl = URL.createObjectURL(await response.blob());
+                const pdf = await response.blob();
+                await archiveOrderDocument(order, 'ttn', `ТТН №${order.ttn_number || order.id}`, pdf);
+                const pdfUrl = URL.createObjectURL(pdf);
                 const printWindow = window.open(pdfUrl, '_blank');
                 if (!printWindow) {
                     const link = document.createElement('a');
@@ -1922,7 +2003,9 @@
                     const result = await response.json().catch(() => ({}));
                     throw new Error(result.error || 'Не вдалося завантажити маркування ТТН.');
                 }
-                const pdfUrl = URL.createObjectURL(await response.blob());
+                const pdf = await response.blob();
+                await archiveOrderDocument(order, 'marking', `Маркування ТТН №${order.ttn_number || order.id}`, pdf);
+                const pdfUrl = URL.createObjectURL(pdf);
                 const printWindow = window.open(pdfUrl, '_blank');
                 if (!printWindow) {
                     const link = document.createElement('a');
@@ -1934,6 +2017,47 @@
             } catch (error) {
                 showToast(error.message || 'Не вдалося завантажити маркування ТТН.', true);
             }
+        }
+
+        async function archiveOrderDocument(order, type, title, file) {
+            const fileName = `${String(order.id)}-${type}.pdf`;
+            const path = `orders/${fileName}`;
+            const { error: uploadError } = await supabaseClient.storage.from('order-documents').upload(path, file, { contentType: 'application/pdf', upsert: true });
+            if (uploadError) throw uploadError;
+            const { error: documentError } = await supabaseClient.from('order_documents').upsert({ order_id: order.id, type, title, file_path: path }, { onConflict: 'order_id,type' });
+            if (documentError) throw documentError;
+        }
+
+        async function archiveCreatedTtn(order) {
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session || !order.ttn_ref) return;
+                const response = await fetch(`${window.HOBBYT_SUPABASE_URL}/functions/v1/nova-poshta`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', apikey: window.HOBBYT_SUPABASE_KEY, Authorization: `Bearer ${session.access_token}` },
+                    body: JSON.stringify({ action: 'print_ttn', ttn_ref: order.ttn_ref })
+                });
+                if (!response.ok) return;
+                await archiveOrderDocument(order, 'ttn', `ТТН №${order.ttn_number || order.id}`, await response.blob());
+            } catch (_) {
+                // ТТН вже створена; її можна зберегти вручну через вкладку документів.
+            }
+        }
+
+        async function loadOrderDocuments(orderId) {
+            const list = document.getElementById('order-documents-list');
+            if (!list) return;
+            try {
+                const { data, error } = await supabaseClient.from('order_documents').select('*').eq('order_id', orderId).order('created_at', { ascending: false });
+                if (error) throw error;
+                if (!data?.length) { list.textContent = 'Поки що немає збережених файлів. Натисни «Офіційний PDF ТТН» або «Маркування ТТН», щоб додати їх сюди.'; return; }
+                const rows = await Promise.all(data.map(async document => {
+                    const { data: signed } = await supabaseClient.storage.from('order-documents').createSignedUrl(document.file_path, 3600);
+                    const url = signed?.signedUrl || '';
+                    return `<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #333;"><span><i class="fa fa-file-pdf-o" style="color:#e74c3c;"></i> ${escapeHtml(document.title)}</span>${url ? `<a class="btn-sm btn-edit" href="${escapeHtml(url)}" target="_blank" rel="noopener">Відкрити</a>` : ''}</div>`;
+                }));
+                list.innerHTML = rows.join('');
+            } catch (error) { list.textContent = `Не вдалося завантажити документи: ${error.message}`; }
         }
 
         async function updateOrderStatus(orderId, status) {
@@ -2006,6 +2130,7 @@
                 if (error) throw error;
                 order.ttn_number = result.ttn_number;
                 order.ttn_ref = result.ttn_ref;
+                archiveCreatedTtn(order);
                 closeOrderModal();
                 await loadOrdersSection();
                 showToast(`ТТН ${result.ttn_number} створено.`);
