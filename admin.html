@@ -1769,7 +1769,7 @@
                 ['delivery', 'Доставка', 'fa-map-marker'],
                 ['documents', 'Документи', 'fa-folder-open']
             ];
-            const tabHeader = `<div class="order-tabs">${tabs.map(([id, label, icon]) => `<button class="order-tab ${activeTab === id ? 'active' : ''}" onclick="renderOrderModalTab(${modalOrderId}, '${id}')"><i class="fa ${icon}"></i> ${label}</button>`).join('')}</div>`;
+            const tabHeader = `<div class="order-tabs">${tabs.map(([id, label, icon]) => `<button class="order-tab ${activeTab === id ? 'active' : ''}" onclick='renderOrderModalTab(${modalOrderId}, "${id}")'><i class="fa ${icon}"></i> ${label}</button>`).join('')}</div>`;
             let body = '';
 
             if (activeTab === 'products') {
@@ -1783,7 +1783,7 @@
             }
 
             if (activeTab === 'ttn') {
-                body = `<div class="order-detail-grid"><div class="order-detail-card"><small>Статус ТТН</small><strong>${order.ttn_number ? 'Створено' : 'Ще не створено'}</strong>${order.ttn_number ? `<br><small style="margin-top:10px;">Номер ТТН</small><strong>${escapeHtml(order.ttn_number)}</strong>` : ''}</div><div class="order-detail-card"><small>Спосіб доставки</small><strong>${escapeHtml(order.delivery_method || '—')}</strong></div></div><div id="ttn-sender-panel">${isNovaPoshtaOrder(order) && !order.ttn_number ? `<button class="btn btn-sm btn-edit" onclick="createTtnForOrder(${modalOrderId})"><i class="fa fa-truck"></i> Створити ТТН</button>` : order.ttn_number ? '<div class="order-detail-card">ТТН уже збережено в цьому замовленні.</div>' : '<div class="order-empty-tab">ТТН доступна лише для способів доставки Нової Пошти.</div>'}</div>`;
+                body = `<div class="order-detail-grid"><div class="order-detail-card"><small>Статус ТТН</small><strong>${order.ttn_number ? 'Створено' : 'Ще не створено'}</strong>${order.ttn_number ? `<br><small style="margin-top:10px;">Номер ТТН</small><strong>${escapeHtml(order.ttn_number)}</strong>` : ''}</div><div class="order-detail-card"><small>Спосіб доставки</small><strong>${escapeHtml(order.delivery_method || '—')}</strong></div></div><div id="ttn-sender-panel">${isNovaPoshtaOrder(order) && !order.ttn_number ? `<button class="btn btn-sm btn-edit" onclick='createTtnForOrder(${modalOrderId})'><i class="fa fa-truck"></i> Створити ТТН</button>` : order.ttn_number ? '<div class="order-detail-card">ТТН уже збережено в цьому замовленні.</div>' : '<div class="order-empty-tab">ТТН доступна лише для способів доставки Нової Пошти.</div>'}</div>`;
             }
 
             if (activeTab === 'delivery') {
