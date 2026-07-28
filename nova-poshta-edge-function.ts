@@ -92,6 +92,25 @@ Deno.serve(async (req) => {
       return Response.json({ data: data.map((item: any) => ({ ref: item.Ref, name: item.Description, number: item.Number || "" })) }, { headers: { ...headers, "Content-Type": "application/json" } });
     }
 
+    if (action === "senders") {
+      const data = await np("Counterparty", "getCounterparties", { CounterpartyProperty: "Sender", Page: "1" });
+      return Response.json({ data: data.map((item: any) => ({
+        ref: item.Ref,
+        name: item.Description || [item.LastName, item.FirstName, item.MiddleName].filter(Boolean).join(" ") || "Відправник",
+        phone: item.Phone || "",
+      })) }, { headers: { ...headers, "Content-Type": "application/json" } });
+    }
+
+    if (action === "sender_contacts") {
+      if (!body.query) throw new Error("Не вибрано відправника Нової Пошти.");
+      const data = await np("Counterparty", "getCounterpartyContactPersons", { Ref: body.query, Page: "1" });
+      return Response.json({ data: data.map((item: any) => ({
+        ref: item.Ref,
+        name: item.Description || [item.LastName, item.FirstName, item.MiddleName].filter(Boolean).join(" ") || "Контактна особа",
+        phone: item.Phone || "",
+      })) }, { headers: { ...headers, "Content-Type": "application/json" } });
+    }
+
     if (action === "create_ttn") {
       const order = body.order || {};
       const sender = body.senderProfile || {};
@@ -106,7 +125,8 @@ Deno.serve(async (req) => {
 
       const senderCity = sender.city_ref || await cityRefByName(sender.city);
       const senderWarehouse = sender.address_ref || await warehouseRef(senderCity, sender.address);
-      const senderParty = await createCounterparty(sender.sender_name, sender.phone, "Sender");
+      if (!sender.sender_ref || !sender.contact_ref) throw new Error("У профілі виберіть відправника й контактну особу з кабінету Нової Пошти.");
+      const senderParty = { ref: sender.sender_ref, contactRef: sender.contact_ref };
       const recipientParty = await createCounterparty(order.customer_name, order.phone, "Recipient");
       const today = new Date();
       const dateTime = `${String(today.getDate()).padStart(2, "0")}.${String(today.getMonth() + 1).padStart(2, "0")}.${today.getFullYear()}`;
