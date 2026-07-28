@@ -1669,7 +1669,7 @@ body.dark-theme img.menu-icon {
 .review-form h3 { margin: 0 0 16px; }
 .review-message { min-height: 20px; color: #9bc9f1; margin: 10px 0 0; }
 .review-rating-picker { display: flex; align-items: center; gap: 3px; min-height: 46px; }
-.review-rating-picker button { border: 0; background: transparent; padding: 0 2px; color: #515151; cursor: pointer; font-size: 31px; line-height: 1; transition: color .15s ease, transform .15s ease; }
+.review-rating-picker button { appearance: none; -webkit-appearance: none; border: 0 !important; outline: 0; background: transparent !important; box-shadow: none; padding: 0 2px; color: #515151; cursor: pointer; font: inherit; font-size: 31px; line-height: 1; transition: color .15s ease, transform .15s ease; }
 .review-rating-picker button:hover, .review-rating-picker button.is-active { color: #f4b942; }
 .review-rating-picker button:hover { transform: scale(1.12); }
 .review-rating-picker span { margin-left: 9px; color: #a8a8a8; font-size: 14px; }
