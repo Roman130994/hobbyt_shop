@@ -126,6 +126,8 @@
         .form-row.product-basics { grid-template-columns: 1.3fr .8fr .9fr; }
         .checkbox-field { display: flex; align-items: center; gap: 9px; min-height: 42px; color: #ddd; }
         .checkbox-field input { width: auto; }
+        .nova-results { width: 100%; margin-top: 6px; padding: 7px; background: #191919; color: #fff; border: 1px solid #3c6d94; border-radius: 7px; font: inherit; }
+        .nova-results option { padding: 7px; }
         .specification-row { display: grid; grid-template-columns: minmax(130px, .9fr) 1.2fr 36px; gap: 8px; margin-bottom: 8px; }
         .specification-row select, .specification-row input { min-width: 0; }
         .specification-row button { border: 0; border-radius: 6px; background: #632323; color: #fff; cursor: pointer; }
@@ -770,9 +772,9 @@
             <div class="form-group"><label>ПІБ або назва відправника</label><input id="np-sender-name" placeholder="Наприклад, Роман Кібіткін"></div>
             <div class="row" style="gap:14px;">
                 <div class="col-2 form-group" style="flex:1;"><label>Телефон відправника</label><input id="np-sender-phone" placeholder="380XXXXXXXXX"></div>
-                <div class="col-2 form-group" style="flex:1;"><label>Місто відправника</label><input id="np-sender-city" placeholder="Наприклад, Київ"></div>
+                <div class="col-2 form-group" style="flex:1;"><label>Місто відправника</label><input id="np-sender-city" autocomplete="off" placeholder="Почніть вводити місто"><select id="np-sender-city-results" class="nova-results" size="4" hidden aria-label="Варіанти міст"></select></div>
             </div>
-            <div class="form-group"><label>Відділення або адреса відправника</label><input id="np-sender-address" placeholder="Наприклад, Відділення №1"></div>
+            <div class="form-group"><label>Відділення відправника</label><input id="np-sender-address" autocomplete="off" placeholder="Спочатку виберіть місто" disabled><select id="np-sender-address-results" class="nova-results" size="4" hidden aria-label="Варіанти відділень"></select><small id="np-sender-address-hint">Оберіть місто зі списку, щоб знайти відділення.</small></div>
             <div class="modal-footer"><button class="btn btn-sm" onclick="closeSenderProfileModal()" style="background:#333;">Скасувати</button><button class="btn btn-sm btn-edit" onclick="saveNovaSenderProfile()"><i class="fa fa-save"></i> Зберегти профіль</button></div>
         </div>
     </div>
@@ -1459,11 +1461,120 @@
             document.getElementById('np-sender-profile-name').value = profile.name || '';
             document.getElementById('np-sender-name').value = profile.sender_name || '';
             document.getElementById('np-sender-phone').value = profile.phone || '';
-            document.getElementById('np-sender-city').value = profile.city || '';
-            document.getElementById('np-sender-address').value = profile.address || '';
+            const cityInput = document.getElementById('np-sender-city');
+            const addressInput = document.getElementById('np-sender-address');
+            cityInput.value = profile.city || '';
+            cityInput.dataset.npRef = profile.city_ref || '';
+            addressInput.value = profile.address || '';
+            addressInput.dataset.npRef = profile.address_ref || '';
+            addressInput.disabled = !cityInput.dataset.npRef;
+            document.getElementById('np-sender-city-results').hidden = true;
+            document.getElementById('np-sender-address-results').hidden = true;
+            document.getElementById('np-sender-address-hint').textContent = cityInput.dataset.npRef
+                ? 'Почніть вводити номер або назву відділення.'
+                : 'Оберіть місто зі списку, щоб знайти відділення.';
+        }
+
+        async function novaPoshtaLookup(action, query = '', cityRef = '') {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            const response = await fetch(`${window.HOBBYT_SUPABASE_URL}/functions/v1/nova-poshta`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    apikey: window.HOBBYT_SUPABASE_KEY,
+                    ...(session ? { Authorization: `Bearer ${session.access_token}` } : {})
+                },
+                body: JSON.stringify({ action, query, cityRef })
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.error || 'Не вдалося отримати дані Нової Пошти.');
+            return result.data || [];
+        }
+
+        function fillSenderNovaResults(select, items, label) {
+            select.replaceChildren(...items.map(item => new Option(label(item), item.ref)));
+            select.hidden = items.length === 0;
+        }
+
+        function setupSenderProfileLookup() {
+            const cityInput = document.getElementById('np-sender-city');
+            const cityResults = document.getElementById('np-sender-city-results');
+            const addressInput = document.getElementById('np-sender-address');
+            const addressResults = document.getElementById('np-sender-address-results');
+            const hint = document.getElementById('np-sender-address-hint');
+            if (!cityInput || cityInput.dataset.lookupBound) return;
+            cityInput.dataset.lookupBound = 'true';
+            let cityTimer;
+            let addressTimer;
+
+            const resetAddress = () => {
+                addressInput.value = '';
+                addressInput.dataset.npRef = '';
+                addressInput.disabled = true;
+                addressResults.hidden = true;
+                hint.textContent = 'Оберіть місто зі списку, щоб знайти відділення.';
+            };
+            cityInput.addEventListener('input', () => {
+                clearTimeout(cityTimer);
+                cityInput.dataset.npRef = '';
+                cityResults.hidden = true;
+                resetAddress();
+                if (cityInput.value.trim().length < 1) return;
+                cityTimer = setTimeout(async () => {
+                    try {
+                        const cities = await novaPoshtaLookup('cities', cityInput.value.trim());
+                        fillSenderNovaResults(cityResults, cities, city => city.name);
+                    } catch (error) {
+                        console.error('Nova Poshta sender cities:', error);
+                    }
+                }, 300);
+            });
+            const chooseCity = () => {
+                const option = cityResults.options[cityResults.selectedIndex];
+                if (!option) return;
+                cityInput.value = option.text;
+                cityInput.dataset.npRef = option.value;
+                cityResults.hidden = true;
+                addressInput.disabled = false;
+                addressInput.placeholder = 'Почніть вводити номер або назву';
+                hint.textContent = 'Почніть вводити номер або назву відділення.';
+            };
+            cityResults.addEventListener('change', chooseCity);
+            cityResults.addEventListener('click', () => setTimeout(chooseCity, 0));
+
+            const loadAddresses = async () => {
+                const cityRef = cityInput.dataset.npRef;
+                if (!cityRef) return;
+                try {
+                    const branches = await novaPoshtaLookup('warehouses', addressInput.value.trim(), cityRef);
+                    fillSenderNovaResults(addressResults, branches, branch => branch.number ? `${branch.number}. ${branch.name}` : branch.name);
+                    hint.textContent = branches.length ? 'Оберіть відділення зі списку.' : 'Відділень не знайдено.';
+                } catch (error) {
+                    console.error('Nova Poshta sender warehouses:', error);
+                    hint.textContent = 'Не вдалося знайти відділення. Спробуйте ще раз.';
+                }
+            };
+            addressInput.addEventListener('focus', loadAddresses);
+            addressInput.addEventListener('input', () => {
+                clearTimeout(addressTimer);
+                addressInput.dataset.npRef = '';
+                addressResults.hidden = true;
+                if (!cityInput.dataset.npRef) return;
+                addressTimer = setTimeout(loadAddresses, 250);
+            });
+            const chooseAddress = () => {
+                const option = addressResults.options[addressResults.selectedIndex];
+                if (!option) return;
+                addressInput.value = option.text;
+                addressInput.dataset.npRef = option.value;
+                addressResults.hidden = true;
+            };
+            addressResults.addEventListener('change', chooseAddress);
+            addressResults.addEventListener('click', () => setTimeout(chooseAddress, 0));
         }
 
         function startNewSenderProfile() {
+            setupSenderProfileLookup();
             editingSenderProfileId = null;
             setSenderForm({});
             document.getElementById('sender-profile-modal-title').textContent = 'Новий профіль відправника';
@@ -1486,6 +1597,7 @@
         function editSenderProfile(profileId) {
             const profile = senderProfiles.find(item => item.id === profileId);
             if (!profile) return;
+            setupSenderProfileLookup();
             editingSenderProfileId = profile.id;
             setSenderForm(profile);
             document.getElementById('sender-profile-modal-title').textContent = 'Редагувати профіль відправника';
@@ -1503,7 +1615,9 @@
                 sender_name: document.getElementById('np-sender-name').value.trim(),
                 phone: document.getElementById('np-sender-phone').value.trim(),
                 city: document.getElementById('np-sender-city').value.trim(),
-                address: document.getElementById('np-sender-address').value.trim()
+                city_ref: document.getElementById('np-sender-city').dataset.npRef || '',
+                address: document.getElementById('np-sender-address').value.trim(),
+                address_ref: document.getElementById('np-sender-address').dataset.npRef || ''
             };
             if (Object.values(profile).some(value => !value)) return showToast('Заповніть назву й усі дані відправника.', true);
             const profiles = [...senderProfiles.filter(item => item.id !== profile.id), profile];

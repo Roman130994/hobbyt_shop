@@ -104,8 +104,8 @@ Deno.serve(async (req) => {
       if (!weight || !description) throw new Error("Вкажіть вагу та опис посилки.");
       if (String(delivery.type || "").includes("courier")) throw new Error("Для кур’єрської доставки потрібно окремо додати технічну адресу отримувача. Поки що автоматично створюються ТТН до відділення.");
 
-      const senderCity = await cityRefByName(sender.city);
-      const senderWarehouse = await warehouseRef(senderCity, sender.address);
+      const senderCity = sender.city_ref || await cityRefByName(sender.city);
+      const senderWarehouse = sender.address_ref || await warehouseRef(senderCity, sender.address);
       const senderParty = await createCounterparty(sender.sender_name, sender.phone, "Sender");
       const recipientParty = await createCounterparty(order.customer_name, order.phone, "Recipient");
       const today = new Date();
