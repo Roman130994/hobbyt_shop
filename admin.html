@@ -1440,6 +1440,7 @@
         }
 
         let managedOrders = [];
+        let openedOrder = null;
         const isNovaPoshtaOrder = order => /Нова Пошта/i.test(order.delivery_method || '');
         const parseOrderJson = value => {
             if (!value) return null;
@@ -1735,7 +1736,7 @@
                     <td>№${order.id}</td><td>${orderDate(order.created_at)}</td>
                     <td>${escapeHtml(order.customer_name || '—')}<br><small>${escapeHtml(order.phone || '')}</small></td>
                     <td>${escapeHtml(order.delivery_method || '—')}</td><td>${orderMoney(order.total)}</td>
-                    <td><button class="btn-sm btn-edit" onclick="openOrderModal(${order.id})">Відкрити</button></td>
+                    <td><button class="btn-sm btn-edit" onclick='openOrderModal(${JSON.stringify(String(order.id))})'>Відкрити</button></td>
                 </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:#999;">Замовлень ще немає.</td></tr>';
             } catch (error) {
                 list.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#e74c3c;">Не вдалося завантажити замовлення.</td></tr>';
@@ -1743,8 +1744,9 @@
         }
 
         async function openOrderModal(orderId) {
-            const order = managedOrders.find(item => Number(item.id) === Number(orderId));
+            const order = managedOrders.find(item => String(item.id) === String(orderId));
             if (!order) return;
+            openedOrder = order;
             document.getElementById('order-modal-title').textContent = `Замовлення №${order.id}`;
             document.getElementById('order-modal').style.display = 'flex';
             renderOrderModalTab(order.id, 'products');
@@ -1755,18 +1757,19 @@
         }
 
         function renderOrderModalTab(orderId, activeTab) {
-            const order = managedOrders.find(item => Number(item.id) === Number(orderId));
+            const order = managedOrders.find(item => String(item.id) === String(orderId)) || (openedOrder && String(openedOrder.id) === String(orderId) ? openedOrder : null);
             if (!order) return;
             const delivery = getNovaPoshtaDelivery(order);
             const items = Array.isArray(order.items) ? order.items : parseOrderJson(order.items) || [];
             const content = document.getElementById('order-modal-content');
+            const modalOrderId = JSON.stringify(String(order.id));
             const tabs = [
                 ['products', 'Товари', 'fa-cube'],
                 ['ttn', 'ТТН', 'fa-truck'],
                 ['delivery', 'Доставка', 'fa-map-marker'],
                 ['documents', 'Документи', 'fa-folder-open']
             ];
-            const tabHeader = `<div class="order-tabs">${tabs.map(([id, label, icon]) => `<button class="order-tab ${activeTab === id ? 'active' : ''}" onclick="renderOrderModalTab(${Number(order.id)}, '${id}')"><i class="fa ${icon}"></i> ${label}</button>`).join('')}</div>`;
+            const tabHeader = `<div class="order-tabs">${tabs.map(([id, label, icon]) => `<button class="order-tab ${activeTab === id ? 'active' : ''}" onclick="renderOrderModalTab(${modalOrderId}, '${id}')"><i class="fa ${icon}"></i> ${label}</button>`).join('')}</div>`;
             let body = '';
 
             if (activeTab === 'products') {
@@ -1780,7 +1783,7 @@
             }
 
             if (activeTab === 'ttn') {
-                body = `<div class="order-detail-grid"><div class="order-detail-card"><small>Статус ТТН</small><strong>${order.ttn_number ? 'Створено' : 'Ще не створено'}</strong>${order.ttn_number ? `<br><small style="margin-top:10px;">Номер ТТН</small><strong>${escapeHtml(order.ttn_number)}</strong>` : ''}</div><div class="order-detail-card"><small>Спосіб доставки</small><strong>${escapeHtml(order.delivery_method || '—')}</strong></div></div><div id="ttn-sender-panel">${isNovaPoshtaOrder(order) && !order.ttn_number ? `<button class="btn btn-sm btn-edit" onclick="createTtnForOrder(${Number(order.id)})"><i class="fa fa-truck"></i> Створити ТТН</button>` : order.ttn_number ? '<div class="order-detail-card">ТТН уже збережено в цьому замовленні.</div>' : '<div class="order-empty-tab">ТТН доступна лише для способів доставки Нової Пошти.</div>'}</div>`;
+                body = `<div class="order-detail-grid"><div class="order-detail-card"><small>Статус ТТН</small><strong>${order.ttn_number ? 'Створено' : 'Ще не створено'}</strong>${order.ttn_number ? `<br><small style="margin-top:10px;">Номер ТТН</small><strong>${escapeHtml(order.ttn_number)}</strong>` : ''}</div><div class="order-detail-card"><small>Спосіб доставки</small><strong>${escapeHtml(order.delivery_method || '—')}</strong></div></div><div id="ttn-sender-panel">${isNovaPoshtaOrder(order) && !order.ttn_number ? `<button class="btn btn-sm btn-edit" onclick="createTtnForOrder(${modalOrderId})"><i class="fa fa-truck"></i> Створити ТТН</button>` : order.ttn_number ? '<div class="order-detail-card">ТТН уже збережено в цьому замовленні.</div>' : '<div class="order-empty-tab">ТТН доступна лише для способів доставки Нової Пошти.</div>'}</div>`;
             }
 
             if (activeTab === 'delivery') {
@@ -1809,7 +1812,7 @@
                     <label style="display:block;margin:8px 0;">Хто оплачує доставку</label>
                     <select id="ttn-payer" style="width:100%;margin-bottom:12px;"><option value="Sender">Відправник оплачує</option><option value="Recipient">Отримувач оплачує</option></select>
                     <div class="row" style="gap:14px;"><div class="col-2 form-group" style="flex:1;"><label>Вага, кг</label><input id="ttn-weight" type="number" min="0.1" step="0.1" value="1"></div><div class="col-2 form-group" style="flex:1;"><label>Опис посилки</label><input id="ttn-description" value="Товари для армреслінгу"></div></div>
-                    <button class="btn btn-sm" onclick="confirmTtnSender(${Number(order.id)})"><i class="fa fa-truck"></i> Продовжити створення ТТН</button>
+                    <button class="btn btn-sm" onclick="confirmTtnSender('${escapeHtml(String(order.id))}')"><i class="fa fa-truck"></i> Продовжити створення ТТН</button>
                 </div>`;
         }
 
@@ -1820,7 +1823,7 @@
             const description = document.getElementById('ttn-description')?.value.trim();
             const profiles = await getSenderProfiles();
             const profile = profiles.find(item => item.id === profileId);
-            const order = managedOrders.find(item => Number(item.id) === Number(orderId));
+            const order = managedOrders.find(item => String(item.id) === String(orderId)) || (openedOrder && String(openedOrder.id) === String(orderId) ? openedOrder : null);
             if (!profile) return showToast('Оберіть профіль відправника.', true);
             if (!order) return showToast('Замовлення не знайдено.', true);
             if (!weight || !description) return showToast('Вкажіть вагу й опис посилки.', true);
