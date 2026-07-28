@@ -670,15 +670,7 @@
         <div id="section-senders" class="admin-section" style="display: none;">
             <div class="admin-content-box" style="margin-bottom:20px;">
                 <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Профілі відправників Нової Пошти</h3><p class="editor-help" style="margin:0;">Створюй профілі вручну. Їх можна буде обирати під час створення ТТН.</p></div><button class="btn btn-sm" type="button" onclick="startNewSenderProfile()"><i class="fa fa-plus"></i> Новий профіль</button></div>
-                <div id="np-sender-profiles" class="editor-help" style="margin-bottom:18px;">Завантаження профілів…</div>
-                <div class="form-group"><label>Назва профілю</label><input id="np-sender-profile-name" placeholder="Наприклад, Роман — Київ"></div>
-                <div class="form-group"><label>ПІБ або назва відправника</label><input id="np-sender-name" placeholder="Наприклад, Роман Кібіткін"></div>
-                <div class="row" style="gap:14px;">
-                    <div class="col-2 form-group" style="flex:1;"><label>Телефон відправника</label><input id="np-sender-phone" placeholder="380XXXXXXXXX"></div>
-                    <div class="col-2 form-group" style="flex:1;"><label>Місто відправника</label><input id="np-sender-city" placeholder="Наприклад, Київ"></div>
-                </div>
-                <div class="form-group"><label>Відділення або адреса відправника</label><input id="np-sender-address" placeholder="Наприклад, Відділення №1"></div>
-                <button class="btn btn-sm" onclick="saveNovaSenderProfile()"><i class="fa fa-save"></i> Зберегти профіль</button>
+                <div id="np-sender-profiles" class="editor-help">Завантаження профілів…</div>
             </div>
         </div>
         <div id="section-orders" class="admin-section" style="display: none;">
@@ -768,6 +760,20 @@
             <h3 id="order-modal-title">Замовлення</h3>
             <div id="order-modal-content"></div>
             <div class="modal-footer"><button class="btn btn-sm" onclick="closeOrderModal()" style="background:#333;">Закрити</button><button id="create-ttn-button" class="btn btn-sm" style="display:none;"><i class="fa fa-truck"></i> Створити ТТН</button></div>
+        </div>
+    </div>
+
+    <div id="sender-profile-modal" class="modal-overlay">
+        <div class="modal-box" style="width:min(620px,96vw);">
+            <h3 id="sender-profile-modal-title">Новий профіль відправника</h3>
+            <div class="form-group"><label>Назва профілю</label><input id="np-sender-profile-name" placeholder="Наприклад, Роман — Київ"></div>
+            <div class="form-group"><label>ПІБ або назва відправника</label><input id="np-sender-name" placeholder="Наприклад, Роман Кібіткін"></div>
+            <div class="row" style="gap:14px;">
+                <div class="col-2 form-group" style="flex:1;"><label>Телефон відправника</label><input id="np-sender-phone" placeholder="380XXXXXXXXX"></div>
+                <div class="col-2 form-group" style="flex:1;"><label>Місто відправника</label><input id="np-sender-city" placeholder="Наприклад, Київ"></div>
+            </div>
+            <div class="form-group"><label>Відділення або адреса відправника</label><input id="np-sender-address" placeholder="Наприклад, Відділення №1"></div>
+            <div class="modal-footer"><button class="btn btn-sm" onclick="closeSenderProfileModal()" style="background:#333;">Скасувати</button><button class="btn btn-sm btn-edit" onclick="saveNovaSenderProfile()"><i class="fa fa-save"></i> Зберегти профіль</button></div>
         </div>
     </div>
 
@@ -891,7 +897,7 @@
             document.querySelector('.admin-header h1').innerText = titles[sectionId];
             if(sectionId === 'stats') loadStats();
             if(sectionId === 'orders') loadOrdersSection();
-            if(sectionId === 'senders') { loadSenderProfiles(); startNewSenderProfile(); }
+            if(sectionId === 'senders') loadSenderProfiles();
             if(sectionId === 'dashboard') loadDashboard();
         }
 
@@ -1454,6 +1460,8 @@
         function startNewSenderProfile() {
             editingSenderProfileId = null;
             setSenderForm({});
+            document.getElementById('sender-profile-modal-title').textContent = 'Новий профіль відправника';
+            document.getElementById('sender-profile-modal').style.display = 'flex';
         }
 
         async function loadSenderProfiles() {
@@ -1474,6 +1482,12 @@
             if (!profile) return;
             editingSenderProfileId = profile.id;
             setSenderForm(profile);
+            document.getElementById('sender-profile-modal-title').textContent = 'Редагувати профіль відправника';
+            document.getElementById('sender-profile-modal').style.display = 'flex';
+        }
+
+        function closeSenderProfileModal() {
+            document.getElementById('sender-profile-modal').style.display = 'none';
         }
 
         async function saveNovaSenderProfile() {
@@ -1492,7 +1506,7 @@
             senderProfiles = profiles;
             await loadSenderProfiles();
             showToast('Профіль відправника збережено.');
-            startNewSenderProfile();
+            closeSenderProfileModal();
         }
 
         async function loadOrdersSection() {
