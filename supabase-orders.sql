@@ -8,10 +8,14 @@ create table if not exists public.orders (
   email text,
   delivery_method text,
   delivery_details text,
+  delivery_data jsonb,
   payment_method text,
   notes text,
   items jsonb not null default '[]'::jsonb,
-  total numeric(12,2) not null default 0
+  total numeric(12,2) not null default 0,
+  ttn_number text,
+  ttn_ref text,
+  ttn_created_at timestamptz
 );
 
 alter table public.orders enable row level security;
@@ -21,5 +25,8 @@ create policy "Customers can create orders" on public.orders for insert to anon,
 
 drop policy if exists "Admins can read orders" on public.orders;
 create policy "Admins can read orders" on public.orders for select to authenticated using (true);
+
+drop policy if exists "Admins can update orders" on public.orders;
+create policy "Admins can update orders" on public.orders for update to authenticated using (true) with check (true);
 
 create index if not exists orders_created_at_idx on public.orders (created_at desc);

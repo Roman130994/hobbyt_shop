@@ -94,6 +94,11 @@
         }
         .btn-edit { background: #0E5EA3; color: #fff; border: none; }
         .btn-delete { background: #e74c3c; color: #fff; border: none; }
+        .order-detail-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:18px 0; }
+        .order-detail-card { background:#171717; border:1px solid #303030; border-radius:9px; padding:14px; }
+        .order-detail-card small { color:#999; display:block; margin-bottom:5px; }
+        .order-items-list { margin:0; padding-left:20px; color:#ddd; }
+        @media (max-width:680px) { .order-detail-grid { grid-template-columns:1fr; } .admin-table { display:block; overflow-x:auto; } }
 
         /* ===== Products editor ===== */
         .products-toolbar { display: flex; justify-content: space-between; gap: 16px; align-items: center; margin-bottom: 22px; flex-wrap: wrap; }
@@ -535,6 +540,7 @@
             <li onclick="switchSection('products')" id="menu-products"><i class="fa fa-shopping-bag"></i> Товари</li>
             <li onclick="switchSection('banners')" id="menu-banners"><i class="fa fa-image"></i> Банери</li>
             <li onclick="switchSection('pages')" id="menu-pages"><i class="fa fa-file-text"></i> Сторінки</li>
+            <li onclick="switchSection('orders')" id="menu-orders"><i class="fa fa-truck"></i> Замовлення</li>
             <li onclick="switchSection('stats')" id="menu-stats"><i class="fa fa-pie-chart"></i> Статистика</li>
             <li><i class="fa fa-cog"></i> Налаштування</li>
         </ul>
@@ -660,6 +666,26 @@
             </div>
         </div>
 
+        <div id="section-orders" class="admin-section" style="display: none;">
+            <div class="admin-content-box" style="margin-bottom:20px;">
+                <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Дані відправника Нової Пошти</h3><p class="editor-help" style="margin:0;">Заповнюються один раз. API-ключ тут не потрібен.</p></div></div>
+                <div class="row" style="gap:14px;">
+                    <div class="col-2 form-group" style="flex:1;"><label>Місто відправника (Ref)</label><input id="np-sender-city-ref" placeholder="Ref міста"></div>
+                    <div class="col-2 form-group" style="flex:1;"><label>Відділення / адреса відправника (Ref)</label><input id="np-sender-address-ref" placeholder="Ref відділення або адреси"></div>
+                </div>
+                <div class="row" style="gap:14px;">
+                    <div class="col-2 form-group" style="flex:1;"><label>Контакт відправника (Ref)</label><input id="np-sender-contact-ref" placeholder="Ref контакту"></div>
+                    <div class="col-2 form-group" style="flex:1;"><label>Телефон відправника</label><input id="np-sender-phone" placeholder="380XXXXXXXXX"></div>
+                </div>
+                <div class="form-group"><label>Відправник / контрагент (Ref)</label><input id="np-sender-ref" placeholder="Ref відправника з кабінету Нової Пошти"></div>
+                <button class="btn btn-sm" onclick="saveNovaSenderSettings()"><i class="fa fa-save"></i> Зберегти дані відправника</button>
+            </div>
+            <div class="admin-content-box">
+                <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Усі замовлення</h3><p class="editor-help" style="margin:0;">Натисни «Відкрити», щоб побачити деталі й створити ТТН.</p></div><button class="btn btn-sm" onclick="loadOrdersSection()"><i class="fa fa-refresh"></i> Оновити</button></div>
+                <table class="admin-table"><thead><tr><th>№</th><th>Дата</th><th>Покупець</th><th>Доставка</th><th>Сума</th><th></th></tr></thead><tbody id="orders-management-list"></tbody></table>
+            </div>
+        </div>
+
         <div id="export-box">
             <h4 style="margin-bottom: 10px;">Оновлений код для js/products-data.js:</h4>
             <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">Скопіюйте цей код і вставте його у файл js/products-data.js, щоб зберегти зміни назавжди.</p>
@@ -732,6 +758,14 @@
                 <button class="btn btn-sm" onclick="closeModal()" style="background: #333;">Закрити</button>
                 <button class="btn btn-sm btn-edit" onclick="saveProduct()">Зберегти зміни</button>
             </div>
+        </div>
+    </div>
+
+    <div id="order-modal" class="modal-overlay">
+        <div class="modal-box" style="width:min(760px,96vw); max-height:90vh; overflow:auto;">
+            <h3 id="order-modal-title">Замовлення</h3>
+            <div id="order-modal-content"></div>
+            <div class="modal-footer"><button class="btn btn-sm" onclick="closeOrderModal()" style="background:#333;">Закрити</button><button id="create-ttn-button" class="btn btn-sm" style="display:none;"><i class="fa fa-truck"></i> Створити ТТН</button></div>
         </div>
     </div>
 
@@ -848,10 +882,12 @@
                 'products': 'Управління товарами',
                 'banners': 'Управління банерами',
                 'pages': 'Редагування сторінок',
+                'orders': 'Замовлення',
                 'stats': 'Статистика та Фінанси'
             };
             document.querySelector('.admin-header h1').innerText = titles[sectionId];
             if(sectionId === 'stats') loadStats();
+            if(sectionId === 'orders') loadOrdersSection();
             if(sectionId === 'dashboard') loadDashboard();
         }
 
@@ -1376,6 +1412,86 @@
             const { data, error } = await supabaseClient.from('orders').select('*').order('created_at', { ascending: false });
             if (error) throw error;
             return data || [];
+        }
+
+        let managedOrders = [];
+        const isNovaPoshtaOrder = order => /Нова Пошта/i.test(order.delivery_method || '');
+        const parseOrderJson = value => {
+            if (!value) return null;
+            try { return typeof value === 'string' ? JSON.parse(value) : value; } catch (_) { return null; }
+        };
+
+        async function loadNovaSenderSettings() {
+            const { data } = await supabaseClient.from('site_settings').select('data').eq('id', 'nova_poshta_sender').maybeSingle();
+            const sender = data?.data || {};
+            ['city_ref', 'address_ref', 'contact_ref', 'phone', 'sender_ref'].forEach(key => {
+                const field = document.getElementById(`np-sender-${key.replace('_', '-')}`);
+                if (field) field.value = sender[key] || '';
+            });
+            return sender;
+        }
+
+        async function saveNovaSenderSettings() {
+            const sender = {
+                city_ref: document.getElementById('np-sender-city-ref').value.trim(),
+                address_ref: document.getElementById('np-sender-address-ref').value.trim(),
+                contact_ref: document.getElementById('np-sender-contact-ref').value.trim(),
+                phone: document.getElementById('np-sender-phone').value.trim(),
+                sender_ref: document.getElementById('np-sender-ref').value.trim()
+            };
+            if (Object.values(sender).some(value => !value)) return showToast('Заповніть усі дані відправника.', true);
+            const { error } = await supabaseClient.from('site_settings').upsert({ id: 'nova_poshta_sender', data: sender });
+            if (error) return showToast(error.message, true);
+            showToast('Дані відправника збережено.');
+        }
+
+        async function loadOrdersSection() {
+            const list = document.getElementById('orders-management-list');
+            if (!list) return;
+            list.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">Завантаження…</td></tr>';
+            try {
+                [managedOrders] = await Promise.all([getOrders(), loadNovaSenderSettings()]);
+                list.innerHTML = managedOrders.map(order => `<tr>
+                    <td>№${order.id}</td><td>${orderDate(order.created_at)}</td>
+                    <td>${escapeHtml(order.customer_name || '—')}<br><small>${escapeHtml(order.phone || '')}</small></td>
+                    <td>${escapeHtml(order.delivery_method || '—')}</td><td>${orderMoney(order.total)}</td>
+                    <td><button class="btn-sm btn-edit" onclick="openOrderModal(${order.id})">Відкрити</button></td>
+                </tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:#999;">Замовлень ще немає.</td></tr>';
+            } catch (error) {
+                list.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#e74c3c;">Не вдалося завантажити замовлення.</td></tr>';
+            }
+        }
+
+        async function openOrderModal(orderId) {
+            const order = managedOrders.find(item => Number(item.id) === Number(orderId));
+            if (!order) return;
+            const delivery = parseOrderJson(order.delivery_data) || parseOrderJson(order.delivery_details);
+            const items = Array.isArray(order.items) ? order.items : parseOrderJson(order.items) || [];
+            document.getElementById('order-modal-title').textContent = `Замовлення №${order.id}`;
+            document.getElementById('order-modal-content').innerHTML = `
+                <div class="order-detail-grid">
+                    <div class="order-detail-card"><small>Покупець</small><strong>${escapeHtml(order.customer_name || '—')}</strong><br>${escapeHtml(order.phone || '')}<br>${escapeHtml(order.email || '')}</div>
+                    <div class="order-detail-card"><small>Оплата та доставка</small><strong>${escapeHtml(order.payment_method || '—')}</strong><br>${escapeHtml(order.delivery_method || '—')}<br>${escapeHtml(order.delivery_details || '—')}</div>
+                    <div class="order-detail-card"><small>Сума</small><strong>${orderMoney(order.total)}</strong></div>
+                    <div class="order-detail-card"><small>Статус</small><strong>${escapeHtml(order.status === 'new' ? 'Нове' : order.status || '—')}</strong>${order.ttn_number ? `<br><small style="margin-top:10px;">ТТН</small><strong>${escapeHtml(order.ttn_number)}</strong>` : ''}</div>
+                </div>
+                <div class="order-detail-card"><small>Товари</small><ul class="order-items-list">${items.map(item => `<li>${escapeHtml(item.name || 'Товар')} × ${Number(item.quantity || 1)} — ${orderMoney(Number(item.price || 0) * Number(item.quantity || 1))}${item.variant ? ` (${escapeHtml(item.variant)})` : ''}</li>`).join('') || '<li>Немає даних</li>'}</ul></div>`;
+            const ttnButton = document.getElementById('create-ttn-button');
+            const canCreate = isNovaPoshtaOrder(order) && !order.ttn_number;
+            ttnButton.style.display = canCreate ? 'inline-block' : 'none';
+            ttnButton.onclick = () => createTtnForOrder(order);
+            document.getElementById('order-modal').style.display = 'flex';
+        }
+
+        function closeOrderModal() { document.getElementById('order-modal').style.display = 'none'; }
+
+        async function createTtnForOrder(order) {
+            const { data: settings } = await supabaseClient.from('site_settings').select('data').eq('id', 'nova_poshta_sender').maybeSingle();
+            const sender = settings?.data || {};
+            const delivery = parseOrderJson(order.delivery_data) || parseOrderJson(order.delivery_details);
+            if (Object.values(sender).some(value => !value)) return showToast('Спочатку заповніть дані відправника у розділі «Замовлення».', true);
+            if (!delivery?.city_ref) return showToast('У цьому замовленні немає технічних даних Нової Пошти. Оформіть нове тестове замовлення.', true);
+            showToast('Створення ТТН підключимо після оновлення захищеної функції Нової Пошти.');
         }
 
         async function loadDashboard() {

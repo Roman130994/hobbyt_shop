@@ -710,8 +710,18 @@ function renderCheckout() {
             
             const doNotCall = document.getElementById('do-not-call').checked;
             const paymentMethodStr = document.querySelector('input[name="payment_method"]:checked').value;
-            const deliveryMethod = document.querySelector('input[name="delivery_method"]:checked').parentElement.textContent.trim();
+            const selectedDelivery = document.querySelector('input[name="delivery_method"]:checked');
+            const deliveryMethod = selectedDelivery.parentElement.textContent.trim();
             const deliveryDetails = [...document.querySelectorAll('#delivery-fields input, #delivery-fields select')].map(field => `${field.previousElementSibling?.textContent?.replace('*', '').trim() || 'Дані'}: ${field.value}`).join(', ');
+            const deliveryData = {
+                type: selectedDelivery.value,
+                city_ref: document.getElementById(selectedDelivery.value === 'nova_branch' ? 'np-city' : 'np-courier-city')?.dataset.npRef || '',
+                city: document.getElementById(selectedDelivery.value === 'nova_branch' ? 'np-city' : 'np-courier-city')?.value || '',
+                warehouse_ref: document.getElementById('np-branch')?.dataset.npRef || '',
+                warehouse: document.getElementById('np-branch')?.value || '',
+                street: document.getElementById('np-courier-street')?.value || '',
+                house: document.getElementById('np-courier-house')?.value || ''
+            };
 
             // Формуємо список товарів для повідомлення
             let itemsText = cart.map(item => `• ${item.name} x${item.quantity} - ${(parseInt(item.price.replace(/[^\\d]/g, '')) * item.quantity).toLocaleString()} ₴`).join('\n');
@@ -736,13 +746,17 @@ function renderCheckout() {
             const orderRecord = {
                 customer_name: `${firstName} ${lastName}`.trim(), phone, email: email || null,
                 delivery_method: deliveryMethod, delivery_details: deliveryDetails || null,
+                delivery_data: deliveryData,
                 payment_method: paymentMethodStr, notes: notes || null,
                 items: cart.map(item => ({ id: item.id, name: item.name, quantity: item.quantity, price: Number(String(item.price).replace(/[^\d]/g, '')) || 0, variant: item.variant || null })),
                 total
             };
             try {
                 const client = window.supabase?.createClient(window.HOBBYT_SUPABASE_URL, window.HOBBYT_SUPABASE_KEY);
-                if (client) await client.from('orders').insert(orderRecord);
+                if (client) {
+                    const { error } = await client.from('orders').insert(orderRecord);
+                    if (error) throw error;
+                }
             } catch (error) {
                 console.warn('Замовлення не збережено в статистиці:', error);
             }
