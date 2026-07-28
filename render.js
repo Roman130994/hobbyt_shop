@@ -36,6 +36,29 @@ function toggleFavorite(productId, button) {
         element.innerHTML = `<i class="fa fa-heart${active ? '' : '-o'}"></i>${element.classList.contains('product-favorite-toggle') ? (active ? ' В обраному' : ' В обране') : ''}`;
     });
     if (button) button.blur();
+    updateFavoritesBadge();
+}
+
+function updateFavoritesBadge() {
+    const total = getFavorites().length;
+    document.querySelectorAll('.favorites-badge').forEach(badge => {
+        badge.textContent = total;
+        badge.hidden = total === 0;
+    });
+}
+
+function setupFavoritesHeader() {
+    document.querySelectorAll('.cart-icon-container').forEach(cart => {
+        if (cart.parentElement?.querySelector('.favorites-header-link')) return;
+        const link = document.createElement('a');
+        link.href = 'products.html?favorites=1';
+        link.className = 'favorites-header-link';
+        link.title = 'Уподобані товари';
+        link.setAttribute('aria-label', 'Уподобані товари');
+        link.innerHTML = '<i class="fa fa-heart-o"></i><span class="favorites-badge" hidden>0</span>';
+        cart.insertAdjacentElement('beforebegin', link);
+    });
+    updateFavoritesBadge();
 }
 
 function mapDatabaseProduct(row) {
@@ -1003,6 +1026,7 @@ function removeFromCart(index) {
     localStorage.setItem('hobbytCart', JSON.stringify(cart));
     renderCart();
     updateCartBadge();
+    setupFavoritesHeader();
 }
 
 function renderSiteContent() {
@@ -1037,7 +1061,12 @@ document.addEventListener('DOMContentLoaded', () => {
     renderProducts('newProductsCarousel', 'sale', 10);
     
     // Якщо ми на сторінці продуктів, рендеримо або категорію, або все
-    if (categoryFromUrl) {
+    const favoritesOnly = urlParams.get('favorites') === '1';
+    if (favoritesOnly) {
+        renderProducts('all-products-list');
+        const titleEl = document.querySelector('.row-2 h2');
+        if (titleEl) titleEl.innerText = 'Уподобані товари';
+    } else if (categoryFromUrl) {
         renderProducts('all-products-list', categoryFromUrl);
         const titleEl = document.querySelector('.row-2 h2');
         if (titleEl) {
@@ -1057,6 +1086,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderHeroSlider();
     renderCart();
     updateCartBadge();
+    setupFavoritesHeader();
     renderSingleProduct();
     renderCheckout();
     if (document.getElementById('checkout-form')) {
