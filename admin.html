@@ -836,7 +836,9 @@
     <script src="supabase-config.js"></script>
     <script src="products-data.js"></script>
     <script>
-        const supabaseClient = window.supabase.createClient(window.HOBBYT_SUPABASE_URL, window.HOBBYT_SUPABASE_KEY);
+        const supabaseClient = window.supabase.createClient(window.HOBBYT_SUPABASE_URL, window.HOBBYT_SUPABASE_KEY, {
+            auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+        });
 
         const toNumber = (value) => Number(String(value || 0).replace(/[^\d,]/g, '').replace(',', '.')) || 0;
         const productSlug = (name) => `${name.toLowerCase().trim().replace(/[^a-zа-яіїє0-9]+/gi, '-').replace(/^-|-$/g, '')}-${Date.now()}`;
@@ -880,11 +882,8 @@
             const pass = document.getElementById('admin-pass').value;
             const { error } = await supabaseClient.auth.signInWithPassword({ email, password: pass });
             if (!error) {
-                document.getElementById('login-overlay').style.display = 'none';
                 try {
-                    await syncProductsFromDatabase();
-                    await syncSiteContentFromDatabase();
-                    await loadDashboard();
+                    await enterAdminSession();
                     showToast('Вхід виконано. Товари синхронізовано з базою.');
                 } catch (syncError) {
                     showToast('Не вдалося завантажити товари: ' + syncError.message, true);
@@ -892,6 +891,15 @@
             } else {
                 alert('Не вдалося увійти. Перевірте пошту й пароль.');
             }
+        }
+
+        async function enterAdminSession() {
+            document.getElementById('login-overlay').style.display = 'none';
+            await Promise.all([
+                syncProductsFromDatabase(),
+                syncSiteContentFromDatabase(),
+                loadDashboard()
+            ]);
         }
 
         function switchSection(sectionId) {
@@ -1951,12 +1959,20 @@
             loadStats();
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             loadAdminProducts();
             loadAdminBanners();
             initUploadZone();
             loadPageContentEditor();
             loadStats();
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                try {
+                    await enterAdminSession();
+                } catch (error) {
+                    console.warn('Не вдалося відновити сесію адмінпанелі:', error);
+                }
+            }
         });
     </script>
 </body>
