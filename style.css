@@ -1668,6 +1668,18 @@ body.dark-theme img.menu-icon {
 .review-form { margin-top: 20px; }
 .review-form h3 { margin: 0 0 16px; }
 .review-message { min-height: 20px; color: #9bc9f1; margin: 10px 0 0; }
+.review-photo-picker { min-height: 132px; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 20px; border: 1px dashed #4a4a4a; border-radius: 10px; background: #171717; color: #d9d9d9; cursor: pointer; transition: .18s ease; position: relative; overflow: hidden; }
+.review-photo-picker:hover, .review-photo-picker.is-dragging { border-color: #1683d8; background: #0e1a26; }
+.review-photo-picker input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.review-photo-picker-icon { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; flex: 0 0 auto; background: #123e62; color: #77c1f7; font-size: 19px; }
+.review-photo-picker-copy { display: grid; gap: 5px; }
+.review-photo-picker-copy strong { font-size: 15px; }
+.review-photo-picker-copy small { color: #929292; }
+.review-photo-picker-preview { position: absolute; inset: 0; background: #0e0e0e; display: block; }
+.review-photo-picker-preview[hidden] { display: none; }
+.review-photo-picker-preview img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.review-photo-picker-preview button { position: absolute; right: 10px; top: 10px; width: 32px; height: 32px; border: 0; border-radius: 50%; cursor: pointer; background: rgba(0,0,0,.72); color: #fff; font-size: 24px; line-height: 28px; }
+.review-photo-picker.has-photo { border-style: solid; border-color: #1683d8; }
 
 @media only screen and (max-width: 390px) {
     .hero-text-col .hero-title { font-size: 30px; }

@@ -261,6 +261,41 @@ async function setupProductReviews(productId) {
     }
     if (form.dataset.bound) return;
     form.dataset.bound = 'true';
+    const photoInput = document.getElementById('ReviewPhoto');
+    const photoPicker = document.getElementById('ReviewPhotoPicker');
+    const photoPreview = document.getElementById('ReviewPhotoPreview');
+    const photoPreviewImage = photoPreview?.querySelector('img');
+    const photoRemove = document.getElementById('ReviewPhotoRemove');
+    let previewUrl = '';
+    const clearReviewPhoto = () => {
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = '';
+        if (photoInput) photoInput.value = '';
+        if (photoPreview) photoPreview.hidden = true;
+        photoPicker?.classList.remove('has-photo');
+    };
+    const showReviewPhoto = file => {
+        if (!file || !file.type.startsWith('image/')) return;
+        if (previewUrl) URL.revokeObjectURL(previewUrl);
+        previewUrl = URL.createObjectURL(file);
+        if (photoPreviewImage) photoPreviewImage.src = previewUrl;
+        if (photoPreview) photoPreview.hidden = false;
+        photoPicker?.classList.add('has-photo');
+    };
+    photoInput?.addEventListener('change', () => showReviewPhoto(photoInput.files?.[0]));
+    photoRemove?.addEventListener('click', event => { event.preventDefault(); clearReviewPhoto(); });
+    photoPicker?.addEventListener('dragover', event => { event.preventDefault(); photoPicker.classList.add('is-dragging'); });
+    photoPicker?.addEventListener('dragleave', () => photoPicker.classList.remove('is-dragging'));
+    photoPicker?.addEventListener('drop', event => {
+        event.preventDefault();
+        photoPicker.classList.remove('is-dragging');
+        const file = event.dataTransfer?.files?.[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        photoInput.files = transfer.files;
+        showReviewPhoto(file);
+    });
     form.addEventListener('submit', async event => {
         event.preventDefault();
         const message = document.getElementById('ReviewMessage');
@@ -281,6 +316,7 @@ async function setupProductReviews(productId) {
             const { error } = await client.from('product_reviews').insert({ product_id: productId, author_name: author, body, rating, photo_url: photoUrl });
             if (error) throw error;
             form.reset();
+            clearReviewPhoto();
             message.textContent = 'Дякуємо! Відгук з’явиться після перевірки.';
         } catch (error) {
             message.textContent = `Не вдалося надіслати відгук: ${error.message || 'спробуйте пізніше'}`;
