@@ -1428,6 +1428,11 @@
         let senderProfiles = [];
         let editingSenderProfileId = null;
 
+        function makeSenderProfileId() {
+            if (window.crypto?.randomUUID) return window.crypto.randomUUID();
+            return `sender-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+        }
+
         async function getSenderProfiles() {
             const { data, error } = await supabaseClient.from('site_settings').select('data').eq('id', 'nova_poshta_senders').maybeSingle();
             if (error) throw error;
@@ -1473,7 +1478,7 @@
 
         async function saveNovaSenderProfile() {
             const profile = {
-                id: editingSenderProfileId || crypto.randomUUID(),
+                id: editingSenderProfileId || makeSenderProfileId(),
                 name: document.getElementById('np-sender-profile-name').value.trim(),
                 sender_name: document.getElementById('np-sender-name').value.trim(),
                 phone: document.getElementById('np-sender-phone').value.trim(),
