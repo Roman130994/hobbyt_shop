@@ -175,16 +175,14 @@ Deno.serve(async (req) => {
 
     if (action === "print_marking") {
       const documentRef = String(body.ttn_ref || "").trim();
+      const apiKey = Deno.env.get("NOVA_POSHTA_API_KEY");
       if (!documentRef) throw new Error("У замовленні не збережено службовий код ТТН Нової Пошти.");
+      if (!apiKey) throw new Error("Не налаштовано ключ Нової Пошти.");
 
-      // Nova Poshta returns a temporary link to its original thermal-label PDF.
-      const marking = await np("DocumentGeneral", "getPrintMarkings", {
-        DocumentRefs: [documentRef],
-        Type: "pdf",
-      });
-      const fileUrl = marking[0]?.Link || marking[0]?.link || marking[0]?.URL || marking[0]?.url;
-      if (!fileUrl) throw new Error("Нова Пошта не повернула файл маркування для цієї ТТН.");
-      const labelResponse = await fetch(fileUrl);
+      // The marking service is separate from the JSON API: it returns Nova Poshta's original label file.
+      const labelResponse = await fetch(
+        `https://my.novaposhta.ua/orders/printMarkings/orders/${encodeURIComponent(documentRef)}/type/pdf/apiKey/${encodeURIComponent(apiKey)}`,
+      );
       if (!labelResponse.ok) throw new Error("Не вдалося завантажити маркування ТТН з Нової Пошти.");
       const pdf = await labelResponse.arrayBuffer();
       return new Response(pdf, {
