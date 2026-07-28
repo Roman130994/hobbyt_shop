@@ -1821,6 +1821,7 @@
             const items = Array.isArray(order.items) ? order.items : parseOrderJson(order.items) || [];
             const content = document.getElementById('order-modal-content');
             const modalOrderId = JSON.stringify(String(order.id));
+            const hasTtn = Boolean(order.ttn_number || order.ttn_ref);
             const tabs = [
                 ['products', 'Товари', 'fa-cube'],
                 ['ttn', 'ТТН', 'fa-truck'],
@@ -1841,7 +1842,7 @@
             }
 
             if (activeTab === 'ttn') {
-                body = `<div class="order-detail-grid"><div class="order-detail-card"><small>Статус ТТН</small><strong>${order.ttn_number ? 'Створено' : 'Ще не створено'}</strong>${order.ttn_number ? `<br><small style="margin-top:10px;">Номер ТТН</small><strong>${escapeHtml(order.ttn_number)}</strong><br><button class="btn-sm btn-edit" style="margin-top:12px;" onclick='printOrderDocument(${modalOrderId}, "ttn")'><i class="fa fa-print"></i> Друк даних ТТН</button>` : ''}</div><div class="order-detail-card"><small>Спосіб доставки</small><strong>${escapeHtml(order.delivery_method || '—')}</strong></div></div><div id="ttn-sender-panel">${isNovaPoshtaOrder(order) && !order.ttn_number ? `<button class="btn btn-sm btn-edit" onclick='createTtnForOrder(${modalOrderId})'><i class="fa fa-truck"></i> Створити ТТН</button>` : order.ttn_number ? '<div class="order-detail-card">ТТН уже збережено в цьому замовленні.</div>' : '<div class="order-empty-tab">ТТН доступна лише для способів доставки Нової Пошти.</div>'}</div>`;
+                body = `<div class="order-detail-grid"><div class="order-detail-card"><small>Статус ТТН</small><strong>${hasTtn ? 'Створено' : 'Ще не створено'}</strong>${hasTtn ? `<br><small style="margin-top:10px;">Номер ТТН</small><strong>${escapeHtml(order.ttn_number || 'Створено в Новій Пошті')}</strong><br><button class="btn-sm btn-edit" style="margin-top:12px;" onclick='printOrderDocument(${modalOrderId}, "ttn")'><i class="fa fa-print"></i> Друкувати ТТН</button>` : ''}</div><div class="order-detail-card"><small>Спосіб доставки</small><strong>${escapeHtml(order.delivery_method || '—')}</strong></div></div><div id="ttn-sender-panel">${isNovaPoshtaOrder(order) && !hasTtn ? `<button class="btn btn-sm btn-edit" onclick='createTtnForOrder(${modalOrderId})'><i class="fa fa-truck"></i> Створити ТТН</button>` : hasTtn ? '<div class="order-detail-card">ТТН уже збережено в цьому замовленні.</div>' : '<div class="order-empty-tab">ТТН доступна лише для способів доставки Нової Пошти.</div>'}</div>`;
             }
 
             if (activeTab === 'delivery') {
@@ -1849,7 +1850,7 @@
             }
 
             if (activeTab === 'documents') {
-                body = `<div class="order-detail-card"><small>Документи продажу</small><p style="color:#aaa;line-height:1.5;">Видаткову можна надрукувати або зберегти як PDF через системне вікно друку.</p><button class="btn btn-sm btn-edit" onclick='printOrderDocument(${modalOrderId}, "invoice")'><i class="fa fa-print"></i> Друк видаткової</button></div><div class="order-empty-tab"><i class="fa fa-folder-open" style="font-size:26px;display:block;margin-bottom:10px;"></i><strong style="color:#ddd;">Майбутні документи</strong><br><span>Надходження від постачальників і переміщення між складами підключимо разом зі складським обліком.</span></div>`;
+                body = `<div class="order-detail-card"><small>Документи продажу</small><p style="color:#aaa;line-height:1.5;">Документи відкривають системне вікно друку, де можна обрати принтер або «Зберегти як PDF».</p>${hasTtn ? `<button class="btn btn-sm btn-edit" style="margin-right:8px;" onclick='printOrderDocument(${modalOrderId}, "ttn")'><i class="fa fa-truck"></i> Друкувати ТТН</button>` : ''}<button class="btn btn-sm btn-edit" onclick='printOrderDocument(${modalOrderId}, "invoice")'><i class="fa fa-print"></i> Друк видаткової</button></div><div class="order-empty-tab"><i class="fa fa-folder-open" style="font-size:26px;display:block;margin-bottom:10px;"></i><strong style="color:#ddd;">Майбутні документи</strong><br><span>Надходження від постачальників і переміщення між складами підключимо разом зі складським обліком.</span></div>`;
             }
 
             content.innerHTML = tabHeader + body;
