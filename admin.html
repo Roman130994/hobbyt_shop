@@ -1572,10 +1572,32 @@
             const description = document.getElementById('ttn-description')?.value.trim();
             const profiles = await getSenderProfiles();
             const profile = profiles.find(item => item.id === profileId);
+            const order = managedOrders.find(item => Number(item.id) === Number(orderId));
             if (!profile) return showToast('Оберіть профіль відправника.', true);
+            if (!order) return showToast('Замовлення не знайдено.', true);
             if (!weight || !description) return showToast('Вкажіть вагу й опис посилки.', true);
-            const payerText = payer === 'Recipient' ? 'отримувач' : 'відправник';
-            showToast(`Обрано профіль «${profile.name}», оплату доставки: ${payerText}. Дані готові для створення ТТН.`);
+            const delivery = parseOrderJson(order.delivery_data) || parseOrderJson(order.delivery_details);
+            if (!delivery?.city_ref || !delivery?.warehouse_ref) return showToast('Для цього замовлення не збережено місто або відділення Нової Пошти.', true);
+            try {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!session) throw new Error('Увійдіть в адмінпанель ще раз.');
+                const response = await fetch(`${window.HOBBYT_SUPABASE_URL}/functions/v1/nova-poshta`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', apikey: window.HOBBYT_SUPABASE_KEY, Authorization: `Bearer ${session.access_token}` },
+                    body: JSON.stringify({ action: 'create_ttn', order, senderProfile: profile, payer, weight, description })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error || 'Не вдалося створити ТТН.');
+                const { error } = await supabaseClient.from('orders').update({ ttn_number: result.ttn_number, ttn_ref: result.ttn_ref, ttn_created_at: new Date().toISOString() }).eq('id', order.id);
+                if (error) throw error;
+                order.ttn_number = result.ttn_number;
+                order.ttn_ref = result.ttn_ref;
+                closeOrderModal();
+                await loadOrdersSection();
+                showToast(`ТТН ${result.ttn_number} створено.`);
+            } catch (error) {
+                showToast(error.message || 'Не вдалося створити ТТН.', true);
+            }
         }
 
         async function loadDashboard() {
