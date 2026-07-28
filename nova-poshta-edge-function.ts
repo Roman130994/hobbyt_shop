@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
     const action = body.action;
     const search = String(body.query || "").trim();
 
-    if (["senders", "sender_contacts", "sender_addresses", "create_ttn", "print_ttn"].includes(action)) await requireAdminSession(req);
+    if (["senders", "sender_contacts", "sender_addresses", "create_ttn", "print_ttn", "print_marking"].includes(action)) await requireAdminSession(req);
 
     if (action === "cities") {
       if (!search) return Response.json({ error: "Введіть хоча б одну літеру." }, { status: 400, headers });
@@ -168,6 +168,25 @@ Deno.serve(async (req) => {
       );
       if (!printResponse.ok) throw new Error("Нова Пошта не повернула PDF ТТН. Спробуйте ще раз через хвилину.");
       const pdf = await printResponse.arrayBuffer();
+      return new Response(pdf, {
+        headers: { ...headers, "Content-Type": "application/pdf", "Content-Disposition": "inline" },
+      });
+    }
+
+    if (action === "print_marking") {
+      const documentRef = String(body.ttn_ref || "").trim();
+      if (!documentRef) throw new Error("У замовленні не збережено службовий код ТТН Нової Пошти.");
+
+      // Nova Poshta returns a temporary link to its original thermal-label PDF.
+      const marking = await np("DocumentGeneral", "getPrintMarkings", {
+        DocumentRefs: [documentRef],
+        Type: "pdf",
+      });
+      const fileUrl = marking[0]?.Link || marking[0]?.link || marking[0]?.URL || marking[0]?.url;
+      if (!fileUrl) throw new Error("Нова Пошта не повернула файл маркування для цієї ТТН.");
+      const labelResponse = await fetch(fileUrl);
+      if (!labelResponse.ok) throw new Error("Не вдалося завантажити маркування ТТН з Нової Пошти.");
+      const pdf = await labelResponse.arrayBuffer();
       return new Response(pdf, {
         headers: { ...headers, "Content-Type": "application/pdf", "Content-Disposition": "inline" },
       });
