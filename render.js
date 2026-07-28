@@ -748,17 +748,26 @@ function renderCheckout() {
                 delivery_method: deliveryMethod, delivery_details: deliveryDetails || null,
                 delivery_data: deliveryData,
                 payment_method: paymentMethodStr, notes: notes || null,
-                items: cart.map(item => ({ id: item.id, name: item.name, quantity: item.quantity, price: Number(String(item.price).replace(/[^\d]/g, '')) || 0, variant: item.variant || null })),
+                items: cart.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    image: item.image || '',
+                    code: item.sku || item.code || item.product_code || '',
+                    quantity: item.quantity,
+                    price: Number(String(item.price).replace(/[^\d]/g, '')) || 0,
+                    variant: item.variant || item.selectedVariant?.name || item.selectedVariant?.value || null
+                })),
                 total
             };
             try {
                 const client = window.supabase?.createClient(window.HOBBYT_SUPABASE_URL, window.HOBBYT_SUPABASE_KEY);
-                if (client) {
-                    const { error } = await client.from('orders').insert(orderRecord);
-                    if (error) throw error;
-                }
+                if (!client) throw new Error('Не вдалося підключитися до бази замовлень.');
+                const { error } = await client.from('orders').insert(orderRecord);
+                if (error) throw error;
             } catch (error) {
                 console.warn('Замовлення не збережено в статистиці:', error);
+                alert('Не вдалося зберегти замовлення. Будь ласка, спробуйте ще раз або зв’яжіться з нами.');
+                return;
             }
 
             // Відправка в Телеграм
