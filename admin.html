@@ -1799,7 +1799,11 @@
 
         function closeOrderModal() { document.getElementById('order-modal').style.display = 'none'; }
 
-        async function createTtnForOrder(order) {
+        async function createTtnForOrder(orderOrId) {
+            const order = typeof orderOrId === 'object'
+                ? orderOrId
+                : managedOrders.find(item => String(item.id) === String(orderOrId)) || (openedOrder && String(openedOrder.id) === String(orderOrId) ? openedOrder : null);
+            if (!order) return showToast('Замовлення не знайдено. Закрийте вікно й відкрийте замовлення ще раз.', true);
             const profiles = await getSenderProfiles();
             if (!profiles.length) return showToast('Спочатку додайте профіль у розділі «Відправники НП».', true);
             const panel = document.getElementById('ttn-sender-panel');
