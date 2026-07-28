@@ -541,6 +541,7 @@
             <li onclick="switchSection('banners')" id="menu-banners"><i class="fa fa-image"></i> Банери</li>
             <li onclick="switchSection('pages')" id="menu-pages"><i class="fa fa-file-text"></i> Сторінки</li>
             <li onclick="switchSection('orders')" id="menu-orders"><i class="fa fa-truck"></i> Замовлення</li>
+            <li onclick="switchSection('senders')" id="menu-senders"><i class="fa fa-address-card"></i> Відправники НП</li>
             <li onclick="switchSection('stats')" id="menu-stats"><i class="fa fa-pie-chart"></i> Статистика</li>
             <li><i class="fa fa-cog"></i> Налаштування</li>
         </ul>
@@ -666,20 +667,24 @@
             </div>
         </div>
 
-        <div id="section-orders" class="admin-section" style="display: none;">
+        <div id="section-senders" class="admin-section" style="display: none;">
             <div class="admin-content-box" style="margin-bottom:20px;">
-                <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Дані відправника Нової Пошти</h3><p class="editor-help" style="margin:0;">Заповнюються один раз. API-ключ тут не потрібен.</p></div></div>
+                <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Профілі відправників Нової Пошти</h3><p class="editor-help" style="margin:0;">Додай кілька профілів: наприклад, «Роман — Київ» або «Склад — Львів». Їх можна буде обирати під час створення ТТН.</p></div><button class="btn btn-sm" type="button" onclick="startNewSenderProfile()"><i class="fa fa-plus"></i> Новий профіль</button></div>
+                <div id="np-sender-profiles" class="editor-help" style="margin-bottom:18px;">Завантаження профілів…</div>
+                <div class="form-group"><label>Назва профілю</label><input id="np-sender-profile-name" placeholder="Наприклад, Роман — Київ"></div>
                 <button class="btn btn-sm" type="button" onclick="loadNovaSenderOptions()" style="margin-bottom:18px;"><i class="fa fa-refresh"></i> Завантажити мої дані з Нової Пошти</button>
-                <p id="np-sender-status" class="editor-help" style="margin-top:-8px;">Натисни кнопку — обери відправника, контакт і відділення зі списку.</p>
+                <p id="np-sender-status" class="editor-help" style="margin-top:-8px;">Натисни кнопку — обери відправника, контакт і адресу зі списку.</p>
                 <input id="np-sender-city-ref" type="hidden">
                 <div class="form-group"><label>Відправник</label><select id="np-sender-ref" onchange="loadNovaSenderContactsAndWarehouses()"><option value="">Спочатку завантажте дані</option></select></div>
                 <div class="row" style="gap:14px;">
                     <div class="col-2 form-group" style="flex:1;"><label>Контакт відправника</label><select id="np-sender-contact-ref"><option value="">Оберіть відправника</option></select></div>
                     <div class="col-2 form-group" style="flex:1;"><label>Телефон відправника</label><input id="np-sender-phone" placeholder="380XXXXXXXXX"></div>
                 </div>
-                <div class="form-group"><label>Відділення відправника</label><select id="np-sender-address-ref"><option value="">Оберіть відправника</option></select></div>
-                <button class="btn btn-sm" onclick="saveNovaSenderSettings()"><i class="fa fa-save"></i> Зберегти дані відправника</button>
+                <div class="form-group"><label>Адреса відправника</label><select id="np-sender-address-ref"><option value="">Оберіть відправника</option></select></div>
+                <button class="btn btn-sm" onclick="saveNovaSenderProfile()"><i class="fa fa-save"></i> Зберегти профіль</button>
             </div>
+        </div>
+        <div id="section-orders" class="admin-section" style="display: none;">
             <div class="admin-content-box">
                 <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Усі замовлення</h3><p class="editor-help" style="margin:0;">Натисни «Відкрити», щоб побачити деталі й створити ТТН.</p></div><button class="btn btn-sm" onclick="loadOrdersSection()"><i class="fa fa-refresh"></i> Оновити</button></div>
                 <table class="admin-table"><thead><tr><th>№</th><th>Дата</th><th>Покупець</th><th>Доставка</th><th>Сума</th><th></th></tr></thead><tbody id="orders-management-list"></tbody></table>
@@ -883,11 +888,13 @@
                 'banners': 'Управління банерами',
                 'pages': 'Редагування сторінок',
                 'orders': 'Замовлення',
+                'senders': 'Відправники Нової Пошти',
                 'stats': 'Статистика та Фінанси'
             };
             document.querySelector('.admin-header h1').innerText = titles[sectionId];
             if(sectionId === 'stats') loadStats();
             if(sectionId === 'orders') loadOrdersSection();
+            if(sectionId === 'senders') { loadSenderProfiles(); startNewSenderProfile(); }
             if(sectionId === 'dashboard') loadDashboard();
         }
 
@@ -1421,28 +1428,77 @@
             try { return typeof value === 'string' ? JSON.parse(value) : value; } catch (_) { return null; }
         };
 
-        async function loadNovaSenderSettings() {
-            const { data } = await supabaseClient.from('site_settings').select('data').eq('id', 'nova_poshta_sender').maybeSingle();
-            const sender = data?.data || {};
-            ['city_ref', 'address_ref', 'contact_ref', 'phone', 'sender_ref'].forEach(key => {
-                const field = document.getElementById(`np-sender-${key.replace('_', '-')}`);
-                if (field) field.value = sender[key] || '';
-            });
-            return sender;
+        let senderProfiles = [];
+        let editingSenderProfileId = null;
+
+        async function getSenderProfiles() {
+            const { data, error } = await supabaseClient.from('site_settings').select('data').eq('id', 'nova_poshta_senders').maybeSingle();
+            if (error) throw error;
+            if (Array.isArray(data?.data?.profiles)) return data.data.profiles;
+
+            const { data: legacy } = await supabaseClient.from('site_settings').select('data').eq('id', 'nova_poshta_sender').maybeSingle();
+            const oldSender = legacy?.data || {};
+            return oldSender.sender_ref ? [{ id: 'legacy-sender', name: 'Основний відправник', ...oldSender }] : [];
         }
 
-        async function saveNovaSenderSettings() {
-            const sender = {
+        function setSenderForm(profile = {}) {
+            document.getElementById('np-sender-profile-name').value = profile.name || '';
+            document.getElementById('np-sender-city-ref').value = profile.city_ref || '';
+            document.getElementById('np-sender-phone').value = profile.phone || '';
+            ['np-sender-ref', 'np-sender-contact-ref', 'np-sender-address-ref'].forEach(id => {
+                const field = document.getElementById(id);
+                const key = id.replace('np-sender-', '').replaceAll('-', '_');
+                const value = profile[key] || '';
+                field.innerHTML = `<option value="${escapeHtml(value)}">${value ? 'Збережене значення — натисніть «Завантажити…» для редагування' : 'Спочатку завантажте дані'}</option>`;
+                field.value = value;
+            });
+        }
+
+        function startNewSenderProfile() {
+            editingSenderProfileId = null;
+            setSenderForm({});
+            document.getElementById('np-sender-status').textContent = 'Введіть назву профілю, завантажте дані Нової Пошти та виберіть контакт і адресу.';
+        }
+
+        async function loadSenderProfiles() {
+            const list = document.getElementById('np-sender-profiles');
+            if (!list) return;
+            try {
+                senderProfiles = await getSenderProfiles();
+                list.innerHTML = senderProfiles.length
+                    ? senderProfiles.map(profile => `<div style="display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #2b2b2b;"><span><strong>${escapeHtml(profile.name || 'Без назви')}</strong><br><small>${escapeHtml(profile.phone || '')}</small></span><button class="btn-sm btn-edit" onclick="editSenderProfile('${escapeHtml(profile.id)}')">Редагувати</button></div>`).join('')
+                    : 'Ще немає профілів. Додай перший профіль відправника.';
+            } catch (error) {
+                list.textContent = 'Не вдалося завантажити профілі.';
+            }
+        }
+
+        function editSenderProfile(profileId) {
+            const profile = senderProfiles.find(item => item.id === profileId);
+            if (!profile) return;
+            editingSenderProfileId = profile.id;
+            setSenderForm(profile);
+            document.getElementById('np-sender-status').textContent = 'Профіль завантажено. Щоб змінити контакт або адресу, натисніть «Завантажити мої дані з Нової Пошти».';
+        }
+
+        async function saveNovaSenderProfile() {
+            const profile = {
+                id: editingSenderProfileId || crypto.randomUUID(),
+                name: document.getElementById('np-sender-profile-name').value.trim(),
                 city_ref: document.getElementById('np-sender-city-ref').value.trim(),
                 address_ref: document.getElementById('np-sender-address-ref').value.trim(),
                 contact_ref: document.getElementById('np-sender-contact-ref').value.trim(),
                 phone: document.getElementById('np-sender-phone').value.trim(),
                 sender_ref: document.getElementById('np-sender-ref').value.trim()
             };
-            if (Object.values(sender).some(value => !value)) return showToast('Заповніть усі дані відправника.', true);
-            const { error } = await supabaseClient.from('site_settings').upsert({ id: 'nova_poshta_sender', data: sender });
+            if (Object.values(profile).some(value => !value)) return showToast('Заповніть назву й усі дані відправника.', true);
+            const profiles = [...senderProfiles.filter(item => item.id !== profile.id), profile];
+            const { error } = await supabaseClient.from('site_settings').upsert({ id: 'nova_poshta_senders', data: { profiles } });
             if (error) return showToast(error.message, true);
-            showToast('Дані відправника збережено.');
+            senderProfiles = profiles;
+            editingSenderProfileId = profile.id;
+            await loadSenderProfiles();
+            showToast('Профіль відправника збережено.');
         }
 
         async function novaPoshtaAdmin(action, payload = {}) {
@@ -1473,7 +1529,13 @@
             const status = document.getElementById('np-sender-status');
             try {
                 status.textContent = 'Завантажуємо дані з Нової Пошти…';
-                const saved = await loadNovaSenderSettings();
+                const saved = {
+                    city_ref: document.getElementById('np-sender-city-ref').value,
+                    address_ref: document.getElementById('np-sender-address-ref').value,
+                    contact_ref: document.getElementById('np-sender-contact-ref').value,
+                    phone: document.getElementById('np-sender-phone').value,
+                    sender_ref: document.getElementById('np-sender-ref').value
+                };
                 const senders = await novaPoshtaAdmin('senders');
                 fillSelect('np-sender-ref', senders, 'Оберіть відправника', saved.sender_ref);
                 if (saved.sender_ref) await loadNovaSenderContactsAndWarehouses(saved);
@@ -1514,7 +1576,7 @@
             if (!list) return;
             list.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#999;">Завантаження…</td></tr>';
             try {
-                [managedOrders] = await Promise.all([getOrders(), loadNovaSenderSettings()]);
+                [managedOrders] = await Promise.all([getOrders(), getSenderProfiles()]);
                 list.innerHTML = managedOrders.map(order => `<tr>
                     <td>№${order.id}</td><td>${orderDate(order.created_at)}</td>
                     <td>${escapeHtml(order.customer_name || '—')}<br><small>${escapeHtml(order.phone || '')}</small></td>
@@ -1550,12 +1612,26 @@
         function closeOrderModal() { document.getElementById('order-modal').style.display = 'none'; }
 
         async function createTtnForOrder(order) {
-            const { data: settings } = await supabaseClient.from('site_settings').select('data').eq('id', 'nova_poshta_sender').maybeSingle();
-            const sender = settings?.data || {};
             const delivery = parseOrderJson(order.delivery_data) || parseOrderJson(order.delivery_details);
-            if (Object.values(sender).some(value => !value)) return showToast('Спочатку заповніть дані відправника у розділі «Замовлення».', true);
             if (!delivery?.city_ref) return showToast('У цьому замовленні немає технічних даних Нової Пошти. Оформіть нове тестове замовлення.', true);
-            showToast('Створення ТТН підключимо після оновлення захищеної функції Нової Пошти.');
+            const profiles = await getSenderProfiles();
+            if (!profiles.length) return showToast('Спочатку додайте профіль у розділі «Відправники НП».', true);
+            document.getElementById('order-modal-content').insertAdjacentHTML('beforeend', `
+                <div class="order-detail-card" id="ttn-sender-panel" style="margin-top:14px;">
+                    <small>Створення ТТН</small>
+                    <label style="display:block;margin:8px 0;">Виберіть відправника</label>
+                    <select id="ttn-sender-profile" style="width:100%;margin-bottom:12px;">${profiles.map(profile => `<option value="${escapeHtml(profile.id)}">${escapeHtml(profile.name || 'Без назви')}</option>`).join('')}</select>
+                    <button class="btn btn-sm" onclick="confirmTtnSender(${Number(order.id)})"><i class="fa fa-truck"></i> Продовжити створення ТТН</button>
+                </div>`);
+            document.getElementById('create-ttn-button').style.display = 'none';
+        }
+
+        async function confirmTtnSender(orderId) {
+            const profileId = document.getElementById('ttn-sender-profile')?.value;
+            const profiles = await getSenderProfiles();
+            const profile = profiles.find(item => item.id === profileId);
+            if (!profile) return showToast('Оберіть профіль відправника.', true);
+            showToast(`Обрано профіль «${profile.name}». Наступним кроком підключимо автоматичне створення ТТН.`);
         }
 
         async function loadDashboard() {
