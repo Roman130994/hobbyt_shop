@@ -1490,9 +1490,9 @@
             const { error } = await supabaseClient.from('site_settings').upsert({ id: 'nova_poshta_senders', data: { profiles } });
             if (error) return showToast(error.message, true);
             senderProfiles = profiles;
-            editingSenderProfileId = profile.id;
             await loadSenderProfiles();
             showToast('Профіль відправника збережено.');
+            startNewSenderProfile();
         }
 
         async function loadOrdersSection() {
