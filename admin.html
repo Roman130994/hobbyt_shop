@@ -550,7 +550,6 @@
         </div>
         <ul class="sidebar-menu">
             <li onclick="switchSection('dashboard')" id="menu-dashboard" class="active"><i class="fa fa-dashboard"></i> Дашборд</li>
-            <li onclick="switchSection('products')" id="menu-products"><i class="fa fa-shopping-bag"></i> Товари</li>
             <li onclick="switchSection('banners')" id="menu-banners"><i class="fa fa-image"></i> Банери</li>
             <li onclick="switchSection('pages')" id="menu-pages"><i class="fa fa-file-text"></i> Сторінки</li>
             <li onclick="switchSection('orders')" id="menu-orders"><i class="fa fa-truck"></i> Замовлення</li>
@@ -704,7 +703,7 @@
 
         <div id="section-warehouse" class="admin-section" style="display: none;">
             <div class="admin-content-box">
-                <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Склад</h3><p class="editor-help" style="margin:0;">Усі товари, їхній код, ціна, характеристики та фактичний залишок.</p></div><button class="btn btn-sm" onclick="loadWarehouseSection()"><i class="fa fa-refresh"></i> Оновити</button></div>
+                <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Склад і товари</h3><p class="editor-help" style="margin:0;">Натисни на товар, щоб відкрити повний редактор: ціни, фото, характеристики, модифікації та залишки.</p></div><div style="display:flex;gap:10px;"><button class="btn btn-sm" style="background:#27ae60;" onclick="openAddModal()"><i class="fa fa-plus"></i> Додати товар</button><button class="btn btn-sm" onclick="loadWarehouseSection()"><i class="fa fa-refresh"></i> Оновити</button></div></div>
                 <table class="admin-table"><thead><tr><th>Товар</th><th>Код</th><th>Категорія</th><th>Ціна</th><th>Залишок</th><th>Інформація</th></tr></thead><tbody id="warehouse-list"></tbody></table>
             </div>
         </div>
@@ -967,7 +966,7 @@
                 const stock = product.stockQuantity;
                 const stockLabel = stock === null || stock === undefined ? 'Не ведеться' : `${stock} шт.`;
                 const info = Object.entries(product.specifications || {}).slice(0, 3).map(([key, value]) => `${key}: ${value}`).join(' · ') || '—';
-                return `<tr><td><div style="display:flex;gap:10px;align-items:center;"><img src="${escapeHtml(product.image || '4.png')}" style="width:44px;height:44px;object-fit:cover;border-radius:5px;" onerror="this.src='4.png'"><strong>${escapeHtml(product.name)}</strong></div></td><td>${escapeHtml(product.sku || '—')}</td><td>${escapeHtml(categoryLabels[product.category] || product.category || '—')}</td><td>${escapeHtml(product.price || '—')}</td><td style="color:${stock !== null && stock !== undefined && stock <= 3 ? '#ffb36b' : '#ddd'};">${stockLabel}</td><td><small>${escapeHtml(info)}</small></td></tr>`;
+                return `<tr style="cursor:pointer;" title="Відкрити редактор товару" onclick="openEditModal(${Number(product.id)})"><td><div style="display:flex;gap:10px;align-items:center;"><img src="${escapeHtml(product.image || '4.png')}" style="width:44px;height:44px;object-fit:cover;border-radius:5px;" onerror="this.src='4.png'"><strong>${escapeHtml(product.name)}</strong></div></td><td>${escapeHtml(product.sku || '—')}</td><td>${escapeHtml(categoryLabels[product.category] || product.category || '—')}</td><td>${escapeHtml(product.price || '—')}</td><td style="color:${stock !== null && stock !== undefined && stock <= 3 ? '#ffb36b' : '#ddd'};">${stockLabel}</td><td><small>${escapeHtml(info)}</small><br><button class="btn-sm btn-edit" style="margin-top:7px;" onclick="event.stopPropagation();openEditModal(${Number(product.id)})"><i class="fa fa-pencil"></i> Редагувати</button></td></tr>`;
             }).join('') || '<tr><td colspan="6">Товарів ще немає.</td></tr>';
         }
 
