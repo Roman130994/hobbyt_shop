@@ -1430,6 +1430,12 @@
             if (!value) return null;
             try { return typeof value === 'string' ? JSON.parse(value) : value; } catch (_) { return null; }
         };
+        const getNovaPoshtaDelivery = order => {
+            const saved = parseOrderJson(order.delivery_data) || parseOrderJson(order.delivery_details);
+            if (saved?.city_ref && saved?.warehouse_ref) return saved;
+            const refs = [...String(order.delivery_details || '').matchAll(/Дані:\s*([a-z0-9-]{20,})/gi)].map(match => match[1]);
+            return refs.length >= 2 ? { city_ref: refs[0], warehouse_ref: refs[1], type: order.delivery_method || '' } : saved || {};
+        };
 
         let senderProfiles = [];
         let editingSenderProfileId = null;
@@ -1529,7 +1535,7 @@
         async function openOrderModal(orderId) {
             const order = managedOrders.find(item => Number(item.id) === Number(orderId));
             if (!order) return;
-            const delivery = parseOrderJson(order.delivery_data) || parseOrderJson(order.delivery_details);
+            const delivery = getNovaPoshtaDelivery(order);
             const items = Array.isArray(order.items) ? order.items : parseOrderJson(order.items) || [];
             document.getElementById('order-modal-title').textContent = `Замовлення №${order.id}`;
             document.getElementById('order-modal-content').innerHTML = `
@@ -1576,7 +1582,7 @@
             if (!profile) return showToast('Оберіть профіль відправника.', true);
             if (!order) return showToast('Замовлення не знайдено.', true);
             if (!weight || !description) return showToast('Вкажіть вагу й опис посилки.', true);
-            const delivery = parseOrderJson(order.delivery_data) || parseOrderJson(order.delivery_details);
+            const delivery = getNovaPoshtaDelivery(order);
             if (!delivery?.city_ref || !delivery?.warehouse_ref) return showToast('Для цього замовлення не збережено місто або відділення Нової Пошти.', true);
             try {
                 const { data: { session } } = await supabaseClient.auth.getSession();
@@ -1584,7 +1590,7 @@
                 const response = await fetch(`${window.HOBBYT_SUPABASE_URL}/functions/v1/nova-poshta`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', apikey: window.HOBBYT_SUPABASE_KEY, Authorization: `Bearer ${session.access_token}` },
-                    body: JSON.stringify({ action: 'create_ttn', order, senderProfile: profile, payer, weight, description })
+                    body: JSON.stringify({ action: 'create_ttn', order: { ...order, delivery_data: delivery }, senderProfile: profile, payer, weight, description })
                 });
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.error || 'Не вдалося створити ТТН.');
