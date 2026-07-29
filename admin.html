@@ -220,6 +220,13 @@
             border-radius: 5px;
             font-family: inherit;
         }
+        .inventory-search-results { position: absolute; z-index: 30; top: 100%; left: 0; right: 0; margin-top: 3px; max-height: 310px; overflow: auto; border: 1px solid #3e5870; border-radius: 7px; background: #171717; box-shadow: 0 14px 30px rgba(0,0,0,.45); }
+        .inventory-search-results button { width: 100%; display: flex; gap: 10px; align-items: center; padding: 9px 11px; border: 0; border-bottom: 1px solid #303030; background: transparent; color: #eee; text-align: left; cursor: pointer; }
+        .inventory-search-results button:hover { background: #102337; }
+        .inventory-search-results img { width: 38px; height: 38px; object-fit: cover; border-radius: 4px; }
+        .inventory-search-results span { display: grid; gap: 2px; }
+        .inventory-search-results small, .inventory-search-empty { color: #999; font-size: 12px; }
+        .inventory-search-empty { padding: 12px; }
         .modal-footer {
             margin-top: 25px;
             display: flex;
@@ -711,7 +718,7 @@
         <div id="section-accounting" class="admin-section" style="display: none;">
             <div class="admin-content-box" style="margin-bottom:20px;">
                 <div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Операції зі складом</h3><p class="editor-help" style="margin:0;">Оприбуткування збільшує залишок, списання та продаж зменшують його.</p></div></div>
-                <div class="form-row" style="grid-template-columns:2fr 1fr 2fr;align-items:end;"><div class="form-group"><label>Товар</label><select id="inventory-product"></select></div><div class="form-group"><label>Кількість</label><input id="inventory-quantity" type="number" min="1" value="1"></div><div class="form-group"><label>Коментар</label><input id="inventory-note" placeholder="Наприклад: нова партія або брак"></div></div>
+                <div class="form-row" style="grid-template-columns:2fr 1fr 2fr;align-items:end;"><div class="form-group" style="position:relative;"><label>Товар</label><input id="inventory-product-search" type="search" autocomplete="off" oninput="renderInventoryProductResults()" placeholder="Почніть вводити назву або код товару"><input id="inventory-product" type="hidden"><div id="inventory-product-results" class="inventory-search-results" hidden></div><small id="inventory-product-selected" style="display:block;color:#8abce5;margin-top:6px;">Спочатку знайдіть і виберіть товар.</small></div><div class="form-group"><label>Кількість</label><input id="inventory-quantity" type="number" min="1" value="1"></div><div class="form-group"><label>Коментар</label><input id="inventory-note" placeholder="Наприклад: нова партія або брак"></div></div>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;"><button class="btn btn-sm" style="background:#27ae60;" onclick="saveInventoryMovement('receipt')"><i class="fa fa-plus"></i> Оприбуткування</button><button class="btn btn-sm" style="background:#e67e22;" onclick="saveInventoryMovement('writeoff')"><i class="fa fa-minus"></i> Списання</button><button class="btn btn-sm" onclick="saveInventoryMovement('sale')"><i class="fa fa-shopping-cart"></i> Продаж</button></div>
             </div>
             <div class="admin-content-box"><div class="products-toolbar"><div><h3 style="margin-bottom:6px;">Журнал обліку</h3><p class="editor-help" style="margin:0;">Продажі з сайту також з’являтимуться тут автоматично.</p></div><button class="btn btn-sm" onclick="loadAccountingSection()"><i class="fa fa-refresh"></i> Оновити</button></div><table class="admin-table"><thead><tr><th>Дата</th><th>Операція</th><th>Товар</th><th>Кількість</th><th>Коментар</th></tr></thead><tbody id="inventory-movements-list"></tbody></table></div>
@@ -954,8 +961,25 @@
             if(sectionId === 'dashboard') loadDashboard();
         }
 
-        function inventoryProductOptions() {
-            return productsData.map(product => `<option value="${Number(product.id)}">${escapeHtml(product.name)} · ${escapeHtml(product.sku || 'без коду')}</option>`).join('');
+        function renderInventoryProductResults() {
+            const input = document.getElementById('inventory-product-search');
+            const results = document.getElementById('inventory-product-results');
+            if (!input || !results) return;
+            const query = input.value.trim().toLowerCase();
+            if (!query) { results.hidden = true; results.innerHTML = ''; return; }
+            const matches = productsData.filter(product => `${product.name} ${product.sku || ''}`.toLowerCase().includes(query)).slice(0, 8);
+            results.innerHTML = matches.length ? matches.map(product => `<button type="button" onclick="selectInventoryProduct(${Number(product.id)})"><img src="${escapeHtml(product.image || '4.png')}" alt=""><span><strong>${escapeHtml(product.name)}</strong><small>${escapeHtml(product.sku || 'Без коду')} · ${escapeHtml(product.price || '')}</small></span></button>`).join('') : '<div class="inventory-search-empty">Нічого не знайдено.</div>';
+            results.hidden = false;
+        }
+
+        function selectInventoryProduct(productId) {
+            const product = productsData.find(item => Number(item.id) === Number(productId));
+            if (!product) return;
+            document.getElementById('inventory-product').value = product.id;
+            document.getElementById('inventory-product-search').value = product.name;
+            document.getElementById('inventory-product-results').hidden = true;
+            const stock = product.stockQuantity === null || product.stockQuantity === undefined ? 'Залишок поки не ведеться' : `Зараз на складі: ${product.stockQuantity} шт.`;
+            document.getElementById('inventory-product-selected').textContent = `${product.sku || 'Без коду'} · ${stock}`;
         }
 
         async function loadWarehouseSection() {
@@ -971,11 +995,14 @@
         }
 
         async function loadAccountingSection() {
-            const select = document.getElementById('inventory-product');
             const list = document.getElementById('inventory-movements-list');
-            if (!select || !list) return;
+            if (!list) return;
             await syncProductsFromDatabase();
-            select.innerHTML = inventoryProductOptions() || '<option value="">Немає товарів</option>';
+            const search = document.getElementById('inventory-product-search');
+            const selected = document.getElementById('inventory-product-selected');
+            if (search) search.value = '';
+            document.getElementById('inventory-product').value = '';
+            if (selected) selected.textContent = 'Спочатку знайдіть і виберіть товар.';
             list.innerHTML = '<tr><td colspan="5">Завантаження…</td></tr>';
             try {
                 const { data, error } = await supabaseClient.from('inventory_movements').select('*, products(name, sku)').order('created_at', { ascending: false }).limit(200);
@@ -993,7 +1020,7 @@
             const quantity = Number(document.getElementById('inventory-quantity')?.value);
             const note = document.getElementById('inventory-note')?.value.trim() || '';
             const product = productsData.find(item => Number(item.id) === productId);
-            if (!product || !quantity || quantity < 1) return showToast('Оберіть товар і вкажіть кількість.', true);
+            if (!product || !quantity || quantity < 1) return showToast('Знайдіть товар через пошук і вкажіть кількість.', true);
             const currentStock = Number(product.stockQuantity || 0);
             const nextStock = type === 'receipt' ? currentStock + quantity : currentStock - quantity;
             if (nextStock < 0) return showToast('Неможливо списати більше, ніж є на складі.', true);
