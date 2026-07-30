@@ -1740,13 +1740,6 @@ nav ul li a, .favorites-header-link { color: #1c2736; }
 .home-page .hero-title { max-width: 620px; font-size: clamp(42px, 5vw, 64px); letter-spacing: -.035em; }
 .home-page .hero-subtitle { max-width: 470px; font-size: 18px; line-height: 1.7; }
 .home-page .btn { margin: 10px 0 0; border-radius: 5px; padding: 13px 28px; font-weight: 600; box-shadow: 0 10px 24px rgba(14, 94, 163, .22); }
-.home-benefits { position: relative; z-index: 5; margin: -40px 0 72px; }
-.home-benefits-grid { display: grid; grid-template-columns: repeat(3, 1fr); background: #fff; border: 1px solid #dce8f3; box-shadow: 0 18px 42px rgba(17, 61, 103, .10); }
-.home-benefits-grid > div { min-height: 126px; padding: 28px 30px 25px 82px; position: relative; display: grid; gap: 3px; }
-.home-benefits-grid > div + div { border-left: 1px solid #e3ecf5; }
-.home-benefits-grid i { position: absolute; left: 30px; top: 34px; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: #eaf5ff; color: #0e6fb7; font-size: 16px; }
-.home-benefits-grid strong { color: #14283e; font-size: 16px; }
-.home-benefits-grid span { color: #65778b; font-size: 13px; line-height: 1.5; }
 .home-page .section-top { border-bottom: 1px solid #dce6ef; padding-bottom: 16px; margin-bottom: 26px; }
 .home-page .section-top .section-title, .home-page .title { color: #14283e; }
 .home-page .section-top .section-title::after, .home-page .title::after { background: #167bd0; height: 3px; width: 62px; }
@@ -1776,11 +1769,6 @@ nav ul li a, .favorites-header-link { color: #1c2736; }
     .home-page .hero-header { min-height: 520px; }
     .home-page .hero-content { min-height: calc(520px - 105px); }
     .home-page .hero-eyebrow { text-align: center; }
-    .home-benefits { margin: -12px 0 48px; }
-    .home-benefits-grid { grid-template-columns: 1fr; }
-    .home-benefits-grid > div { min-height: 0; padding: 18px 18px 18px 64px; }
-    .home-benefits-grid > div + div { border-left: 0; border-top: 1px solid #e3ecf5; }
-    .home-benefits-grid i { left: 18px; top: 20px; width: 30px; height: 30px; }
     .home-section-heading { margin-top: 58px; }
 }
 
