@@ -906,7 +906,7 @@ body.dark-theme img.menu-icon {
     min-height: 50vh;
 }
 .hero-header.header {
-    background: #121212;
+    background: #f5f9ff;
 }
 .hero-slider {
     position: absolute;
@@ -927,7 +927,7 @@ body.dark-theme img.menu-icon {
     object-fit: cover;
     object-position: right center;
     display: block;
-    filter: brightness(0.8);
+    filter: none;
 }
 .hero-slider .slide:nth-child(1) { animation-delay: 0s; }
 .hero-slider .slide:nth-child(2) { animation-delay: 5s; }
@@ -936,7 +936,7 @@ body.dark-theme img.menu-icon {
 .hero-slider .overlay {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(to right, rgba(18, 18, 18, 1) 0%, rgba(18, 18, 18, 0.4) 60%, transparent 100%);
+    background: linear-gradient(to right, rgba(255,255,255,.96) 0%, rgba(255,255,255,.76) 48%, rgba(255,255,255,.10) 100%);
     z-index: 1;
 }
 
@@ -957,13 +957,13 @@ body.dark-theme img.menu-icon {
     font-size: 55px;
     line-height: 1.2;
     margin-bottom: 25px;
-    color: #fff;
+    color: #172235;
     text-align: left;
 }
 .hero-text-col .hero-subtitle {
     font-size: 18px;
     margin-bottom: 35px;
-    color: #e0e0e0;
+    color: #41516a;
     text-align: left;
 }
 
@@ -1127,7 +1127,7 @@ body.dark-theme img.menu-icon {
     width: 100%;
     height: 50vh;
     overflow: hidden;
-    background: #000;
+    background: #edf5ff;
     margin-top: 80px;
 }
 .offer-slide-bg {
@@ -1142,7 +1142,7 @@ body.dark-theme img.menu-icon {
 .slider-overlay {
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.6);
+    background: linear-gradient(to right, rgba(255,255,255,.95) 0%, rgba(255,255,255,.70) 48%, rgba(255,255,255,.08) 100%);
     z-index: 1;
 }
 
@@ -1170,12 +1170,12 @@ body.dark-theme img.menu-icon {
 .offer-slide-content h2 {
     font-size: 36px;
     margin-bottom: 20px;
-    color: #fff;
+    color: #172235;
     line-height: 1.3;
 }
 .offer-slide-content p {
     font-size: 18px;
-    color: #ddd;
+    color: #41516a;
     margin-bottom: 30px;
 }
 
@@ -1564,7 +1564,7 @@ body.dark-theme img.menu-icon {
     .header .row, .hero-content { margin-top: 0; min-height: 420px; }
     .hero-header { min-height: 420px; }
     .hero-slider .slide img { object-position: 62% center; }
-    .hero-slider .overlay { background: linear-gradient(to bottom, rgba(18,18,18,.84), rgba(18,18,18,.68)); }
+    .hero-slider .overlay { background: linear-gradient(to bottom, rgba(255,255,255,.86), rgba(255,255,255,.56)); }
     .hero-text-col { max-width: 100%; padding: 64px 0 34px; text-align: center; }
     .hero-text-col .hero-title { font-size: 34px; line-height: 1.15; margin-bottom: 15px; text-align: center; }
     .hero-text-col .hero-subtitle { font-size: 15px; margin-bottom: 22px; text-align: center; }
