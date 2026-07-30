@@ -32,7 +32,14 @@
     <script src="render.js?v=favorites-20260728-1"></script>
 </head>
 
-<body>
+<body class="home-page">
+
+    <div class="store-notice">
+        <div class="container">
+            <span><i class="fa fa-shield"></i> Обладнання для армрестлінгу та силових тренувань</span>
+            <span><i class="fa fa-truck"></i> Відправка по Україні</span>
+        </div>
+    </div>
 
     <div class="header hero-header">
         <div class="hero-slider" id="hero-slider-container">
@@ -68,6 +75,7 @@
             </div>
             <div class="row hero-content">
                 <div class="col-2 hero-text-col">
+                    <p class="hero-eyebrow">HOBBYT EQUIPMENT</p>
                     <h1 class="hero-title" data-content="index.heroTitle">Обладнання,<br>що робить різницю</h1>
                     <p class="hero-subtitle" data-content="index.heroText">Від новачка до професіонала - маємо все, що потрібно для результату.</p>
                     <a href="products.html" class="btn">Переглянути каталог &#8594;</a>
@@ -79,8 +87,18 @@
         </div>
     </div>
 
+    <section class="home-benefits">
+        <div class="small-container">
+            <div class="home-benefits-grid">
+                <div><i class="fa fa-cubes"></i><strong>Власне виробництво</strong><span>Продумані рішення для реального тренування</span></div>
+                <div><i class="fa fa-check-circle"></i><strong>Надійні матеріали</strong><span>Міцні комплектуючі для щоденних навантажень</span></div>
+                <div><i class="fa fa-paper-plane"></i><strong>Швидка відправка</strong><span>Допоможемо підібрати потрібне обладнання</span></div>
+            </div>
+        </div>
+    </section>
+
     <!-- Популярні товари (Карусель) -->
-    <div class="popular-products-section small-container">
+    <div class="popular-products-section small-container home-products-section">
         <div class="section-top">
             <h2 class="section-title" data-content="index.popularTitle">Популярні товари</h2>
             <div class="carousel-nav">
@@ -99,7 +117,10 @@
     <!-- Рекомендовані товари -->
 
     <div class="small-container">
-        <h2 class="title" data-content="index.categoriesTitle">Категорії товарів</h2>
+        <div class="home-section-heading">
+            <p>ОБЕРИ НАПРЯМ</p>
+            <h2 class="title" data-content="index.categoriesTitle">Категорії товарів</h2>
+        </div>
         <div class="row">
             <div class="col-4">
                 <a href="products.html?category=handles">
@@ -142,7 +163,7 @@
                 </a>
             </div>
         </div>
-        <div class="section-top" style="margin-top: 50px;">
+        <div class="section-top sale-section-heading" style="margin-top: 50px;">
             <h2 class="section-title" data-content="index.saleTitle">Розпродаж</h2>
             <div class="carousel-nav">
                 <button id="newPrevBtn"><i class="fa fa-angle-left"></i></button>

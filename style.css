@@ -1721,6 +1721,64 @@ nav ul li a, .favorites-header-link { color: #1c2736; }
 .footer-col-2 img { width: 224px; }
 .offer-logo { background: rgba(255, 255, 255, 0.96); border-radius: 10px; padding: 8px 12px; width: 190px; }
 
+/* Homepage: clean blue storefront system inspired by premium equipment shops. */
+.home-page { background: #f8fbff; }
+.store-notice { background: #0c3560; color: #dfeeff; font-size: 12px; font-weight: 500; letter-spacing: .02em; }
+.store-notice .container { min-height: 38px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.store-notice i { color: #60b7ff; margin-right: 7px; }
+.home-page .navbar { margin-top: 18px; border-radius: 4px; box-shadow: 0 8px 22px rgba(14, 57, 104, .10); }
+.home-page .hero-header { min-height: 590px; }
+.home-page .hero-content { min-height: calc(590px - 120px); }
+.home-page .hero-eyebrow { margin: 0 0 12px; color: #0e6fb7; font-size: 12px; letter-spacing: .18em; font-weight: 700; }
+.home-page .hero-title { max-width: 620px; font-size: clamp(42px, 5vw, 64px); letter-spacing: -.035em; }
+.home-page .hero-subtitle { max-width: 470px; font-size: 18px; line-height: 1.7; }
+.home-page .btn { margin: 10px 0 0; border-radius: 5px; padding: 13px 28px; font-weight: 600; box-shadow: 0 10px 24px rgba(14, 94, 163, .22); }
+.home-benefits { position: relative; z-index: 5; margin: -40px 0 72px; }
+.home-benefits-grid { display: grid; grid-template-columns: repeat(3, 1fr); background: #fff; border: 1px solid #dce8f3; box-shadow: 0 18px 42px rgba(17, 61, 103, .10); }
+.home-benefits-grid > div { min-height: 126px; padding: 28px 30px 25px 82px; position: relative; display: grid; gap: 3px; }
+.home-benefits-grid > div + div { border-left: 1px solid #e3ecf5; }
+.home-benefits-grid i { position: absolute; left: 30px; top: 34px; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: #eaf5ff; color: #0e6fb7; font-size: 16px; }
+.home-benefits-grid strong { color: #14283e; font-size: 16px; }
+.home-benefits-grid span { color: #65778b; font-size: 13px; line-height: 1.5; }
+.home-page .section-top { border-bottom: 1px solid #dce6ef; padding-bottom: 16px; margin-bottom: 26px; }
+.home-page .section-top .section-title, .home-page .title { color: #14283e; }
+.home-page .section-top .section-title::after, .home-page .title::after { background: #167bd0; height: 3px; width: 62px; }
+.home-page .carousel-nav button { border-color: #c9d9e8; color: #0e5ea3; background: #fff; border-radius: 50%; }
+.home-page .carousel-nav button:hover { background: #0e5ea3; color: #fff; }
+.home-page .product-card { background: #fff; border-color: #dce7f1; box-shadow: 0 8px 26px rgba(19, 62, 103, .08); }
+.home-page .product-card img { background: #f5f9fd; object-fit: contain; }
+.home-page .product-card h4 { color: #1b2d40; }
+.home-page .product-card p { color: #0e5ea3; font-weight: 700; }
+.home-page .discount-badge, .home-page .product-discount { background: #167bd0; }
+.home-page .category-col { background: #fff; border: 1px solid #dce7f1; box-shadow: 0 8px 24px rgba(19, 62, 103, .08); }
+.home-page .category-col img { transition: transform .35s ease; }
+.home-page .category-col:hover img { transform: scale(1.04); }
+.home-page .category-overlay { background: linear-gradient(to top, rgba(12, 43, 76, .88), rgba(12, 43, 76, .05)); }
+.home-page .category-overlay h3 { color: #fff; font-size: 18px; }
+.home-section-heading { text-align: center; margin: 78px 0 30px; }
+.home-section-heading > p { color: #167bd0; font-size: 12px; font-weight: 700; letter-spacing: .15em; margin-bottom: 7px; }
+.home-page .home-section-heading .title { display: inline-block; margin: 0; line-height: 1.35; }
+.home-page .home-section-heading .title::after { left: 50%; transform: translateX(-50%); bottom: -12px; }
+.home-page .sale-section-heading { margin-top: 86px !important; }
+.home-page .offer-slider-container { margin-top: 86px; border-top: 1px solid #dce7f1; border-bottom: 1px solid #dce7f1; }
+.home-page .testimonial { padding: 80px 0; margin-top: 0; background: #fff; }
+.home-page .testimonial .col-3 { border: 1px solid #dce7f1; box-shadow: 0 10px 30px rgba(19, 62, 103, .07); }
+.home-page .testimonial .col-3 h3 { color: #1b2d40; }
+
+@media only screen and (max-width: 767px) {
+    .store-notice .container { min-height: 34px; justify-content: center; font-size: 10px; }
+    .store-notice span:last-child { display: none; }
+    .home-page .hero-header { min-height: 520px; }
+    .home-page .hero-content { min-height: calc(520px - 105px); }
+    .home-page .hero-eyebrow { text-align: center; }
+    .home-benefits { margin: -12px 0 48px; }
+    .home-benefits-grid { grid-template-columns: 1fr; }
+    .home-benefits-grid > div { min-height: 0; padding: 18px 18px 18px 64px; }
+    .home-benefits-grid > div + div { border-left: 0; border-top: 1px solid #e3ecf5; }
+    .home-benefits-grid i { left: 18px; top: 20px; width: 30px; height: 30px; }
+    .home-section-heading { margin-top: 58px; }
+}
+
 .about-section.dark-bg, .values-section,
 .review-card, .review-form,
 .product-summary, .cart-page, .checkout-page {
