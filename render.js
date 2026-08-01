@@ -65,23 +65,24 @@ function mapDatabaseProduct(row) {
     const images = Array.isArray(row.images) ? row.images : [];
     const price = formatPrice(row.price);
     const oldPrice = row.old_price ? formatPrice(row.old_price) : null;
+    const localProduct = (typeof productsData !== 'undefined' ? productsData : []).find(p => p.id === row.id || p.name === row.name);
     return {
         id: row.id,
-        name: row.name,
+        name: row.name || localProduct?.name,
         price,
         oldPrice,
         discount: row.old_price && row.old_price > row.price
             ? `-${Math.round((1 - row.price / row.old_price) * 100)}%` : null,
-        image: images[0] || '4.png',
-        gallery: images,
+        image: images[0] || localProduct?.image || '4.png',
+        gallery: images.length ? images : (localProduct?.gallery || [images[0] || localProduct?.image || '4.png']),
         rating: 5,
-        category: row.category,
+        category: row.category || localProduct?.category,
         popular: row.is_popular,
-        description: row.description,
+        description: (row.description && row.description.trim().length > 30) ? row.description : (localProduct?.description || row.description),
         sku: row.sku,
-        specifications: row.specifications,
-        highlights: row.highlights || [],
-        variants: row.variants || { enabled: false, items: [] },
+        specifications: (row.specifications && (Array.isArray(row.specifications) ? row.specifications.length : Object.keys(row.specifications).length)) ? row.specifications : (localProduct?.specifications || null),
+        highlights: (row.highlights && row.highlights.length) ? row.highlights : (localProduct?.highlights || []),
+        variants: row.variants || localProduct?.variants || { enabled: false, items: [] },
         videoUrl: row.video_url,
         inStock: row.in_stock,
         stockQuantity: row.stock_quantity
