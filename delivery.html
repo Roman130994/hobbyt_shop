@@ -15,65 +15,23 @@
     <link rel="apple-touch-icon" href="favicon.png?v=2">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Доставка та оплата | Hobbyt Equipment</title>
-    <meta name="description" content="Доставка обладнання Hobbyt Equipment Новою Поштою, Укрпоштою та самовивозом. Зручні способи оплати.">
+    <meta name="description" content="Умови доставки та оплати обладнання Hobbyt Equipment по Україні та світу. Нова Пошта, Укрпошта, онлайн оплата та післяплата.">
     <link rel="canonical" href="https://hobbytequipment.com/delivery.html">
     <meta property="og:title" content="Доставка та оплата | Hobbyt Equipment">
-    <meta property="og:description" content="Умови доставки та оплати замовлень Hobbyt Equipment.">
+    <meta property="og:description" content="Швидка доставка обладнання для армрестлінгу Новою Поштою та Укрпоштою. Зручні способи оплати.">
+    <meta property="og:image" content="https://hobbytequipment.com/hobbyt-equipment-logo.png">
+    <meta property="og:url" content="https://hobbytequipment.com/delivery.html">
     <meta property="og:type" content="website">
-    <link rel="stylesheet" href="style.css?v=light-logo-20260730">
+    <link rel="stylesheet" href="style.css?v=delivery-light-upgrade-20260802">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabase-config.js"></script>
     <script src="products-data.js?v=light-banners-20260730"></script>
     <script src="render.js?v=favorites-20260728-1"></script>
-    <style>
-        .info-card {
-            background: #1a1a1a;
-            padding: 40px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            border: 1px solid #333;
-            transition: border-color 0.3s;
-        }
-        .info-card:hover {
-            border-color: #0E5EA3;
-        }
-        .info-card i {
-            font-size: 30px;
-            color: #0E5EA3;
-            margin-bottom: 20px;
-        }
-        .info-card h3 {
-            color: #fff;
-            margin-bottom: 15px;
-        }
-        .info-card p {
-            color: #aaa;
-            line-height: 1.6;
-        }
-        .info-card ul {
-            list-style: none;
-            padding-left: 0;
-            margin-top: 15px;
-        }
-        .info-card ul li {
-            color: #ccc;
-            margin-bottom: 10px;
-            padding-left: 25px;
-            position: relative;
-        }
-        .info-card ul li::before {
-            content: "\f00c";
-            font-family: FontAwesome;
-            position: absolute;
-            left: 0;
-            color: #0E5EA3;
-        }
-    </style>
 </head>
 
-<body>
+<body class="delivery-page">
     <div class="container">
         <div class="navbar">
             <div class="logo">
@@ -92,75 +50,162 @@
                         </div>
                     </li>
                     <li><a href="about.html">Про нас</a></li>
-                    <li><a href="delivery.html">Доставка та оплата</a></li>
+                    <li><a href="delivery.html" class="active">Доставка та оплата</a></li>
                 </ul>
             </nav>
-            <a href="cart.html" class="cart-icon-container">
-                <img src="cart.png" width="30px" height="30px">
-                <span class="cart-badge">0</span>
-            </a>
-            <img src="menu.png" class="menu-icon" onclick="menutoggle()">
+            <div class="header-actions">
+                <a href="cart.html" class="cart-icon-container">
+                    <img src="cart.png" width="30px" height="30px">
+                    <span class="cart-badge">0</span>
+                </a>
+                <img src="menu.png" class="menu-icon" onclick="menutoggle()">
+            </div>
         </div>
     </div>
 
-    <!-- Hero Section -->
-    <div class="about-hero" style="background-image: linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url('golovnyj baner.png'); height: 30vh;">
-        <div class="container" style="text-align: center;">
-            <h1 data-content="delivery.heroTitle">Доставка та оплата</h1>
-            <p data-content="delivery.heroText">Ваші замовлення будуть доставлені швидко та надійно в будь-яку точку України та світу.</p>
+    <!-- Light Hero Section -->
+    <div class="about-hero light-about-hero">
+        <div class="container">
+            <div class="about-hero-content">
+                <span class="about-hero-eyebrow"><i class="fa fa-truck"></i> СЕРВІС ТА ДОСТАВКА</span>
+                <h1 data-content="delivery.heroTitle">Умови доставки та оплати</h1>
+                <p data-content="delivery.heroText">Швидко відправляємо обладнання по всій Україні та світу. Обирайте зручний спосіб доставки та оплати замовлення.</p>
+                
+                <div class="about-stats-row">
+                    <div class="stat-card">
+                        <h3>1-2 дні</h3>
+                        <p>Термін відправлення</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>3000 ₴</h3>
+                        <p>Безкоштовно від суми</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>100%</h3>
+                        <p>Безпека платежів</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>50+</h3>
+                        <p>Країн доставки</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Info Sections -->
-    <div class="small-container" style="padding-top: 80px; padding-bottom: 80px;">
-        <div class="row" style="align-items: stretch; justify-content: space-between;">
+    <div class="small-container delivery-main-section">
+        <div class="delivery-grid">
             <!-- Доставка -->
-            <div class="col-2" style="flex-basis: 48%;">
-                <h2 class="title" data-content="delivery.deliveryTitle">Методи доставки</h2>
-                <div class="info-card">
-                    <i class="fa fa-truck"></i>
-                    <h3 data-content="delivery.novaPostTitle">Нова Пошта</h3>
-                    <p data-content="delivery.novaPostText">Найпопулярніший спосіб доставки по Україні. Термін 1-3 дні.</p>
+            <div class="delivery-column">
+                <div class="column-header">
+                    <i class="fa fa-paper-plane"></i>
+                    <h2 class="title" data-content="delivery.deliveryTitle">Способи доставки</h2>
+                </div>
+                
+                <div class="info-card light-info-card">
+                    <div class="info-card-header">
+                        <div class="card-icon-wrap"><i class="fa fa-truck"></i></div>
+                        <div>
+                            <h3 data-content="delivery.novaPostTitle">Нова Пошта</h3>
+                            <span class="badge-tag">Популярний вибір</span>
+                        </div>
+                    </div>
+                    <p data-content="delivery.novaPostText">Найшвидша та найзручніша доставка по всій Україні з можливістю відстеження в реальному часі.</p>
                     <ul>
-                        <li>До відділення або поштомату</li>
-                        <li>Кур'єрська доставка до дверей</li>
-                        <li>Безкоштовно при замовленні від 5000 ₴</li>
+                        <li>Доставка у будь-яке відділення або поштомат (1–3 дні)</li>
+                        <li>Кур'єрська доставка прямо до ваших дверей</li>
+                        <li><strong>Безкоштовна доставка</strong> при замовленні від <strong>3000 ₴</strong></li>
+                        <li>SMS / Viber сповіщення з трекінг-номером ТТН відразу після відправки</li>
                     </ul>
                 </div>
-                <div class="info-card">
-                    <i class="fa fa-globe"></i>
-                    <h3 data-content="delivery.internationalTitle">Міжнародна доставка</h3>
-                    <p data-content="delivery.internationalText">Ми відправляємо наше обладнання атлетам по всьому світу через Укрпошту або DHL.</p>
+
+                <div class="info-card light-info-card">
+                    <div class="info-card-header">
+                        <div class="card-icon-wrap"><i class="fa fa-globe"></i></div>
+                        <div>
+                            <h3 data-content="delivery.internationalTitle">Міжнародна доставка & Укрпошта</h3>
+                            <span class="badge-tag alt">Worldwide Delivery</span>
+                        </div>
+                    </div>
+                    <p data-content="delivery.internationalText">Відправляємо професійне обладнання спортсменам по всьому світу через Укрпошту або міжнародні служби (DHL, FedEx).</p>
                     <ul>
-                        <li>Фіксована ціна для Європи</li>
-                        <li>Можливість відстеження посилки</li>
-                        <li>Термін від 7 до 21 дня</li>
+                        <li>Доставка по Україні через Укрпошту (Стандарт / Експрес)</li>
+                        <li>Міжнародна відправка у понад 50 країн світу</li>
+                        <li>Повний трекінг відправлення на всьому шляху</li>
+                        <li>Терміни міжнародної доставки: від 7 до 21 робочого дня</li>
                     </ul>
                 </div>
             </div>
 
             <!-- Оплата -->
-            <div class="col-2" style="flex-basis: 48%;">
-                <h2 class="title" data-content="delivery.paymentTitle">Методи оплати</h2>
-                <div class="info-card">
-                    <i class="fa fa-credit-card"></i>
-                    <h3 data-content="delivery.onlinePaymentTitle">Оплата онлайн</h3>
-                    <p data-content="delivery.onlinePaymentText">Швидко та безпечно за допомогою карт будь-якого банку (Visa, Mastercard).</p>
+            <div class="delivery-column">
+                <div class="column-header">
+                    <i class="fa fa-credit-card-alt"></i>
+                    <h2 class="title" data-content="delivery.paymentTitle">Способи оплати</h2>
+                </div>
+
+                <div class="info-card light-info-card">
+                    <div class="info-card-header">
+                        <div class="card-icon-wrap"><i class="fa fa-shield"></i></div>
+                        <div>
+                            <h3 data-content="delivery.onlinePaymentTitle">Онлайн-оплата (Monobank / LiqPay)</h3>
+                            <span class="badge-tag">Без комісії</span>
+                        </div>
+                    </div>
+                    <p data-content="delivery.onlinePaymentText">Миттєва та безпечна оплата банківськими картками з захистом за стандартом 3D-Secure.</p>
                     <ul>
-                        <li>Криптовалюти (USDT)</li>
-                        <li>Apple Pay та Google Pay</li>
-                        <li>Безпечне проведення платежів через LiqPay</li>
+                        <li>Оплата картками Visa та Mastercard будь-яких банків</li>
+                        <li>Швидкий розрахунок через Apple Pay та Google Pay</li>
+                        <li>Можливість оплати у криптовалюті (USDT / Crypto)</li>
+                        <li>Офіційні електронні чеки та підтвердження замовлення</li>
                     </ul>
                 </div>
-                <div class="info-card">
-                    <i class="fa fa-handshake-o"></i>
-                    <h3 data-content="delivery.codTitle">Післяплата</h3>
-                    <p data-content="delivery.codText">Сплачуйте замовлення при отриманні у відділенні Нової Пошти.</p>
+
+                <div class="info-card light-info-card">
+                    <div class="info-card-header">
+                        <div class="card-icon-wrap"><i class="fa fa-handshake-o"></i></div>
+                        <div>
+                            <h3 data-content="delivery.codTitle">Післяплата (при отриманні)</h3>
+                            <span class="badge-tag alt">Оплата на пошті</span>
+                        </div>
+                    </div>
+                    <p data-content="delivery.codText">Розраховуйтесь за спорядження після особистого огляду у відділенні Нової Пошти.</p>
                     <ul>
-                        <li>Огляд товару перед оплатою</li>
-                        <li>Мінімальна передоплата 200 ₴</li>
-                        <li>Комісія за переказ згідно тарифів перевізника</li>
+                        <li>Можливість оглянути та приміряти ручки перед оплатою</li>
+                        <li>Мінімальна передплата 150-200 ₴ (страховий внесок доставки, зараховується у суму)</li>
+                        <li>Оплата готівкою або карткою у терміналі поштового відділення</li>
                     </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Гарантія та повернення -->
+        <div class="delivery-guarantee-grid">
+            <div class="guarantee-card">
+                <div class="guarantee-icon"><i class="fa fa-refresh"></i></div>
+                <div>
+                    <h3>14 днів на повернення</h3>
+                    <p>Якщо товар не підійшов, ви можете повернути або обміняти його протягом 14 днів згідно із Законом України.</p>
+                </div>
+            </div>
+            <div class="guarantee-card">
+                <div class="guarantee-icon"><i class="fa fa-check-square-o"></i></div>
+                <div>
+                    <h3>Перевірка кожної деталі</h3>
+                    <p>Перед відправкою кожен тренажер та ручка проходять детальний контроль якості та міцності пакування.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Contact Box -->
+        <div class="about-cta-section" style="margin-top: 50px; padding: 0;">
+            <div class="about-cta-box">
+                <h2>Маєте запитання щодо доставки чи відправки?</h2>
+                <p>Наша команда завжди на зв'язку. Напишіть нам у Telegram або зателефонуйте, і ми допоможемо обрати найкращий спосіб доставки.</p>
+                <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                    <a href="https://t.me/rmnkbtkn" target="_blank" class="btn" style="background: #fff; color: #0e5ea3;"><i class="fa fa-telegram"></i> Написати в Telegram</a>
+                    <a href="tel:+380978194010" class="btn" style="background: rgba(255,255,255,0.2); color: #fff; border: 1px solid #fff;"><i class="fa fa-phone"></i> +38 (097) 819-4010</a>
                 </div>
             </div>
         </div>
@@ -202,7 +247,7 @@
                 </div>
             </div>
             <hr>
-            <p class="copyright">Copyright 2025 - Hobbyt Equipment</p>
+            <p class="copyright">Copyright 2026 - Hobbyt Equipment</p>
         </div>
     </div>
 
