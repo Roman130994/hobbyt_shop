@@ -30,6 +30,25 @@
     <script src="supabase-config.js"></script>
     <script src="products-data.js?v=light-banners-20260730"></script>
     <script src="render.js?v=favorites-20260728-1"></script>
+    <!-- Structured Data Schema.org -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SportsGoodsStore",
+      "name": "Hobbyt Equipment",
+      "url": "https://hobbytequipment.com/",
+      "logo": "https://hobbytequipment.com/hobbyt-equipment-logo.png",
+      "description": "Професійне обладнання для тренувань з армрестлінгу в Україні. Ручки, сети та блоки для чемпіонів.",
+      "telephone": "+380978194010",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "UA"
+      },
+      "sameAs": [
+        "https://t.me/rmnkbtkn"
+      ]
+    }
+    </script>
 </head>
 
 <body class="home-page">
@@ -73,8 +92,54 @@
                     <p class="hero-subtitle" data-content="index.heroText">Від новачка до професіонала - маємо все, що потрібно для результату.</p>
                     <a href="products.html" class="btn">Переглянути каталог &#8594;</a>
                 </div>
-                <div class="col-2">
-                    <!-- Залишено порожнім умисно -->
+                <div class="col-2 hero-featured-col">
+                    <div class="hero-featured-card">
+                        <span class="hero-card-badge"><i class="fa fa-fire"></i> ХІТ ПРОДАЖІВ</span>
+                        <div class="hero-card-img-wrap">
+                            <img src="category-handle.png" alt="Професійні ручки для армрестлінгу">
+                        </div>
+                        <div class="hero-card-info">
+                            <h3>Ручки для тренувань</h3>
+                            <p>Максимальне навантаження та ергономічний хват для ефективного пронатора і кисті.</p>
+                            <a href="products.html?category=handles" class="hero-card-link">Детальніше у каталозі <i class="fa fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Блок переваг (Trust Signals) -->
+    <div class="features-bar">
+        <div class="small-container">
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fa fa-truck"></i></div>
+                    <div class="feature-text">
+                        <h4>Швидка доставка</h4>
+                        <p>Новою Поштою та Укрпоштою по всій Україні</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fa fa-shield"></i></div>
+                    <div class="feature-text">
+                        <h4>Гарантія якості</h4>
+                        <p>Тестовано професійними спортсменами</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fa fa-certificate"></i></div>
+                    <div class="feature-text">
+                        <h4>Українське виробництво</h4>
+                        <p>Власне виробництво та міцні матеріали</p>
+                    </div>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon"><i class="fa fa-credit-card"></i></div>
+                    <div class="feature-text">
+                        <h4>Зручна оплата</h4>
+                        <p>Оплата карткою або післяплатою</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -231,6 +296,14 @@
     <!-- Testimonial -->
     <div class="testimonial">
         <div class="small-container">
+            <div class="home-section-heading testimonial-heading">
+                <p>ВІДГУКИ СПОРТСМЕНІВ</p>
+                <h2 class="title">Що кажуть про Hobbyt Equipment</h2>
+                <div class="trust-badge-line">
+                    <span class="stars"><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i><i class="fa fa-star"></i></span>
+                    <strong>5.0 / 5.0</strong> — понад 500+ задоволених покупців по Україні
+                </div>
+            </div>
             <div class="row">
                 <div class="col-3">
                     <i class="fa fa-quote-left"></i>

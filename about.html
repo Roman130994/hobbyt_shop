@@ -14,13 +14,15 @@
     <link rel="icon" type="image/png" href="favicon.png?v=2">
     <link rel="apple-touch-icon" href="favicon.png?v=2">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Про Hobbyt Equipment | Обладнання для армрестлінгу</title>
-    <meta name="description" content="Hobbyt Equipment створює професійне обладнання для тренувань з армрестлінгу в Україні.">
+    <title>Про Hobbyt Equipment | Професійне обладнання для армрестлінгу</title>
+    <meta name="description" content="Hobbyt Equipment створює професійне обладнання для тренувань з армрестлінгу в Україні. Ручки, сети та блоки для справжніх чемпіонів.">
     <link rel="canonical" href="https://hobbytequipment.com/about.html">
-    <meta property="og:title" content="Про Hobbyt Equipment">
-    <meta property="og:description" content="Професійне обладнання для армрестлінгу від українського виробника.">
+    <meta property="og:title" content="Про Hobbyt Equipment | Професійне обладнання для армрестлінгу">
+    <meta property="og:description" content="Український виробник обладнання для тренувань з армрестлінгу. Надійні матеріали, ергономіка та якість.">
+    <meta property="og:image" content="https://hobbytequipment.com/hobbyt-equipment-logo.png">
+    <meta property="og:url" content="https://hobbytequipment.com/about.html">
     <meta property="og:type" content="website">
-    <link rel="stylesheet" href="style.css?v=light-logo-20260730">
+    <link rel="stylesheet" href="style.css?v=about-light-upgrade-20260802">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
@@ -28,18 +30,9 @@
     <script src="supabase-config.js"></script>
     <script src="products-data.js?v=light-banners-20260730"></script>
     <script src="render.js?v=favorites-20260728-1"></script>
-    <style>
-        .about-page {
-            padding: 50px 0;
-        }
-        .about-page h1 {
-            font-size: 36px;
-            margin-bottom: 20px;
-        }
-    </style>
 </head>
 
-<body>
+<body class="about-page">
     <div class="container">
         <div class="navbar">
             <div class="logo">
@@ -57,78 +50,143 @@
                             <a href="products.html?category=tables">Столи для тренувань</a>
                         </div>
                     </li>
-                    <li><a href="about.html">Про нас</a></li>
+                    <li><a href="about.html" class="active">Про нас</a></li>
                     <li><a href="delivery.html">Доставка та оплата</a></li>
                 </ul>
             </nav>
-            <a href="cart.html" class="cart-icon-container">
-                <img src="cart.png" width="30px" height="30px">
-                <span class="cart-badge">0</span>
-            </a>
-            <img src="menu.png" class="menu-icon" onclick="menutoggle()">
+            <div class="header-actions">
+                <a href="cart.html" class="cart-icon-container">
+                    <img src="cart.png" width="30px" height="30px">
+                    <span class="cart-badge">0</span>
+                </a>
+                <img src="menu.png" class="menu-icon" onclick="menutoggle()">
+            </div>
         </div>
     </div>
 
-    <!-- About Hero Section -->
-    <div class="about-hero" style="background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('golovnyj baner.png');">
+    <!-- Light About Hero Section -->
+    <div class="about-hero light-about-hero">
         <div class="container">
-            <h1 data-content="about.heroTitle">Ми створюємо інструменти для перемоги</h1>
-            <p data-content="about.heroText">Hobbyt Equipment — це не просто бренд, це спільнота армрестлерів, які прагнуть до досконалості.</p>
-        </div>
-    </div>
-
-    <!-- Наша історія -->
-    <div class="about-section">
-        <div class="container">
-            <div class="row">
-                <div class="col-12" style="max-width: 1000px; margin: auto;">
-                    <h2 class="title" data-content="about.historyTitle">Наша історія</h2>
-                    <p data-content="about.historyText">Ласкаво просимо до <strong>Hobbyt Equipment</strong> — виробника професійного обладнання для армреслінгу! Ми розпочали свій шлях у 2025 році...</p>
-                    <p data-content="about.historyMore">Як виробник, ми приділяємо максимум уваги кожній деталі: від ергономіки ручок до міцності матеріалів.</p>
-                    <p>Сьогодні Hobbyt Equipment — це не просто магазин, а ціла лабораторія інновацій. Ми використовуємо відгуки сотень атлетів, щоб кожна нова ітерація нашої продукції була кращою за попередню. Наша мета — стати стандартом якості у світі армрестлінгу, де кожен спортсмен може знайти інструмент, який допоможе йому досягти нових вершин сили та техніки.</p>
+            <div class="about-hero-content">
+                <span class="about-hero-eyebrow"><i class="fa fa-shield"></i> HOBBYT EQUIPMENT</span>
+                <h1 data-content="about.heroTitle">Ми створюємо інструменти для перемоги</h1>
+                <p data-content="about.heroText">Hobbyt Equipment — це український бренд обладнання для армрестлінгу, де інженерні інновації зустрічаються з досвідом професійних спортсменів.</p>
+                
+                <div class="about-stats-row">
+                    <div class="stat-card">
+                        <h3>500+</h3>
+                        <p>Задоволених атлетів</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>100%</h3>
+                        <p>Українське виробництво</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>5.0 ★</h3>
+                        <p>Середня оцінка якості</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>30+</h3>
+                        <p>Моделей тренажерів</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Чому обирають нас (Цінності) -->
-    <div class="values-section">
+    <!-- Наша історія та місія -->
+    <div class="about-section story-section">
         <div class="container">
-            <h2 class="title" data-content="about.advantagesTitle">Чому обирають Hobbyt?</h2>
-            <div class="row">
-                <div class="col-3 value-box">
-                    <i class="fa fa-rocket"></i>
-                    <h3>Інновації</h3>
-                    <p>Використовуємо високоточний 3D-друк та сучасні матеріали для створення ручок ідеальної форми.</p>
+            <div class="about-grid">
+                <div class="about-text-col">
+                    <span class="section-tag">НАША ІСТОРІЯ ТА МІСІЯ</span>
+                    <h2 class="title" data-content="about.historyTitle">Лабораторія силачів та інновацій</h2>
+                    <p data-content="about.historyText">Заснований у <strong>2025 році</strong>, бренд Hobbyt Equipment розпочав свій шлях із простої, але амбітної мети — надати українським та світовим армрестлерам інструменти найвищого ґатунку.</p>
+                    <p data-content="about.historyMore">Як виробник, ми приділяємо максимум уваги кожній деталі: від ергономіки ручок до зносостійкості спеціалізованих матеріалів.</p>
+                    <p>Сьогодні Hobbyt Equipment — це не просто магазин, а справжня лабораторія спортивних рішень. Ми аналізуємо відгуки сотень атлетів, випробуємо вироби під критичними навантаженнями та постійно вдосконалюємо кожен виріб, щоб ви досягали максимального прогресу в кожному підході.</p>
                 </div>
-                <div class="col-3 value-box">
-                    <i class="fa fa-shield"></i>
-                    <h3>Надійність</h3>
-                    <p>Кожен виріб проходить тестування професійними спортсменами під критичними навантаженнями.</p>
-                </div>
-                <div class="col-3 value-box">
-                    <i class="fa fa-users"></i>
-                    <h3>Експертність</h3>
-                    <p>Ми самі є частиною спорту, тому знаємо, що саме потрібно для прогресу та безпеки ваших тренувань.</p>
+                <div class="about-media-col">
+                    <div class="about-image-card">
+                        <img src="banner-light-set.png" alt="Обладнання Hobbyt Equipment">
+                        <div class="about-media-badge">
+                            <i class="fa fa-certificate"></i>
+                            <span>Гарантія надійності та довговічності</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Технології та якість -->
-    <div class="about-section dark-bg">
+    <!-- Цінності бренду -->
+    <div class="values-section light-values-section">
         <div class="container">
-            <div class="row">
-                <div class="col-12" style="max-width: 1000px; margin: auto;">
-                    <h2 class="title" data-content="about.qualityTitle">Якість понад усе</h2>
-                    <p data-content="about.qualityText">Наші ручки для тренування пронації та супінації розроблені так, щоб мінімізувати травматизм і максимально навантажити цільові м'язи...</p>
-                    <p>Кожен матеріал, який ми обираємо, проходить випробування на зносостійкість та ударну міцність. Наші ручки не ковзають у спітнілих руках завдяки особливій текстурі поверхні, що критично важливо під час важких підходів. Ми віримо, що дрібниць не існує, тому навіть кріплення та карабіни ми підбираємо з особливою ретельністю.</p>
-                    <p>Hobbyt Equipment — це вибір тих, хто цінує результат і хоче мати найкраще спорядження у своєму арсеналі. Ми гарантуємо, що наше обладнання прослужить вам роками, допомагаючи кожне тренування ставати міцнішим. Наша впевненість у якості підтверджена довірою провідних рукоборців України та за кордоном.</p>
+            <div class="home-section-heading">
+                <p>ЧОМУ ОБИРАЮТЬ HOBBYT</p>
+                <h2 class="title" data-content="about.advantagesTitle">Ключові цінності нашого бренду</h2>
+            </div>
+            <div class="values-grid">
+                <div class="value-box">
+                    <div class="value-icon"><i class="fa fa-rocket"></i></div>
+                    <h3>Інновації та 3D-друк</h3>
+                    <p>Використовуємо високоточні інженерні технології та міцні полімери для створення ручок із точним розподілом вектора сили.</p>
+                </div>
+                <div class="value-box">
+                    <div class="value-icon"><i class="fa fa-shield"></i></div>
+                    <h3>Безкомпромісна надійність</h3>
+                    <p>Кожен елемент витримує екстремальне навантаження. Наші ручки та блоки розраховані на роботу з великими вагами.</p>
+                </div>
+                <div class="value-box">
+                    <div class="value-icon"><i class="fa fa-hand-rock-o"></i></div>
+                    <h3>Анатомічна точність</h3>
+                    <p>Форма та текстура вигадуються з урахуванням біомеханіки армрестлінгу для точного опрацювання пронатора, супінатора та кисті.</p>
+                </div>
+                <div class="value-box">
+                    <div class="value-icon"><i class="fa fa-users"></i></div>
+                    <h3>Досвід чемпіонів</h3>
+                    <p>Ми самі тренуємося та є частиною спільноти армрестлерів, тому створюємо спорядження, яке дійсно дає результат.</p>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Технології та стандарти якості -->
+    <div class="about-section quality-section">
+        <div class="container">
+            <div class="home-section-heading">
+                <p>СТАНДАРТИ ВИРОБНИЦТВА</p>
+                <h2 class="title" data-content="about.qualityTitle">Якість у кожній деталі</h2>
+            </div>
+            <div class="quality-grid">
+                <div class="quality-card">
+                    <div class="quality-card-icon"><i class="fa fa-cogs"></i></div>
+                    <h3>Технологічні матеріали</h3>
+                    <p>Спеціально підібрані полімери не деформуються від тривалих навантажень та мають високу зносостійкість.</p>
+                </div>
+                <div class="quality-card">
+                    <div class="quality-card-icon"><i class="fa fa-thumbs-up"></i></div>
+                    <h3>Ергономічний хват</h3>
+                    <p>Спеціальна текстура поверхні запобігає ковзанню долоні навіть під час найінтенсивніших підходів.</p>
+                </div>
+                <div class="quality-card">
+                    <div class="quality-card-icon"><i class="fa fa-link"></i></div>
+                    <h3>Міцна фурнітура</h3>
+                    <p>Використовуємо надійні металеві карабіни та ремені з посиленою прошивкою для вашої безпеки.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="about-cta-section">
+        <div class="container">
+            <div class="about-cta-box">
+                <h2>Готові вивести свої тренування на новий рівень?</h2>
+                <p>Обирайте професійне обладнання Hobbyt Equipment та досягайте нових вершин у армрестлінгу вже сьогодні.</p>
+                <a href="products.html" class="btn">Переглянути каталог обладнання &#8594;</a>
+            </div>
+        </div>
+    </div>
 
     <!-- Footer -->
     <div class="footer">
@@ -144,8 +202,7 @@
                 </div>
                 <div class="footer-col-2">
                     <img src="hobbyt-equipment-logo.png" alt="Hobbyt Equipment">
-                    <p>Наша мета — зробити задоволення та користь від спорту доступними для багатьох.
-                    </p>
+                    <p>Наша мета — зробити задоволення та користь від спорту доступними для багатьох.</p>
                 </div>
                 <div class="footer-col-3">
                     <h3>Меню</h3>
@@ -172,20 +229,18 @@
     </div>
 
     <!-- javascript -->
-
     <script>
         var MenuItems = document.getElementById("MenuItems");
         MenuItems.style.maxHeight = "0px";
         function menutoggle() {
             if (MenuItems.style.maxHeight == "0px") {
-                MenuItems.style.maxHeight = "200px"
+                MenuItems.style.maxHeight = "200px";
             }
             else {
-                MenuItems.style.maxHeight = "0px"
+                MenuItems.style.maxHeight = "0px";
             }
         }
     </script>
-
 </body>
 
 </html>
